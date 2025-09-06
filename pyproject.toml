@@ -7,7 +7,9 @@ authors = [
     { name = "Jan Vanbuel", email = "jan.vanbuel@ond.vlaanderen.be" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pydantic>=2.11.7",
+]
 
 [project.scripts]
 checkup = "checkup:main"
