@@ -152,7 +152,7 @@ class CheckHub:
         result_metrics: list[Metric] = []
 
         for metric_cls in execution_order:
-            config = metric_configs.get(metric_cls().name, {})  # type: ignore
+            config = metric_configs.get(metric_cls.name, {})
             metric = metric_cls(**config, is_direct=(metric_cls in direct_metrics))
             metric.tags.update(context_dict)
             metric.calculate(context, calculated)

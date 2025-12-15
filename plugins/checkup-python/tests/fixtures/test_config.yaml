@@ -1,0 +1,4 @@
+metrics:
+  python_version_check:
+    min_version: "3.12"
+    max_version: "3.14"
