@@ -1,6 +1,7 @@
 from checkup import CheckHub
-
+from checkup_conveyor.conveyor_metric import ConveyorLastDeploymentTime
 
 
 def test_integration():
-    CheckHub().with_metrics([ConveyorLastDeploymentTime])
+    r = CheckHub().with_metrics([ConveyorLastDeploymentTime]).measure()
+    assert r is not None
