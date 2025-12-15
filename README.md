@@ -1,4 +1,4 @@
-# Checkup
+![CheckUp](images/horseshoe.png)
 
 Extensible metrics calculation framework with dependency resolution and context enrichment.
 
@@ -50,8 +50,8 @@ Create `checkup.yaml`:
 ```yaml
 metrics:
   python_version:
-    min: "3.11.0"
-    max: "3.12.99"
+    min: '3.11.0'
+    max: '3.12.99'
 ```
 
 Use with CheckHub:
