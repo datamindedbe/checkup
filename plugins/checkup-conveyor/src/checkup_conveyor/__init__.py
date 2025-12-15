@@ -9,5 +9,9 @@ from checkup.metric import Metric
 class ConveyorMetric(Metric):
     """Base class for Conveyor-related metrics."""
 
+    @classmethod
     def providers(cls) -> list[Callable[[Context], Context]]:
-        return [lambda context: context.update({'conveyor_api_key': os.environ['CHECKUP__CONVEYOR__API_KEY']})]
+        def context(context: Context) -> Context:
+            return context.update({'conveyor_api_key': os.environ['CHECKUP__CONVEYOR__API_KEY']})
+        return [context]
+
