@@ -5,6 +5,13 @@ description = "dbt metrics for checkup"
 requires-python = ">=3.12"
 dependencies = [
     "checkup",
+    "dbt-core>=1.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "dbt-duckdb>=1.9",
 ]
 
 [tool.uv.sources]

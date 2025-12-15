@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Staging model for customer data"
+    config:
+      schema: staging__int
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+        data_type: integer
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        description: "Full name of the customer"
+        data_type: varchar
+      - name: email
+        description: "Customer email address"
+        data_type: varchar
+        tests:
+          - not_null
+
+  - name: stg_orders
+    description: "Staging model for order data"
+    config:
+      schema: staging__int
+    columns:
+      - name: order_id
+        description: "Primary key for orders"
+        data_type: integer
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to customers"
+        data_type: integer
+        tests:
+          - not_null
+      - name: amount
+        description: "Order amount"
+        data_type: decimal
+      - name: order_date
+        # No description - testing columns without descriptions
+        data_type: date

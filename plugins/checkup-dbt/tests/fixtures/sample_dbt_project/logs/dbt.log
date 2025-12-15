@@ -1,0 +1,476 @@
+[0m15:48:29.779947 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109586a20>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108f7b4d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108f7b8f0>]}
+
+
+============================== 15:48:29.879711 | f30859dc-6492-4e3a-a782-1faee6e2a730 ==============================
+[0m15:48:29.879711 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:48:29.880166 [debug] [MainThread]: running dbt with arguments {'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'write_json': 'True', 'cache_selected_only': 'False', 'log_format': 'default', 'indirect_selection': 'eager', 'use_colors': 'True', 'fail_fast': 'False', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'profiles_dir': '.', 'use_experimental_parser': 'False', 'version_check': 'True', 'partial_parse': 'True', 'printer_width': '80', 'quiet': 'False', 'static_parser': 'True', 'warn_error': 'None', 'target_path': 'None', 'empty': 'None', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'no_print': 'None', 'invocation_command': 'dbt parse --profiles-dir .', 'log_cache_events': 'False'}
+[0m15:48:31.029649 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'f30859dc-6492-4e3a-a782-1faee6e2a730', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107871640>]}
+[0m15:48:31.069905 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'f30859dc-6492-4e3a-a782-1faee6e2a730', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109cb9340>]}
+[0m15:48:31.087226 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m15:48:31.218317 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m15:48:31.219038 [info ] [MainThread]: Unable to do partial parsing because saved manifest not found. Starting full parse.
+[0m15:48:31.219340 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': 'f30859dc-6492-4e3a-a782-1faee6e2a730', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b60080>]}
+[0m15:48:32.393792 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'f30859dc-6492-4e3a-a782-1faee6e2a730', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a1a5b50>]}
+[0m15:48:32.396630 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m15:48:32.447350 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m15:48:32.461926 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m15:48:32.462516 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 2.762351, "process_in_blocks": "0", "process_kernel_time": 0.386123, "process_mem_max_rss": "155828224", "process_out_blocks": "0", "process_user_time": 1.936206}
+[0m15:48:32.462877 [debug] [MainThread]: Command `dbt parse` succeeded at 15:48:32.462819 after 2.76 seconds
+[0m15:48:32.463157 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109dffe60>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109c77e00>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109c77d70>]}
+[0m15:48:32.463427 [debug] [MainThread]: Flushing usage events
+[0m15:48:33.306177 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:50:40.271677 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1094401a0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a08b200>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a08aae0>]}
+
+
+============================== 15:50:40.278991 | 731dba10-f418-439f-a3c9-f4fff37b0399 ==============================
+[0m15:50:40.278991 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:50:40.279473 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'indirect_selection': 'eager', 'log_format': 'default', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'fail_fast': 'False', 'static_parser': 'True', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'cache_selected_only': 'False', 'target_path': 'None', 'no_print': 'None', 'partial_parse': 'True', 'warn_error': 'None', 'use_experimental_parser': 'False', 'use_colors': 'True', 'write_json': 'True', 'log_cache_events': 'False', 'send_anonymous_usage_stats': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'debug': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'empty': 'None', 'printer_width': '80', 'quiet': 'False'}
+[0m15:50:40.368715 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '731dba10-f418-439f-a3c9-f4fff37b0399', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1083f3500>]}
+[0m15:50:40.589226 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:50:40.590006 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:50:40.590452 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.37018654, "process_in_blocks": "0", "process_kernel_time": 0.217904, "process_mem_max_rss": "121651200", "process_out_blocks": "0", "process_user_time": 0.973724}
+[0m15:50:40.590832 [debug] [MainThread]: Command `cli deps` succeeded at 15:50:40.590775 after 0.37 seconds
+[0m15:50:40.591103 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1093f1730>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b4d7f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1095220f0>]}
+[0m15:50:40.591397 [debug] [MainThread]: Flushing usage events
+[0m15:50:40.994866 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:50:41.027226 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a215640>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1094e8560>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108fb86b0>]}
+
+
+============================== 15:50:41.027715 | 4c33e966-3fa9-47d3-830c-11dda94bd50c ==============================
+[0m15:50:41.027715 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:50:41.028109 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'indirect_selection': 'eager', 'log_format': 'default', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'fail_fast': 'False', 'static_parser': 'True', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'cache_selected_only': 'False', 'target_path': 'None', 'no_print': 'None', 'partial_parse': 'True', 'warn_error': 'None', 'use_experimental_parser': 'False', 'use_colors': 'True', 'write_json': 'True', 'log_cache_events': 'False', 'send_anonymous_usage_stats': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'debug': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'empty': 'None', 'printer_width': '80', 'quiet': 'False'}
+[0m15:50:41.246601 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '4c33e966-3fa9-47d3-830c-11dda94bd50c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a216120>]}
+[0m15:50:41.281982 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '4c33e966-3fa9-47d3-830c-11dda94bd50c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109de7140>]}
+[0m15:50:41.296189 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m15:50:41.410150 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m15:50:41.572790 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m15:50:41.573204 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m15:50:41.598535 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '4c33e966-3fa9-47d3-830c-11dda94bd50c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a32f5c0>]}
+[0m15:50:41.601642 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m15:50:41.648074 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m15:50:41.651072 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m15:50:41.651439 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.65435547, "process_in_blocks": "0", "process_kernel_time": 0.298762, "process_mem_max_rss": "148488192", "process_out_blocks": "0", "process_user_time": 1.26783}
+[0m15:50:41.651777 [debug] [MainThread]: Command `cli parse` succeeded at 15:50:41.651719 after 0.65 seconds
+[0m15:50:41.652041 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108325cd0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1093c7410>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a2e6c30>]}
+[0m15:50:41.652312 [debug] [MainThread]: Flushing usage events
+[0m15:50:42.086144 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:52:32.539031 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10aef7650>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bafb260>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bafab10>]}
+
+
+============================== 15:52:32.545302 | 8d5fa420-7a63-4126-ba59-fd35c479daae ==============================
+[0m15:52:32.545302 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:52:32.545834 [debug] [MainThread]: running dbt with arguments {'introspect': 'True', 'use_experimental_parser': 'False', 'quiet': 'False', 'static_parser': 'True', 'target_path': 'None', 'invocation_command': 'dbt tests/test_integration.py -v', 'log_cache_events': 'False', 'empty': 'None', 'no_print': 'None', 'cache_selected_only': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'log_format': 'default', 'printer_width': '80', 'partial_parse': 'True', 'fail_fast': 'False', 'write_json': 'True', 'debug': 'False', 'indirect_selection': 'eager', 'version_check': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'warn_error': 'None', 'use_colors': 'True'}
+[0m15:52:32.661523 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '8d5fa420-7a63-4126-ba59-fd35c479daae', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bbcc050>]}
+[0m15:52:32.819591 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:52:32.821187 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:52:32.821726 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.34561133, "process_in_blocks": "0", "process_kernel_time": 0.220626, "process_mem_max_rss": "119865344", "process_out_blocks": "0", "process_user_time": 0.97187}
+[0m15:52:32.822106 [debug] [MainThread]: Command `cli deps` succeeded at 15:52:32.822045 after 0.35 seconds
+[0m15:52:32.822376 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b8842c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc86e40>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bb97b90>]}
+[0m15:52:32.822638 [debug] [MainThread]: Flushing usage events
+[0m15:52:33.244257 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:52:33.277599 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc86e40>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10ae97c50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10ab55700>]}
+
+
+============================== 15:52:33.278140 | 730d8429-72f8-47ee-8ef7-45b5dc3e1cce ==============================
+[0m15:52:33.278140 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:52:33.278597 [debug] [MainThread]: running dbt with arguments {'introspect': 'True', 'use_experimental_parser': 'False', 'quiet': 'False', 'static_parser': 'True', 'target_path': 'None', 'invocation_command': 'dbt tests/test_integration.py -v', 'log_cache_events': 'False', 'empty': 'None', 'no_print': 'None', 'cache_selected_only': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'log_format': 'default', 'printer_width': '80', 'partial_parse': 'True', 'fail_fast': 'False', 'write_json': 'True', 'debug': 'False', 'indirect_selection': 'eager', 'version_check': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'warn_error': 'None', 'use_colors': 'True'}
+[0m15:52:33.461346 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '730d8429-72f8-47ee-8ef7-45b5dc3e1cce', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a023860>]}
+[0m15:52:33.497091 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '730d8429-72f8-47ee-8ef7-45b5dc3e1cce', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bdbd0d0>]}
+[0m15:52:33.500104 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m15:52:33.609038 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m15:52:33.770859 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m15:52:33.771252 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m15:52:33.796076 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '730d8429-72f8-47ee-8ef7-45b5dc3e1cce', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be2a570>]}
+[0m15:52:33.798736 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m15:52:33.852005 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m15:52:33.854403 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m15:52:33.854934 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.6077199, "process_in_blocks": "0", "process_kernel_time": 0.303789, "process_mem_max_rss": "147521536", "process_out_blocks": "0", "process_user_time": 1.279075}
+[0m15:52:33.855405 [debug] [MainThread]: Command `cli parse` succeeded at 15:52:33.855318 after 0.61 seconds
+[0m15:52:33.855731 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc94710>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109f56000>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109f55fa0>]}
+[0m15:52:33.856044 [debug] [MainThread]: Flushing usage events
+[0m15:52:34.293666 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:53:26.553414 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bff5b80>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c5333b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c532c60>]}
+
+
+============================== 15:53:26.557446 | 733f8f3d-1fa3-4dc0-821b-0dacd83a62eb ==============================
+[0m15:53:26.557446 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:53:26.557889 [debug] [MainThread]: running dbt with arguments {'log_cache_events': 'False', 'target_path': 'None', 'no_print': 'None', 'version_check': 'True', 'log_format': 'default', 'send_anonymous_usage_stats': 'True', 'partial_parse': 'True', 'printer_width': '80', 'write_json': 'True', 'use_colors': 'True', 'static_parser': 'True', 'introspect': 'True', 'use_experimental_parser': 'False', 'warn_error': 'None', 'empty': 'None', 'quiet': 'False', 'fail_fast': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'invocation_command': 'dbt tests/test_integration.py -v', 'debug': 'False'}
+[0m15:53:26.638672 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '733f8f3d-1fa3-4dc0-821b-0dacd83a62eb', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c3234d0>]}
+[0m15:53:26.655111 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:53:26.656526 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:53:26.657077 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.15153275, "process_in_blocks": "0", "process_kernel_time": 0.196067, "process_mem_max_rss": "119832576", "process_out_blocks": "0", "process_user_time": 0.924164}
+[0m15:53:26.657453 [debug] [MainThread]: Command `cli deps` succeeded at 15:53:26.657392 after 0.15 seconds
+[0m15:53:26.657735 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c4abd40>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c6c0080>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c6fb440>]}
+[0m15:53:26.658008 [debug] [MainThread]: Flushing usage events
+[0m15:53:27.059940 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:53:27.076011 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c65fef0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a7d1f40>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c34a240>]}
+
+
+============================== 15:53:27.076560 | 25d5797a-8891-4a07-bfdb-3cbe08a5f7ed ==============================
+[0m15:53:27.076560 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:53:27.077093 [debug] [MainThread]: running dbt with arguments {'log_cache_events': 'False', 'target_path': 'None', 'no_print': 'None', 'version_check': 'True', 'log_format': 'default', 'send_anonymous_usage_stats': 'True', 'partial_parse': 'True', 'printer_width': '80', 'write_json': 'True', 'use_colors': 'True', 'static_parser': 'True', 'introspect': 'True', 'use_experimental_parser': 'False', 'warn_error': 'None', 'empty': 'None', 'quiet': 'False', 'fail_fast': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'invocation_command': 'dbt tests/test_integration.py -v', 'debug': 'False'}
+[0m15:53:27.171137 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '25d5797a-8891-4a07-bfdb-3cbe08a5f7ed', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c79c500>]}
+[0m15:53:27.204795 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '25d5797a-8891-4a07-bfdb-3cbe08a5f7ed', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c531340>]}
+[0m15:53:27.207476 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m15:53:27.279527 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m15:53:27.411695 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m15:53:27.412124 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m15:53:27.437284 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '25d5797a-8891-4a07-bfdb-3cbe08a5f7ed', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c72f440>]}
+[0m15:53:27.441100 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m15:53:27.486861 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m15:53:27.492037 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m15:53:27.492435 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.42936724, "process_in_blocks": "0", "process_kernel_time": 0.262609, "process_mem_max_rss": "147275776", "process_out_blocks": "0", "process_user_time": 1.221768}
+[0m15:53:27.492756 [debug] [MainThread]: Command `cli parse` succeeded at 15:53:27.492706 after 0.43 seconds
+[0m15:53:27.493034 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b51eba0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b8cf470>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b8ce360>]}
+[0m15:53:27.493296 [debug] [MainThread]: Flushing usage events
+[0m15:53:27.886381 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:54:14.824792 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109eed670>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10979b260>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10979b1d0>]}
+
+
+============================== 15:54:14.829078 | 4a301940-d4c2-408d-841a-87b2d2f4c838 ==============================
+[0m15:54:14.829078 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:54:14.829572 [debug] [MainThread]: running dbt with arguments {'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_cache_events': 'False', 'invocation_command': 'dbt -v', 'send_anonymous_usage_stats': 'True', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'target_path': 'None', 'printer_width': '80', 'debug': 'False', 'use_colors': 'True', 'no_print': 'None', 'warn_error': 'None', 'fail_fast': 'False', 'log_format': 'default', 'version_check': 'True', 'use_experimental_parser': 'False', 'static_parser': 'True', 'introspect': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'write_json': 'True', 'partial_parse': 'True', 'quiet': 'False', 'empty': 'None'}
+[0m15:54:14.930394 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '4a301940-d4c2-408d-841a-87b2d2f4c838', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a417bc0>]}
+[0m15:54:14.954762 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:54:14.956733 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m15:54:14.957202 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.18218184, "process_in_blocks": "0", "process_kernel_time": 0.194676, "process_mem_max_rss": "119947264", "process_out_blocks": "0", "process_user_time": 0.916231}
+[0m15:54:14.957591 [debug] [MainThread]: Command `cli deps` succeeded at 15:54:14.957523 after 0.18 seconds
+[0m15:54:14.957867 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10979b260>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a35b8c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a35b890>]}
+[0m15:54:14.958132 [debug] [MainThread]: Flushing usage events
+[0m15:54:15.368328 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m15:54:15.375962 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1085fe1b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a0bf320>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10993cfe0>]}
+
+
+============================== 15:54:15.376456 | 6edc9139-69e2-4d73-aaab-658824d93a0b ==============================
+[0m15:54:15.376456 [info ] [MainThread]: Running with dbt=1.10.15
+[0m15:54:15.376865 [debug] [MainThread]: running dbt with arguments {'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_cache_events': 'False', 'invocation_command': 'dbt -v', 'send_anonymous_usage_stats': 'True', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'target_path': 'None', 'printer_width': '80', 'debug': 'False', 'use_colors': 'True', 'no_print': 'None', 'warn_error': 'None', 'fail_fast': 'False', 'log_format': 'default', 'version_check': 'True', 'use_experimental_parser': 'False', 'static_parser': 'True', 'introspect': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'write_json': 'True', 'partial_parse': 'True', 'quiet': 'False', 'empty': 'None'}
+[0m15:54:15.453509 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '6edc9139-69e2-4d73-aaab-658824d93a0b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a48e1e0>]}
+[0m15:54:15.490201 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '6edc9139-69e2-4d73-aaab-658824d93a0b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a416600>]}
+[0m15:54:15.492984 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m15:54:15.563425 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m15:54:15.677563 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m15:54:15.677951 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m15:54:15.702907 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '6edc9139-69e2-4d73-aaab-658824d93a0b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a5ff8c0>]}
+[0m15:54:15.707318 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m15:54:15.754016 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m15:54:15.757060 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m15:54:15.757410 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.38642246, "process_in_blocks": "0", "process_kernel_time": 0.258098, "process_mem_max_rss": "147292160", "process_out_blocks": "0", "process_user_time": 1.205831}
+[0m15:54:15.757713 [debug] [MainThread]: Command `cli parse` succeeded at 15:54:15.757665 after 0.39 seconds
+[0m15:54:15.757970 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10889b0e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a08e600>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b58cb0>]}
+[0m15:54:15.758251 [debug] [MainThread]: Flushing usage events
+[0m15:54:16.151079 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:01:22.277147 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1093fc560>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1099e7620>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1099e6ed0>]}
+
+
+============================== 16:01:22.285787 | f9a95d7c-c5f5-49f7-b844-9b0bce1d2845 ==============================
+[0m16:01:22.285787 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:01:22.286275 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'empty': 'None', 'write_json': 'True', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True', 'warn_error': 'None', 'quiet': 'False', 'version_check': 'True', 'use_experimental_parser': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'no_print': 'None', 'use_colors': 'True', 'cache_selected_only': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'introspect': 'True', 'partial_parse': 'True', 'indirect_selection': 'eager', 'debug': 'False', 'target_path': 'None', 'fail_fast': 'False', 'printer_width': '80', 'log_cache_events': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project'}
+[0m16:01:22.379491 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'f9a95d7c-c5f5-49f7-b844-9b0bce1d2845', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1099cbdd0>]}
+[0m16:01:22.471000 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:01:22.472442 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:01:22.472885 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.27126226, "process_in_blocks": "0", "process_kernel_time": 0.200374, "process_mem_max_rss": "119816192", "process_out_blocks": "0", "process_user_time": 0.895519}
+[0m16:01:22.473242 [debug] [MainThread]: Command `cli deps` succeeded at 16:01:22.473182 after 0.27 seconds
+[0m16:01:22.473523 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108e7fe00>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109213da0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b13ef0>]}
+[0m16:01:22.473780 [debug] [MainThread]: Flushing usage events
+[0m16:01:22.919426 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:01:22.931406 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107c86000>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1099a5040>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10818e330>]}
+
+
+============================== 16:01:22.931813 | b409488f-bb93-4bd1-8f75-ba40ee749e42 ==============================
+[0m16:01:22.931813 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:01:22.932169 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'empty': 'None', 'write_json': 'True', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True', 'warn_error': 'None', 'quiet': 'False', 'version_check': 'True', 'use_experimental_parser': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'no_print': 'None', 'use_colors': 'True', 'cache_selected_only': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'introspect': 'True', 'partial_parse': 'True', 'indirect_selection': 'eager', 'debug': 'False', 'target_path': 'None', 'fail_fast': 'False', 'printer_width': '80', 'log_cache_events': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project'}
+[0m16:01:23.190876 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'b409488f-bb93-4bd1-8f75-ba40ee749e42', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109a9f7d0>]}
+[0m16:01:23.223050 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'b409488f-bb93-4bd1-8f75-ba40ee749e42', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107e32870>]}
+[0m16:01:23.255204 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:01:23.403591 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:01:23.976254 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:01:23.976706 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:01:24.001134 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'b409488f-bb93-4bd1-8f75-ba40ee749e42', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109c87860>]}
+[0m16:01:24.005820 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:01:24.054341 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:01:24.065982 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:01:24.066440 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 1.144894, "process_in_blocks": "0", "process_kernel_time": 0.285757, "process_mem_max_rss": "147439616", "process_out_blocks": "0", "process_user_time": 1.194599}
+[0m16:01:24.066789 [debug] [MainThread]: Command `cli parse` succeeded at 16:01:24.066733 after 1.15 seconds
+[0m16:01:24.067088 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109aed2e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10995fec0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10995fe90>]}
+[0m16:01:24.067383 [debug] [MainThread]: Flushing usage events
+[0m16:01:24.461437 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:03:08.553093 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10adc2d50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109717a70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bbd2ff0>]}
+
+
+============================== 16:03:08.557563 | 3e626f4f-61d7-4a57-8f33-004ded0b791e ==============================
+[0m16:03:08.557563 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:03:08.558279 [debug] [MainThread]: running dbt with arguments {'target_path': 'None', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'cache_selected_only': 'False', 'use_colors': 'True', 'printer_width': '80', 'quiet': 'False', 'fail_fast': 'False', 'warn_error': 'None', 'empty': 'None', 'log_format': 'default', 'version_check': 'True', 'send_anonymous_usage_stats': 'True', 'use_experimental_parser': 'False', 'debug': 'False', 'partial_parse': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'no_print': 'None', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'static_parser': 'True', 'invocation_command': 'dbt tests/test_integration.py -v'}
+[0m16:03:08.644522 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '3e626f4f-61d7-4a57-8f33-004ded0b791e', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b6db560>]}
+[0m16:03:08.670896 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:03:08.673295 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:03:08.673808 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.17438258, "process_in_blocks": "0", "process_kernel_time": 0.192278, "process_mem_max_rss": "119832576", "process_out_blocks": "0", "process_user_time": 0.913424}
+[0m16:03:08.674221 [debug] [MainThread]: Command `cli deps` succeeded at 16:03:08.674160 after 0.17 seconds
+[0m16:03:08.674498 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109f64920>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bbd32c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bbd3680>]}
+[0m16:03:08.674761 [debug] [MainThread]: Flushing usage events
+[0m16:03:09.082651 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:03:09.097023 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b3cc170>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10aaad340>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b9dc7d0>]}
+
+
+============================== 16:03:09.097583 | c6a0bff7-d025-4942-8943-e3643288a901 ==============================
+[0m16:03:09.097583 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:03:09.098068 [debug] [MainThread]: running dbt with arguments {'target_path': 'None', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'cache_selected_only': 'False', 'use_colors': 'True', 'printer_width': '80', 'quiet': 'False', 'fail_fast': 'False', 'warn_error': 'None', 'empty': 'None', 'log_format': 'default', 'version_check': 'True', 'send_anonymous_usage_stats': 'True', 'use_experimental_parser': 'False', 'debug': 'False', 'partial_parse': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'no_print': 'None', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'static_parser': 'True', 'invocation_command': 'dbt tests/test_integration.py -v'}
+[0m16:03:09.191405 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'c6a0bff7-d025-4942-8943-e3643288a901', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bca7bf0>]}
+[0m16:03:09.227338 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'c6a0bff7-d025-4942-8943-e3643288a901', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a2caba0>]}
+[0m16:03:09.230488 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:03:09.299107 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:03:09.415153 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:03:09.415546 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:03:09.440686 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'c6a0bff7-d025-4942-8943-e3643288a901', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc87f80>]}
+[0m16:03:09.443563 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:03:09.491621 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:03:09.493798 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:03:09.494166 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.4080833, "process_in_blocks": "0", "process_kernel_time": 0.255742, "process_mem_max_rss": "147505152", "process_out_blocks": "0", "process_user_time": 1.210814}
+[0m16:03:09.494495 [debug] [MainThread]: Command `cli parse` succeeded at 16:03:09.494443 after 0.41 seconds
+[0m16:03:09.494799 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b9dc7d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b892420>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be6fbc0>]}
+[0m16:03:09.495084 [debug] [MainThread]: Flushing usage events
+[0m16:03:09.888892 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:04:22.221985 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cdd2420>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dd336e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dd32fc0>]}
+
+
+============================== 16:04:22.226842 | 36ceb659-0604-451a-9809-776f620e6bbb ==============================
+[0m16:04:22.226842 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:04:22.227301 [debug] [MainThread]: running dbt with arguments {'indirect_selection': 'eager', 'static_parser': 'True', 'log_format': 'default', 'use_colors': 'True', 'fail_fast': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'version_check': 'True', 'cache_selected_only': 'False', 'printer_width': '80', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'target_path': 'None', 'partial_parse': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'write_json': 'True', 'empty': 'None', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'quiet': 'False', 'warn_error': 'None', 'use_experimental_parser': 'False', 'log_cache_events': 'False', 'no_print': 'None'}
+[0m16:04:22.316613 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '36ceb659-0604-451a-9809-776f620e6bbb', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10de5b770>]}
+[0m16:04:22.345272 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:04:22.346615 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:04:22.347048 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.18057333, "process_in_blocks": "0", "process_kernel_time": 0.194378, "process_mem_max_rss": "119848960", "process_out_blocks": "0", "process_user_time": 0.916445}
+[0m16:04:22.347419 [debug] [MainThread]: Command `cli deps` succeeded at 16:04:22.347355 after 0.18 seconds
+[0m16:04:22.347696 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d3bce30>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dd33680>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dd33380>]}
+[0m16:04:22.347957 [debug] [MainThread]: Flushing usage events
+[0m16:04:22.751233 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:04:22.766092 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bfce000>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d383530>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d13b5c0>]}
+
+
+============================== 16:04:22.766574 | 59a49419-d66f-4e5c-81b5-381451fb2eaf ==============================
+[0m16:04:22.766574 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:04:22.766974 [debug] [MainThread]: running dbt with arguments {'indirect_selection': 'eager', 'static_parser': 'True', 'log_format': 'default', 'use_colors': 'True', 'fail_fast': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'version_check': 'True', 'cache_selected_only': 'False', 'printer_width': '80', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'target_path': 'None', 'partial_parse': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'write_json': 'True', 'empty': 'None', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'quiet': 'False', 'warn_error': 'None', 'use_experimental_parser': 'False', 'log_cache_events': 'False', 'no_print': 'None'}
+[0m16:04:22.922465 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '59a49419-d66f-4e5c-81b5-381451fb2eaf', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x113037da0>]}
+[0m16:04:22.960074 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '59a49419-d66f-4e5c-81b5-381451fb2eaf', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c17a660>]}
+[0m16:04:22.962713 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:04:23.035317 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:04:23.146415 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:04:23.146812 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:04:23.172081 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '59a49419-d66f-4e5c-81b5-381451fb2eaf', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1131f4170>]}
+[0m16:04:23.175304 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:04:23.225312 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:04:23.229016 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:04:23.229418 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.47483796, "process_in_blocks": "0", "process_kernel_time": 0.271634, "process_mem_max_rss": "147537920", "process_out_blocks": "0", "process_user_time": 1.21723}
+[0m16:04:23.229763 [debug] [MainThread]: Command `cli parse` succeeded at 16:04:23.229709 after 0.48 seconds
+[0m16:04:23.230046 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d18c740>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c55ab40>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dfcfbc0>]}
+[0m16:04:23.230318 [debug] [MainThread]: Flushing usage events
+[0m16:04:23.619430 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:06:04.547341 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d2fd160>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cc3b0e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cc3b050>]}
+
+
+============================== 16:06:04.552054 | 5c761408-149c-4d0f-91f6-14d573acaac9 ==============================
+[0m16:06:04.552054 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:06:04.552562 [debug] [MainThread]: running dbt with arguments {'use_colors': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'cache_selected_only': 'False', 'version_check': 'True', 'indirect_selection': 'eager', 'fail_fast': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'use_experimental_parser': 'False', 'target_path': 'None', 'no_print': 'None', 'printer_width': '80', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'introspect': 'True', 'debug': 'False', 'log_format': 'default', 'log_cache_events': 'False', 'warn_error': 'None', 'static_parser': 'True', 'write_json': 'True', 'partial_parse': 'True', 'quiet': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'empty': 'None'}
+[0m16:06:04.648326 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '5c761408-149c-4d0f-91f6-14d573acaac9', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d777dd0>]}
+[0m16:06:04.667752 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:06:04.668945 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:06:04.669554 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.174667, "process_in_blocks": "0", "process_kernel_time": 0.196115, "process_mem_max_rss": "119898112", "process_out_blocks": "0", "process_user_time": 0.915449}
+[0m16:06:04.669985 [debug] [MainThread]: Command `cli deps` succeeded at 16:06:04.669919 after 0.18 seconds
+[0m16:06:04.670267 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d9be1b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d2fecc0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d7fb6b0>]}
+[0m16:06:04.670549 [debug] [MainThread]: Flushing usage events
+[0m16:06:05.068934 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:06:05.092474 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d2cb560>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b530c20>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d0d5130>]}
+
+
+============================== 16:06:05.093044 | c21b9c0b-df41-4bf7-881d-3d464dd83bda ==============================
+[0m16:06:05.093044 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:06:05.093533 [debug] [MainThread]: running dbt with arguments {'use_colors': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'cache_selected_only': 'False', 'version_check': 'True', 'indirect_selection': 'eager', 'fail_fast': 'False', 'invocation_command': 'dbt tests/test_integration.py -v', 'use_experimental_parser': 'False', 'target_path': 'None', 'no_print': 'None', 'printer_width': '80', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'introspect': 'True', 'debug': 'False', 'log_format': 'default', 'log_cache_events': 'False', 'warn_error': 'None', 'static_parser': 'True', 'write_json': 'True', 'partial_parse': 'True', 'quiet': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'empty': 'None'}
+[0m16:06:05.226788 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'c21b9c0b-df41-4bf7-881d-3d464dd83bda', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10da61730>]}
+[0m16:06:05.260577 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'c21b9c0b-df41-4bf7-881d-3d464dd83bda', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bef77a0>]}
+[0m16:06:05.263589 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:06:05.339107 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:06:05.473997 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:06:05.474409 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:06:05.499078 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'c21b9c0b-df41-4bf7-881d-3d464dd83bda', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10da60380>]}
+[0m16:06:05.501939 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:06:05.550418 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:06:05.555349 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:06:05.555746 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.4835635, "process_in_blocks": "0", "process_kernel_time": 0.276187, "process_mem_max_rss": "147406848", "process_out_blocks": "0", "process_user_time": 1.208707}
+[0m16:06:05.556205 [debug] [MainThread]: Command `cli parse` succeeded at 16:06:05.556092 after 0.48 seconds
+[0m16:06:05.556593 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d1e6570>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cb3bfb0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1056f9790>]}
+[0m16:06:05.556920 [debug] [MainThread]: Flushing usage events
+[0m16:06:05.949752 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:07:09.211324 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10df0f410>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10df435f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e43f2f0>]}
+
+
+============================== 16:07:09.216236 | 7b25b1c3-6504-4d63-a622-6787debb66ca ==============================
+[0m16:07:09.216236 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:07:09.216753 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'use_colors': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'send_anonymous_usage_stats': 'True', 'target_path': 'None', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'invocation_command': 'dbt tests/test_integration.py -v', 'use_experimental_parser': 'False', 'write_json': 'True', 'warn_error': 'None', 'version_check': 'True', 'no_print': 'None', 'static_parser': 'True', 'empty': 'None', 'quiet': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_cache_events': 'False', 'fail_fast': 'False', 'introspect': 'True', 'partial_parse': 'True', 'printer_width': '80', 'debug': 'False'}
+[0m16:07:09.310907 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '7b25b1c3-6504-4d63-a622-6787debb66ca', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e56b980>]}
+[0m16:07:09.341801 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:07:09.343352 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:07:09.343775 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.18260133, "process_in_blocks": "0", "process_kernel_time": 0.178521, "process_mem_max_rss": "119717888", "process_out_blocks": "0", "process_user_time": 0.866831}
+[0m16:07:09.344145 [debug] [MainThread]: Command `cli deps` succeeded at 16:07:09.344082 after 0.18 seconds
+[0m16:07:09.344409 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e5cc320>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e605c70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e51b4d0>]}
+[0m16:07:09.344664 [debug] [MainThread]: Flushing usage events
+[0m16:07:09.750091 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:07:09.762539 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c89e0f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10de795e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10cd70fb0>]}
+
+
+============================== 16:07:09.763223 | 726a06d7-78bc-4218-a81c-91a1082ff07b ==============================
+[0m16:07:09.763223 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:07:09.763798 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'use_colors': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'send_anonymous_usage_stats': 'True', 'target_path': 'None', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'invocation_command': 'dbt tests/test_integration.py -v', 'use_experimental_parser': 'False', 'write_json': 'True', 'warn_error': 'None', 'version_check': 'True', 'no_print': 'None', 'static_parser': 'True', 'empty': 'None', 'quiet': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_cache_events': 'False', 'fail_fast': 'False', 'introspect': 'True', 'partial_parse': 'True', 'printer_width': '80', 'debug': 'False'}
+[0m16:07:09.890597 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '726a06d7-78bc-4218-a81c-91a1082ff07b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e403ef0>]}
+[0m16:07:09.923335 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '726a06d7-78bc-4218-a81c-91a1082ff07b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e4f7cb0>]}
+[0m16:07:09.926462 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:07:10.000563 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:07:10.140923 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:07:10.141282 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:07:10.165810 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '726a06d7-78bc-4218-a81c-91a1082ff07b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e687380>]}
+[0m16:07:10.169042 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:07:10.215103 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:07:10.220844 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:07:10.221241 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.4673802, "process_in_blocks": "0", "process_kernel_time": 0.254067, "process_mem_max_rss": "147210240", "process_out_blocks": "0", "process_user_time": 1.154568}
+[0m16:07:10.221564 [debug] [MainThread]: Command `cli parse` succeeded at 16:07:10.221513 after 0.47 seconds
+[0m16:07:10.221833 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d8da1b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e401220>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10e401280>]}
+[0m16:07:10.222102 [debug] [MainThread]: Flushing usage events
+[0m16:07:10.624666 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:07:58.974263 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10beb4fb0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d119c10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d11b410>]}
+
+
+============================== 16:07:58.986051 | 7cd7315c-6c6e-4925-a0fd-3932b1237d07 ==============================
+[0m16:07:58.986051 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:07:58.986574 [debug] [MainThread]: running dbt with arguments {'quiet': 'False', 'warn_error': 'None', 'cache_selected_only': 'False', 'partial_parse': 'True', 'log_format': 'default', 'invocation_command': 'dbt -v', 'fail_fast': 'False', 'introspect': 'True', 'indirect_selection': 'eager', 'empty': 'None', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'static_parser': 'True', 'no_print': 'None', 'write_json': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'log_cache_events': 'False', 'printer_width': '80', 'use_colors': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'version_check': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'use_experimental_parser': 'False'}
+[0m16:07:59.097352 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '7cd7315c-6c6e-4925-a0fd-3932b1237d07', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dddedb0>]}
+[0m16:07:59.132343 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:07:59.133812 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:07:59.134250 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.21429858, "process_in_blocks": "0", "process_kernel_time": 0.202825, "process_mem_max_rss": "119996416", "process_out_blocks": "0", "process_user_time": 0.935893}
+[0m16:07:59.134650 [debug] [MainThread]: Command `cli deps` succeeded at 16:07:59.134588 after 0.21 seconds
+[0m16:07:59.134923 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10de6c860>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dc989e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d8c88f0>]}
+[0m16:07:59.135197 [debug] [MainThread]: Flushing usage events
+[0m16:07:59.567951 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:07:59.581403 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d7dfaa0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d5688c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bd73da0>]}
+
+
+============================== 16:07:59.581873 | 0e6b4cd9-de55-4066-82d0-dd5e2f9844bc ==============================
+[0m16:07:59.581873 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:07:59.582307 [debug] [MainThread]: running dbt with arguments {'quiet': 'False', 'warn_error': 'None', 'cache_selected_only': 'False', 'partial_parse': 'True', 'log_format': 'default', 'invocation_command': 'dbt -v', 'fail_fast': 'False', 'introspect': 'True', 'indirect_selection': 'eager', 'empty': 'None', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'static_parser': 'True', 'no_print': 'None', 'write_json': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'log_cache_events': 'False', 'printer_width': '80', 'use_colors': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'version_check': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'use_experimental_parser': 'False'}
+[0m16:07:59.714053 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '0e6b4cd9-de55-4066-82d0-dd5e2f9844bc', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d5de600>]}
+[0m16:07:59.748956 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '0e6b4cd9-de55-4066-82d0-dd5e2f9844bc', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d7aa4b0>]}
+[0m16:07:59.753811 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:07:59.833700 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:07:59.974381 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:07:59.974757 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:07:59.999909 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '0e6b4cd9-de55-4066-82d0-dd5e2f9844bc', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x11304c470>]}
+[0m16:08:00.005980 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:08:00.057112 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:08:00.060648 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:08:00.061118 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.49045897, "process_in_blocks": "0", "process_kernel_time": 0.283008, "process_mem_max_rss": "147816448", "process_out_blocks": "0", "process_user_time": 1.230184}
+[0m16:08:00.061475 [debug] [MainThread]: Command `cli parse` succeeded at 16:08:00.061420 after 0.49 seconds
+[0m16:08:00.061767 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d6e0200>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bd73da0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d118d70>]}
+[0m16:08:00.062040 [debug] [MainThread]: Flushing usage events
+[0m16:08:00.496329 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:12:51.846382 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b5473b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10afd6fc0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10afd6ed0>]}
+
+
+============================== 16:12:51.850358 | e6aed151-f599-4dc0-a229-d1380f889699 ==============================
+[0m16:12:51.850358 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:12:51.850932 [debug] [MainThread]: running dbt with arguments {'cache_selected_only': 'False', 'static_parser': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'no_print': 'None', 'log_format': 'default', 'version_check': 'True', 'quiet': 'False', 'warn_error': 'None', 'log_cache_events': 'False', 'fail_fast': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'indirect_selection': 'eager', 'send_anonymous_usage_stats': 'True', 'invocation_command': 'dbt tests/ -v', 'target_path': 'None', 'partial_parse': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'empty': 'None', 'printer_width': '80', 'debug': 'False', 'introspect': 'True', 'use_colors': 'True', 'write_json': 'True', 'use_experimental_parser': 'False'}
+[0m16:12:51.940489 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'e6aed151-f599-4dc0-a229-d1380f889699', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc4c8c0>]}
+[0m16:12:51.956969 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:12:51.958320 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:12:51.958804 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.18016979, "process_in_blocks": "0", "process_kernel_time": 0.218287, "process_mem_max_rss": "120111104", "process_out_blocks": "0", "process_user_time": 0.972667}
+[0m16:12:51.959236 [debug] [MainThread]: Command `cli deps` succeeded at 16:12:51.959129 after 0.18 seconds
+[0m16:12:51.959598 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc96b70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc4c8c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bb9b4a0>]}
+[0m16:12:51.959931 [debug] [MainThread]: Flushing usage events
+[0m16:12:52.362428 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:12:52.374649 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109fa8fb0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b9b06b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b602660>]}
+
+
+============================== 16:12:52.375114 | f1a26625-3d21-4595-998c-0fdaa7e7dbae ==============================
+[0m16:12:52.375114 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:12:52.375492 [debug] [MainThread]: running dbt with arguments {'cache_selected_only': 'False', 'static_parser': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'no_print': 'None', 'log_format': 'default', 'version_check': 'True', 'quiet': 'False', 'warn_error': 'None', 'log_cache_events': 'False', 'fail_fast': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'indirect_selection': 'eager', 'send_anonymous_usage_stats': 'True', 'invocation_command': 'dbt tests/ -v', 'target_path': 'None', 'partial_parse': 'True', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'empty': 'None', 'printer_width': '80', 'debug': 'False', 'introspect': 'True', 'use_colors': 'True', 'write_json': 'True', 'use_experimental_parser': 'False'}
+[0m16:12:52.484243 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'f1a26625-3d21-4595-998c-0fdaa7e7dbae', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc6cfe0>]}
+[0m16:12:52.518671 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'f1a26625-3d21-4595-998c-0fdaa7e7dbae', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a2e4710>]}
+[0m16:12:52.521127 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:12:52.599976 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:12:52.765727 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:12:52.766130 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:12:52.791884 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'f1a26625-3d21-4595-998c-0fdaa7e7dbae', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be05580>]}
+[0m16:12:52.794787 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:12:52.841520 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:12:52.853081 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:12:52.853568 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.48865837, "process_in_blocks": "0", "process_kernel_time": 0.284698, "process_mem_max_rss": "147275776", "process_out_blocks": "0", "process_user_time": 1.269526}
+[0m16:12:52.853920 [debug] [MainThread]: Command `cli parse` succeeded at 16:12:52.853865 after 0.49 seconds
+[0m16:12:52.854239 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b032420>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1098ccd10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bb13d70>]}
+[0m16:12:52.854612 [debug] [MainThread]: Flushing usage events
+[0m16:12:53.262939 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:13:41.557769 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d270500>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d12f5c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d12f530>]}
+
+
+============================== 16:13:41.562235 | 64210d8c-0438-44d6-8662-8b51b094f10b ==============================
+[0m16:13:41.562235 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:13:41.562702 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'use_colors': 'True', 'empty': 'None', 'invocation_command': 'dbt -v', 'partial_parse': 'True', 'version_check': 'True', 'indirect_selection': 'eager', 'quiet': 'False', 'cache_selected_only': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'target_path': 'None', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'write_json': 'True', 'printer_width': '80', 'send_anonymous_usage_stats': 'True', 'use_experimental_parser': 'False', 'introspect': 'True', 'fail_fast': 'False', 'debug': 'False', 'static_parser': 'True', 'warn_error': 'None', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_cache_events': 'False'}
+[0m16:13:41.652360 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '64210d8c-0438-44d6-8662-8b51b094f10b', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dcefd40>]}
+[0m16:13:41.673372 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:13:41.674745 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:13:41.675268 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.19098471, "process_in_blocks": "0", "process_kernel_time": 0.194018, "process_mem_max_rss": "119898112", "process_out_blocks": "0", "process_user_time": 0.918875}
+[0m16:13:41.675659 [debug] [MainThread]: Command `cli deps` succeeded at 16:13:41.675594 after 0.19 seconds
+[0m16:13:41.675959 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d270500>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dcb0530>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c2481d0>]}
+[0m16:13:41.676238 [debug] [MainThread]: Flushing usage events
+[0m16:13:42.083498 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:13:42.091058 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c121040>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d151940>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10dab3cb0>]}
+
+
+============================== 16:13:42.091494 | 478308d3-fc76-4eaf-b72d-8afb07209bd1 ==============================
+[0m16:13:42.091494 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:13:42.091862 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'use_colors': 'True', 'empty': 'None', 'invocation_command': 'dbt -v', 'partial_parse': 'True', 'version_check': 'True', 'indirect_selection': 'eager', 'quiet': 'False', 'cache_selected_only': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'target_path': 'None', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'write_json': 'True', 'printer_width': '80', 'send_anonymous_usage_stats': 'True', 'use_experimental_parser': 'False', 'introspect': 'True', 'fail_fast': 'False', 'debug': 'False', 'static_parser': 'True', 'warn_error': 'None', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_cache_events': 'False'}
+[0m16:13:42.178906 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '478308d3-fc76-4eaf-b72d-8afb07209bd1', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d381af0>]}
+[0m16:13:42.214445 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '478308d3-fc76-4eaf-b72d-8afb07209bd1', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10ddf45f0>]}
+[0m16:13:42.216670 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:13:42.285168 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:13:42.404000 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:13:42.404402 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:13:42.429154 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '478308d3-fc76-4eaf-b72d-8afb07209bd1', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1130ceed0>]}
+[0m16:13:42.432064 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:13:42.485898 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:13:42.491028 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:13:42.491512 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 0.40522584, "process_in_blocks": "0", "process_kernel_time": 0.259716, "process_mem_max_rss": "147587072", "process_out_blocks": "0", "process_user_time": 1.217602}
+[0m16:13:42.491882 [debug] [MainThread]: Command `cli parse` succeeded at 16:13:42.491827 after 0.41 seconds
+[0m16:13:42.492165 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10d44ab70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10de7fc50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10de7cdd0>]}
+[0m16:13:42.492446 [debug] [MainThread]: Flushing usage events
+[0m16:13:42.882720 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:23:34.107580 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b576db0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bd18e90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bd18740>]}
+
+
+============================== 16:23:34.210742 | 4f69bc84-3167-4a7c-a1f2-1881e191c029 ==============================
+[0m16:23:34.210742 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:23:34.211411 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'use_colors': 'True', 'invocation_command': 'dbt -v', 'warn_error': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'version_check': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'printer_width': '80', 'quiet': 'False', 'use_experimental_parser': 'False', 'fail_fast': 'False', 'log_cache_events': 'False', 'introspect': 'True', 'debug': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'write_json': 'True', 'static_parser': 'True', 'cache_selected_only': 'False', 'send_anonymous_usage_stats': 'True', 'indirect_selection': 'eager', 'empty': 'None', 'partial_parse': 'True', 'no_print': 'None', 'target_path': 'None'}
+[0m16:23:34.305319 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '4f69bc84-3167-4a7c-a1f2-1881e191c029', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be898b0>]}
+[0m16:23:34.517082 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:23:34.518614 [info ] [MainThread]: Warning: No packages were found in packages.yml
+[0m16:23:34.519088 [debug] [MainThread]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.48236525, "process_in_blocks": "0", "process_kernel_time": 0.216559, "process_mem_max_rss": "140722176", "process_out_blocks": "0", "process_user_time": 0.970733}
+[0m16:23:34.519472 [debug] [MainThread]: Command `cli deps` succeeded at 16:23:34.519404 after 0.48 seconds
+[0m16:23:34.519744 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bfc0e90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c27b620>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be5a1b0>]}
+[0m16:23:34.520004 [debug] [MainThread]: Flushing usage events
+[0m16:23:35.003616 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:23:35.011840 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109f86450>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109f86480>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10bc5f740>]}
+
+
+============================== 16:23:35.012260 | 7507721c-eefc-4cc0-aa12-73c5727425a5 ==============================
+[0m16:23:35.012260 [info ] [MainThread]: Running with dbt=1.10.15
+[0m16:23:35.012623 [debug] [MainThread]: running dbt with arguments {'log_format': 'default', 'use_colors': 'True', 'invocation_command': 'dbt -v', 'warn_error': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'version_check': 'True', 'log_path': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/logs', 'printer_width': '80', 'quiet': 'False', 'use_experimental_parser': 'False', 'fail_fast': 'False', 'log_cache_events': 'False', 'introspect': 'True', 'debug': 'False', 'profiles_dir': '/Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project', 'write_json': 'True', 'static_parser': 'True', 'cache_selected_only': 'False', 'send_anonymous_usage_stats': 'True', 'indirect_selection': 'eager', 'empty': 'None', 'partial_parse': 'True', 'no_print': 'None', 'target_path': 'None'}
+[0m16:23:36.045655 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '7507721c-eefc-4cc0-aa12-73c5727425a5', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10a053e60>]}
+[0m16:23:36.080361 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '7507721c-eefc-4cc0-aa12-73c5727425a5', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10b549a00>]}
+[0m16:23:36.112122 [info ] [MainThread]: Registered adapter: duckdb=1.10.0
+[0m16:23:36.201625 [debug] [MainThread]: checksum: 14a228079bd6df63ba81633f9a3cf44ecfaa31056ac397c602753ec895dbf885, vars: {}, profile: , target: , version: 1.10.15
+[0m16:23:36.666388 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m16:23:36.666769 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m16:23:36.692188 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '7507721c-eefc-4cc0-aa12-73c5727425a5', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10c0307d0>]}
+[0m16:23:36.694874 [info ] [MainThread]: Performance info: /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/perf_info.json
+[0m16:23:36.743007 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/manifest.json
+[0m16:23:36.747086 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/beheerder/checkup/plugins/checkup-dbt/tests/fixtures/sample_dbt_project/target/semantic_manifest.json
+[0m16:23:36.747491 [debug] [MainThread]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 1.741581, "process_in_blocks": "0", "process_kernel_time": 0.307503, "process_mem_max_rss": "164364288", "process_out_blocks": "0", "process_user_time": 1.282329}
+[0m16:23:36.747829 [debug] [MainThread]: Command `cli parse` succeeded at 16:23:36.747775 after 1.74 seconds
+[0m16:23:36.748100 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be0b6b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be0a3c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10be0a990>]}
+[0m16:23:36.748368 [debug] [MainThread]: Flushing usage events
+[0m16:23:37.158416 [debug] [MainThread]: An error was encountered while trying to flush usage events

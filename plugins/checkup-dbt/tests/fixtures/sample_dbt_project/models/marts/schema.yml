@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: customers
+    description: "Customer mart with aggregated order metrics"
+    config:
+      schema: marts
+      contract:
+        enforced: true
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+        data_type: integer
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        description: "Full name of the customer"
+        data_type: varchar
+      - name: email
+        description: "Customer email address"
+        data_type: varchar
+      - name: total_orders
+        description: "Total number of orders"
+        data_type: integer
+      - name: total_amount
+        # No description - testing columns without descriptions
+        data_type: decimal
