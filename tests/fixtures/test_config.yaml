@@ -1,0 +1,3 @@
+metrics:
+  dummy:
+    expected_value: 200

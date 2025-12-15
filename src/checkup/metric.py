@@ -1,32 +1,54 @@
-from abc import ABC
-from collections.abc import Hashable
-from typing import Any
+"""Metric base class."""
+from abc import ABC, abstractmethod
+from typing import Any, Callable
+from pydantic import BaseModel, Field
+
+from checkup.types import Context
 
 
+class Metric(ABC, BaseModel):
+    """Base class for all metrics.
 
+    Metrics are Pydantic models that calculate values from context.
+    They can depend on other metrics and declare providers for context enrichment.
+    """
 
-class Metric(ABC):
+    # Core attributes
     name: str
     description: str
-    unit: Any
-    value: Hashable
-    tags: dict
+    unit: str
+    tags: dict = Field(default_factory=dict)
+
+    # Calculated value (set by calculate())
+    value: Any = None
+
+    # Whether this metric was directly requested (vs auto-added as dependency)
+    is_direct: bool = True
+
+    @abstractmethod
+    def calculate(self, context: Context, metrics: dict[type['Metric'], 'Metric']) -> None:
+        """Calculate metric value and set self.value.
+
+        Args:
+            context: General context enriched by providers
+            metrics: Dict of already-calculated metric instances (dependencies)
+        """
+        pass
 
     @classmethod
-    def measure(cls, context: dict) -> "Metric":
-        raise NotImplementedError("Subclasses must implement this method.")
+    def depends_on(cls) -> list[type['Metric']]:
+        """Return list of metric classes this metric depends on.
 
-
-class PythonMajorVersionMetric(Metric):
-    name = "python_major_version"
-    description = "The major version of Python"
-    unit = "version"
-    tags: dict = {}
+        Returns:
+            List of metric classes (empty by default)
+        """
+        return []
 
     @classmethod
-    def measure(cls, context: dict) -> "PythonMajorVersionMetric":
-        import sys
+    def providers(cls) -> list[Callable[[Context], Context]]:
+        """Return list of provider functions to enrich context.
 
-        instance = cls()
-        instance.value = float(sys.version_info.major)
-        return instance
+        Returns:
+            List of provider functions (empty by default)
+        """
+        return []
