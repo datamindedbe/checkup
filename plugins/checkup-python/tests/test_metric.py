@@ -1,10 +1,11 @@
-from checkup_python.metric import PythonVersionMetric
+from checkup_python.metrics import PythonVersionMetric
 
 
-def test_python_version_metric() -> None:
+def test_python_version_metric_calculate() -> None:
     metric = PythonVersionMetric()
     metric.calculate(context={}, metrics={})
-    print(metric.value)
+
+    assert metric.value is not None
 
 
 def test_python_version_metric_compare() -> None:

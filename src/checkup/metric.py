@@ -1,6 +1,8 @@
 """Metric base class."""
+
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
+
 from pydantic import BaseModel, Field
 
 from checkup.types import Context
@@ -13,20 +15,21 @@ class Metric(ABC, BaseModel):
     They can depend on other metrics and declare providers for context enrichment.
     """
 
-    # Core attributes
-    name: str
-    description: str
-    unit: str
+    name: ClassVar[str]
+    description: ClassVar[str]
+    unit: ClassVar[str]
+
     tags: dict = Field(default_factory=dict)
 
-    # Calculated value (set by calculate())
     value: Any = None
 
     # Whether this metric was directly requested (vs auto-added as dependency)
     is_direct: bool = True
 
     @abstractmethod
-    def calculate(self, context: Context, metrics: dict[type['Metric'], 'Metric']) -> None:
+    def calculate(
+        self, context: Context, metrics: dict[type["Metric"], "Metric"]
+    ) -> None:
         """Calculate metric value and set self.value.
 
         Args:
@@ -36,7 +39,7 @@ class Metric(ABC, BaseModel):
         pass
 
     @classmethod
-    def depends_on(cls) -> list[type['Metric']]:
+    def depends_on(cls) -> list[type["Metric"]]:
         """Return list of metric classes this metric depends on.
 
         Returns:
