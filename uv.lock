@@ -2,6 +2,14 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "checkup",
+    "checkup-dbt",
+    "checkup-git",
+    "checkup-python",
+]
+
 [[package]]
 name = "annotated-types"
 version = "0.7.0"
@@ -20,7 +28,7 @@ dependencies = [
     { name = "pyyaml" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -29,11 +37,47 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = ">=2.11.7" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+]
+
+[[package]]
+name = "checkup-dbt"
+version = "0.1.0"
+source = { editable = "plugins/checkup-dbt" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
+
+[[package]]
+name = "checkup-git"
+version = "0.1.0"
+source = { editable = "plugins/checkup-git" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
+
+[[package]]
+name = "checkup-python"
+version = "0.1.0"
+source = { editable = "plugins/checkup-python" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
 
 [[package]]
 name = "colorama"
