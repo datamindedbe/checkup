@@ -87,13 +87,6 @@ class ConsoleMaterializer(Materializer):
 
         console.print(table)
 
-        print("\n=== Error Report ===\n")
-
-        for metric in filtered:
-            print(f"{metric.name}: {metric.error}")
-            if metric.description:
-                print(f"  {metric.description}")
-            print()
 
 class CSVMaterializer(Materializer):
     """Output metrics to a CSV file.
