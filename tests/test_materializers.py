@@ -6,7 +6,12 @@ from io import StringIO
 import pytest
 from conftest import DummyMetric
 
-from checkup.materializers import ConsoleMaterializer, CSVMaterializer, Materializer
+from checkup.materializers import (
+    ConsoleMaterializer,
+    CSVMaterializer,
+    HTMLMaterializer,
+    Materializer,
+)
 
 
 def test_materializer_is_abstract():
@@ -175,3 +180,287 @@ def test_csv_materializer_includes_indirect(tmp_path):
     assert len(lines) == 3  # Header + 2 metrics
     assert "dummy" in content
     assert "indirect" in content
+
+
+def test_html_materializer(tmp_path):
+    """Test HTML materializer with hierarchical grouping."""
+    # Create metrics with tags
+    metric1 = DummyMetric(expected_value=42)
+    metric1.value = 42
+    metric1.tags = {"domain": "Analytics", "project": "Project A"}
+
+    metric2 = DummyMetric(expected_value=100)
+    metric2.value = 100
+    metric2.tags = {"domain": "Analytics", "project": "Project B"}
+
+    metric3 = DummyMetric(expected_value=75)
+    metric3.value = 75
+    metric3.tags = {"domain": "Engineering", "project": "Project C"}
+
+    output_file = tmp_path / "metrics.html"
+    materializer = HTMLMaterializer(
+        output_path=output_file, group_tag_1="domain", group_tag_2="project"
+    )
+    materializer.materialize([metric1, metric2, metric3], {"dummy"})
+
+    # Verify file was created
+    assert output_file.exists()
+
+    # Read and verify HTML content
+    content = output_file.read_text()
+
+    # Check HTML structure
+    assert "<!DOCTYPE html>" in content
+    assert "<html lang='en'>" in content
+    assert "<title>Metrics Report</title>" in content
+
+    # Check Bootstrap is included
+    assert "bootstrap" in content
+
+    # Check for group names
+    assert "Analytics" in content
+    assert "Engineering" in content
+    assert "Project A" in content
+    assert "Project B" in content
+    assert "Project C" in content
+
+    # Check for accordion components
+    assert "accordion" in content
+    assert "accordion-button" in content
+    assert "accordion-collapse" in content
+
+    # Check metric data is present
+    assert "dummy" in content
+    assert "42" in content
+    assert "100" in content
+    assert "75" in content
+
+    # Check for table structure
+    assert "<table" in content
+    assert "<thead" in content
+    assert "<tbody" in content
+    assert "Metric</th>" in content
+    assert "Value</th>" in content
+
+
+def test_html_materializer_with_diagnostics(tmp_path):
+    """Test HTML materializer with diagnostic coloring."""
+    # Create metrics with different diagnostics
+    metric1 = DummyMetric(expected_value=42)
+    metric1.value = 42
+    metric1.diagnostic = "✅ All good"
+    metric1.tags = {"domain": "Test", "project": "TestProject"}
+
+    metric2 = DummyMetric(expected_value=100)
+    metric2.value = 100
+    metric2.diagnostic = "⚠ Warning: something to check"
+    metric2.tags = {"domain": "Test", "project": "TestProject"}
+
+    output_file = tmp_path / "metrics.html"
+    materializer = HTMLMaterializer(
+        output_path=output_file, group_tag_1="domain", group_tag_2="project"
+    )
+    materializer.materialize([metric1, metric2], {"dummy"})
+
+    content = output_file.read_text()
+
+    # Check for diagnostic color classes
+    assert "table-success" in content
+    assert "table-warning" in content
+
+    # Check diagnostic text is present
+    assert "All good" in content
+    assert "Warning" in content
+
+
+def test_html_materializer_ungrouped_metrics(tmp_path):
+    """Test HTML materializer with metrics missing tags."""
+    # Create metric without tags
+    metric = DummyMetric(expected_value=42)
+    metric.value = 42
+    metric.tags = {}  # No tags
+
+    output_file = tmp_path / "metrics.html"
+    materializer = HTMLMaterializer(
+        output_path=output_file, group_tag_1="domain", group_tag_2="project"
+    )
+    materializer.materialize([metric], {"dummy"})
+
+    content = output_file.read_text()
+
+    # Should default to "Ungrouped"
+    assert "Ungrouped" in content
+    assert "dummy" in content
+
+
+def test_html_materializer_filters_indirect(tmp_path):
+    """Test HTML materializer filtering of indirect metrics."""
+    from conftest import IndirectDummyMetric
+
+    direct_metric = DummyMetric(expected_value=42)
+    direct_metric.value = 42
+    direct_metric.tags = {"domain": "Test", "project": "TestProject"}
+
+    indirect_metric = IndirectDummyMetric(expected_value=100)
+    indirect_metric.value = 100
+    indirect_metric.tags = {"domain": "Test", "project": "TestProject"}
+
+    output_file = tmp_path / "metrics.html"
+
+    # Default: filter indirect
+    materializer = HTMLMaterializer(
+        output_path=output_file, group_tag_1="domain", group_tag_2="project"
+    )
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
+
+    content = output_file.read_text()
+
+    # Only direct metric should be present
+    assert "dummy" in content
+    assert "indirect" not in content
+
+
+def test_html_materializer_escape_html(tmp_path):
+    """Test that HTML special characters are escaped."""
+    metric = DummyMetric(expected_value=42)
+    metric.value = "<script>alert('xss')</script>"
+    metric.diagnostic = "Test & verify <tags>"
+    metric.tags = {"domain": "Test & Dev", "project": "Project <A>"}
+
+    output_file = tmp_path / "metrics.html"
+    materializer = HTMLMaterializer(
+        output_path=output_file, group_tag_1="domain", group_tag_2="project"
+    )
+    materializer.materialize([metric], {"dummy"})
+
+    content = output_file.read_text()
+
+    # Check that special characters are escaped
+    assert "&lt;script&gt;" in content
+    assert "&amp;" in content
+    assert "<script>alert" not in content  # Raw script should not be present
+
+
+def test_html_materializer_end_to_end(tmp_path):
+    """End-to-end test with multiple metrics grouped by domain and project.
+
+    This test creates a realistic scenario with multiple domains and projects,
+    generates the HTML, and opens it for visual inspection.
+    """
+    from conftest import OtherDummyMetric
+
+    # Create metrics for Analytics domain
+    metric1 = DummyMetric(expected_value=42)
+    metric1.value = 42
+    metric1.diagnostic = "✅ Good coverage"
+    metric1.tags = {"domain": "Analytics", "project": "Customer Insights"}
+
+    metric2 = OtherDummyMetric(expected_value=85)
+    metric2.value = 85
+    metric2.diagnostic = ""
+    metric2.tags = {"domain": "Analytics", "project": "Customer Insights"}
+
+    metric3 = DummyMetric(expected_value=100)
+    metric3.value = 100
+    metric3.diagnostic = "✅ Excellent"
+    metric3.tags = {"domain": "Analytics", "project": "Sales Dashboard"}
+
+    metric4 = OtherDummyMetric(expected_value=60)
+    metric4.value = 60
+    metric4.diagnostic = "⚠ Below target"
+    metric4.tags = {"domain": "Analytics", "project": "Sales Dashboard"}
+
+    # Create metrics for Engineering domain
+    metric5 = DummyMetric(expected_value=95)
+    metric5.value = 95
+    metric5.diagnostic = "✅ Strong test coverage"
+    metric5.tags = {"domain": "Engineering", "project": "Core Platform"}
+
+    metric6 = OtherDummyMetric(expected_value=45)
+    metric6.value = 45
+    metric6.diagnostic = "❌ Critical - needs attention"
+    metric6.tags = {"domain": "Engineering", "project": "Core Platform"}
+
+    metric7 = DummyMetric(expected_value=78)
+    metric7.value = 78
+    metric7.diagnostic = ""
+    metric7.tags = {"domain": "Engineering", "project": "Mobile App"}
+
+    # Create metrics for Data Science domain
+    metric8 = DummyMetric(expected_value=92)
+    metric8.value = 92
+    metric8.diagnostic = "✅ Model accuracy within range"
+    metric8.tags = {"domain": "Data Science", "project": "ML Pipeline"}
+
+    metric9 = OtherDummyMetric(expected_value=88)
+    metric9.value = 88
+    metric9.diagnostic = ""
+    metric9.tags = {"domain": "Data Science", "project": "ML Pipeline"}
+
+    metric10 = DummyMetric(expected_value=55)
+    metric10.value = 55
+    metric10.diagnostic = "⚠ Training data quality concerns"
+    metric10.tags = {"domain": "Data Science", "project": "Recommendation Engine"}
+
+    # Create some ungrouped metrics
+    metric11 = DummyMetric(expected_value=70)
+    metric11.value = 70
+    metric11.diagnostic = ""
+    metric11.tags = {}  # No tags
+
+    all_metrics = [
+        metric1,
+        metric2,
+        metric3,
+        metric4,
+        metric5,
+        metric6,
+        metric7,
+        metric8,
+        metric9,
+        metric10,
+        metric11,
+    ]
+    direct_names = {"dummy", "other_metric"}
+
+    # Generate HTML
+    output_file = tmp_path / "metrics_report.html"
+    materializer = HTMLMaterializer(
+        output_path=output_file,
+        group_tag_1="domain",
+        group_tag_2="project",
+        include_indirect=False,
+    )
+    materializer.materialize(all_metrics, direct_names)
+
+    # Verify file was created
+    assert output_file.exists()
+
+    # Read content for basic validation
+    content = output_file.read_text()
+
+    # Verify all domains are present
+    assert "Analytics" in content
+    assert "Engineering" in content
+    assert "Data Science" in content
+    assert "Ungrouped" in content
+
+    # Verify all projects are present
+    assert "Customer Insights" in content
+    assert "Sales Dashboard" in content
+    assert "Core Platform" in content
+    assert "Mobile App" in content
+    assert "ML Pipeline" in content
+    assert "Recommendation Engine" in content
+
+    # Verify diagnostic styling
+    assert "table-success" in content
+    assert "table-warning" in content
+    assert "table-danger" in content
+
+    # Print the file path so it can be opened
+    print(f"\n\n📊 HTML Report Generated: {output_file}")
+    print(f"Open in browser: file://{output_file}\n")
+
+    # Return the path for manual inspection
+    return output_file
