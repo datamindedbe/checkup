@@ -89,17 +89,14 @@ class ConsoleMaterializer(Materializer):
             table.add_column("Value", justify="right", style="green")
             table.add_column("Unit", style="yellow")
             table.add_column("Diagnostics", style="red")
-            table.add_column("Tags", style="magenta")
 
             for metric in group_metrics:
-                tags_str = ", ".join(f"{k}={v}" for k, v in metric.tags.items())
                 table.add_row(
                     metric.name,
                     metric.description,
                     str(metric.value) if metric.value is not None else "",
                     metric.unit,
                     metric.diagnostic,
-                    tags_str,
                 )
 
             console.print(table)
