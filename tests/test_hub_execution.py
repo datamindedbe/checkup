@@ -36,6 +36,30 @@ class DataMetric(Metric):
         self.value = context[DataProvider.name]["value"]
 
 
+class OtherProvider(Provider):
+    """Another provider for testing partial provider availability."""
+
+    name: ClassVar[str] = "other"
+
+    def provide(self) -> dict[str, Any]:
+        return {"other_value": 999}
+
+
+class OtherMetric(Metric):
+    """Metric that uses OtherProvider."""
+
+    name: ClassVar[str] = "other_metric"
+    description: ClassVar[str] = "Uses other provider"
+    unit: ClassVar[str] = "count"
+
+    @classmethod
+    def providers(cls) -> list[type[Provider]]:
+        return [OtherProvider]
+
+    def calculate(self, context: Context, metrics: dict) -> None:
+        self.value = context[OtherProvider.name]["other_value"]
+
+
 class TestHubExecution:
     """Tests for measure() with new provider system."""
 
@@ -100,3 +124,25 @@ class TestHubExecution:
 
         assert len(result.metrics) == 1
         assert result.metrics[0].value == 42
+
+    def test_measure_skips_only_metrics_with_missing_providers(self, caplog):
+        """Test that metrics with available providers are still calculated when others are missing."""
+        import logging
+
+        # Request both metrics but only provide DataProvider (not OtherProvider)
+        with caplog.at_level(logging.WARNING):
+            result = (
+                CheckHub()
+                .with_metrics([DataMetric, OtherMetric])
+                .with_providers([[DataProvider(value=42)]])
+                .measure()
+            )
+
+        # DataMetric should be calculated (has its provider)
+        # OtherMetric should be skipped (missing OtherProvider)
+        assert len(result.metrics) == 1
+        assert result.metrics[0].name == "data_metric"
+        assert result.metrics[0].value == 42
+
+        # Warning should be logged for the missing provider
+        assert "other" in caplog.text.lower()

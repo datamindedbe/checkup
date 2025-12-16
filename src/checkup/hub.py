@@ -172,10 +172,26 @@ class CheckHub:
         """
         context, tags = self._execute_providers(provider_set)
 
+        # Determine which provider types are available
+        provided_classes = {type(p) for p in provider_set}
+
         calculated: dict[type[Metric], Metric] = {}
         result_metrics: list[Metric] = []
 
         for metric_cls in execution_order:
+            # Check if all required providers for this metric are present
+            required_providers = set(metric_cls.providers())
+            missing_providers = required_providers - provided_classes
+
+            if missing_providers:
+                missing_names = sorted(cls.name for cls in missing_providers)
+                logger.warning(
+                    "Skipping metric %s: missing providers %s",
+                    metric_cls.name,
+                    missing_names,
+                )
+                continue
+
             config = metric_configs.get(metric_cls.name, {})
             metric = metric_cls(**config)
             metric.tags.update(tags)

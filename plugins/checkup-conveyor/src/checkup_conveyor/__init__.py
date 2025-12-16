@@ -1,4 +1,5 @@
 """Python metrics for checkup."""
+import logging
 import os
 from typing import Callable
 
@@ -7,6 +8,8 @@ import requests
 from checkup import Context
 from checkup.metric import Metric
 from checkup_conveyor.provider import ConveyorProvider
+
+logger = logging.getLogger(__name__)
 
 
 class ConveyorMetric(Metric):
@@ -21,19 +24,29 @@ class ConveyorMetric(Metric):
         }
         return headers
 
-    def get_conveyor_project_id(self, context):
+    def get_conveyor_project_id(self, context) -> str | None:
+        project_name = context['ConveyorProvider']['project_name']
         r = requests.get(f"{self.base_url}/projects",
                      headers=self.get_conveyor_api_headers(context),
-                     params={"name": context['ConveyorProvider']['project_name']},
+                     params={"name": project_name},
                      ).json()
-        return r['projects'][0]['id']
+        projects = r.get('projects', [])
+        if not projects:
+            logger.warning("No Conveyor project found with name: %s", project_name)
+            return None
+        return projects[0]['id']
 
-    def get_environment_id(self, context):
+    def get_environment_id(self, context) -> str | None:
+        env_name = context['ConveyorProvider']['environment_name']
         r = requests.get(f"{self.base_url}/environments",
                      headers=self.get_conveyor_api_headers(context),
-                     params={"name": context['ConveyorProvider']['environment_name']},
+                     params={"name": env_name},
         ).json()
-        return r['environments'][0]['id']
+        environments = r.get('environments', [])
+        if not environments:
+            logger.warning("No Conveyor environment found with name: %s", env_name)
+            return None
+        return environments[0]['id']
 
     @classmethod
     def providers(cls) -> list[type["Provider"]]:
