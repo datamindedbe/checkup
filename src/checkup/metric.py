@@ -1,11 +1,14 @@
 """Metric base class."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import BaseModel, Field
 
 from checkup.types import Context
+
+if TYPE_CHECKING:
+    from checkup.provider import Provider
 
 
 class Metric(ABC, BaseModel):
@@ -23,9 +26,6 @@ class Metric(ABC, BaseModel):
 
     value: Any = None
     diagnostic: str = ""
-
-    # Whether this metric was directly requested (vs auto-added as dependency)
-    is_direct: bool = True
 
     @abstractmethod
     def calculate(
@@ -49,10 +49,10 @@ class Metric(ABC, BaseModel):
         return []
 
     @classmethod
-    def providers(cls) -> list[Callable[[Context], Context]]:
-        """Return list of provider functions to enrich context.
+    def providers(cls) -> list[type["Provider"]]:
+        """Return list of provider classes to enrich context.
 
         Returns:
-            List of provider functions (empty by default)
+            List of provider classes (empty by default)
         """
         return []

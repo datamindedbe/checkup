@@ -1,6 +1,6 @@
 """dbt metrics for checkup."""
 
-from checkup_dbt.provider import dbt_manifest_provider
+from checkup_dbt.provider import DbtManifestProvider
 from checkup_dbt.metrics import (
     DbtMetric,
     NamingConventionChecker,
@@ -23,7 +23,7 @@ from checkup_dbt.metrics import (
 )
 
 __all__ = [
-    "dbt_manifest_provider",
+    "DbtManifestProvider",
     "DbtMetric",
     "NamingConventionChecker",
     "DbtModelsMetric",

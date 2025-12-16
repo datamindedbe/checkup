@@ -1,13 +1,18 @@
 """Checkup - Extensible metrics calculation framework."""
+
 from checkup.hub import CheckHub, MeasurementResult
 from checkup.materializers import ConsoleMaterializer, CSVMaterializer, Materializer
 from checkup.metric import Metric
+from checkup.provider import Provider
+from checkup.providers.tags import TagProvider
 from checkup.types import Context, ContextDict
 
 __all__ = [
     "CheckHub",
     "MeasurementResult",
     "Metric",
+    "Provider",
+    "TagProvider",
     "Materializer",
     "ConsoleMaterializer",
     "CSVMaterializer",

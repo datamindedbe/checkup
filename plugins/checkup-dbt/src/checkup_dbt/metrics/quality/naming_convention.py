@@ -1,17 +1,19 @@
 import logging
+from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric, NamingConventionChecker
+from checkup_dbt.provider import DbtManifestProvider
 
 logger = logging.getLogger(__name__)
 
 
 class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
-    name: str = "dbt_models_not_adhering_to_naming_convention"
-    description: str = "Number of models not adhering to naming convention"
-    unit: str = "models"
+    name: ClassVar[str] = "dbt_models_not_adhering_to_naming_convention"
+    description: ClassVar[str] = "Number of models not adhering to naming convention"
+    unit: ClassVar[str] = "models"
 
     @classmethod
     def get_checker(cls) -> NamingConventionChecker:
@@ -31,7 +33,7 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
         return CustomNamingConventionMetric
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context["dbt_manifest"]
+        manifest = context[DbtManifestProvider.name]["manifest"]
         checker = self.get_checker()
 
         non_adhering_models = [

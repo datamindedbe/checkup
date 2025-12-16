@@ -8,13 +8,15 @@ from checkup_dbt import (
     DbtModelsWithDescriptionMetric,
     DbtTestsMetric,
 )
+from checkup_dbt.provider import DbtManifestProvider
 
 
 def test_models_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -26,7 +28,8 @@ def test_columns_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtColumnsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -38,7 +41,8 @@ def test_tests_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtTestsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -50,7 +54,8 @@ def test_models_with_description_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsWithDescriptionMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -62,7 +67,8 @@ def test_columns_with_description_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtColumnsWithDescriptionMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]

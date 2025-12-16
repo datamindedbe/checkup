@@ -8,13 +8,15 @@ from checkup_dbt import (
     DbtTestedColumnsMetric,
     DbtUnitTestsMetric,
 )
+from checkup_dbt.provider import DbtManifestProvider
 
 
 def test_unit_tests_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtUnitTestsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -26,7 +28,8 @@ def test_data_tests_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtDataTestsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -38,7 +41,8 @@ def test_column_tests_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtColumnTestsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -50,7 +54,8 @@ def test_tested_columns_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtTestedColumnsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -62,7 +67,8 @@ def test_column_test_coverage_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtColumnTestCoverageMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     assert len(result.metrics) == 3

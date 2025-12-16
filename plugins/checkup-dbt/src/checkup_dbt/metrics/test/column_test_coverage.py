@@ -1,4 +1,5 @@
 import logging
+from typing import ClassVar
 
 from checkup.metric import Metric
 from checkup.types import Context
@@ -10,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class DbtColumnTestCoverageMetric(DbtMetric):
-    name: str = "dbt_column_test_coverage"
-    description: str = "Percentage of columns with at least one test"
-    unit: str = "percent"
+    name: ClassVar[str] = "dbt_column_test_coverage"
+    description: ClassVar[str] = "Percentage of columns with at least one test"
+    unit: ClassVar[str] = "percent"
 
     @classmethod
     def depends_on(cls) -> list[type[Metric]]:

@@ -250,11 +250,7 @@ def test_complex_graph_via_checkhub():
     assert len(result.metrics) == 9
 
     # Only requested metrics are marked as direct
-    assert metrics_by_name["leaf_ab"].is_direct is True
-    assert metrics_by_name["leaf_c"].is_direct is True
-    assert metrics_by_name["root_a"].is_direct is False
-    assert metrics_by_name["root_b"].is_direct is False
-    assert metrics_by_name["root_c"].is_direct is False
+    assert result.direct_metric_names == {"leaf_ab", "leaf_c"}
 
     # Verify calculated values
     assert metrics_by_name["leaf_ab"].value == 4200
@@ -296,14 +292,12 @@ def test_independent_subgraphs():
     result = CheckHub().with_metrics([LeafC]).measure()
 
     assert len(result.metrics) == 2
+    assert result.direct_metric_names == {"leaf_c"}
     metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["leaf_c"].is_direct is True
-    assert metrics_by_name["root_c"].is_direct is False
     assert metrics_by_name["leaf_c"].value == 10000
 
     # Request both subgraphs - returns all 9 metrics
     result = CheckHub().with_metrics([LeafAB, LeafC]).measure()
 
     assert len(result.metrics) == 9
-    direct_names = {m.name for m in result.metrics if m.is_direct}
-    assert direct_names == {"leaf_ab", "leaf_c"}
+    assert result.direct_metric_names == {"leaf_ab", "leaf_c"}

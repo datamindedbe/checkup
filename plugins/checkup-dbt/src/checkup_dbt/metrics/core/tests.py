@@ -1,20 +1,22 @@
 import logging
+from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
+from checkup_dbt.provider import DbtManifestProvider
 
 logger = logging.getLogger(__name__)
 
 
 class DbtTestsMetric(DbtMetric):
-    name: str = "dbt_tests"
-    description: str = "Total number of dbt tests"
-    unit: str = "tests"
+    name: ClassVar[str] = "dbt_tests"
+    description: ClassVar[str] = "Total number of dbt tests"
+    unit: ClassVar[str] = "tests"
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context["dbt_manifest"]
+        manifest = context[DbtManifestProvider.name]["manifest"]
         self.value = len(
             [
                 node

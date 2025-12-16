@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from checkup.hub import CheckHub
 from checkup_dbt import (
     DbtColumnsMetric,
     DbtColumnsWithDescriptionMetric,
@@ -18,6 +17,9 @@ from checkup_dbt import (
     DbtTestsMetric,
     DbtUnitTestsMetric,
 )
+from checkup_dbt.provider import DbtManifestProvider
+
+from checkup.hub import CheckHub
 
 from .conftest import InternalModelNamingMetric
 
@@ -45,7 +47,8 @@ def test_all_metrics(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics(all_metrics)
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     assert len(result.metrics) == 16

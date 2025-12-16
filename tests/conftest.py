@@ -1,10 +1,11 @@
 """Pytest configuration and shared fixtures."""
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import pytest
 
 from checkup.metric import Metric
+from checkup.provider import Provider
 from checkup.types import Context
 
 
@@ -284,9 +285,16 @@ class LeafAB(Metric):
         self.diagnostic = f"Product of MidShared ({mid_shared_val}) and MidBranch ({mid_branch_val}) = {self.value}"
 
 
-def dummy_provider(context: Context) -> Context:
+class DummyProvider(Provider):
     """Test provider that adds dummy data to context."""
-    return {**context, "dummy_data": 100}
+
+    name: ClassVar[str] = "dummy"
+
+    def __init__(self, data: int = 100):
+        self.data = data
+
+    def provide(self) -> dict[str, Any]:
+        return {"data": self.data}
 
 
 class ProviderDummyMetric(Metric):
@@ -297,11 +305,11 @@ class ProviderDummyMetric(Metric):
     unit: ClassVar[str] = "count"
 
     @classmethod
-    def providers(cls) -> list:
-        return [dummy_provider]
+    def providers(cls) -> list[type[Provider]]:
+        return [DummyProvider]
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = context["dummy_data"]
+        self.value = context[DummyProvider.name]["data"]
         self.diagnostic = f"Retrieved dummy_data from context: {self.value}"
 
 
@@ -323,9 +331,16 @@ class FailingMetric(Metric):
 # Integration test metrics (must be at module level for ProcessPoolExecutor)
 
 
-def integration_provider(context: Context) -> Context:
+class IntegrationProvider(Provider):
     """Provider that adds base_value to context."""
-    return {**context, "base_value": 25}
+
+    name: ClassVar[str] = "integration"
+
+    def __init__(self, base_value: int = 25):
+        self.base_value = base_value
+
+    def provide(self) -> dict[str, Any]:
+        return {"base_value": self.base_value}
 
 
 class IntegrationBaseMetric(Metric):
@@ -337,11 +352,11 @@ class IntegrationBaseMetric(Metric):
     threshold: int = 100
 
     @classmethod
-    def providers(cls):
-        return [integration_provider]
+    def providers(cls) -> list[type[Provider]]:
+        return [IntegrationProvider]
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = context["base_value"]
+        self.value = context[IntegrationProvider.name]["base_value"]
         self.diagnostic = (
             f"Retrieved base_value from integration provider: {self.value}"
         )
@@ -365,10 +380,16 @@ class IntegrationDerivedMetric(Metric):
         self.diagnostic = f"Multiplied base metric value: {base_val} * {self.multiplier} = {self.value}"
 
 
-def path_length_provider(context: Context) -> Context:
+class PathLengthProvider(Provider):
     """Provider that calculates path length."""
-    path = context.get("path", "/unknown")
-    return {**context, "path_length": len(path)}
+
+    name: ClassVar[str] = "path_length"
+
+    def __init__(self, path: str = "/unknown"):
+        self.path = path
+
+    def provide(self) -> dict[str, Any]:
+        return {"length": len(self.path)}
 
 
 class PathMetric(Metric):
@@ -380,11 +401,11 @@ class PathMetric(Metric):
     multiplier: int = 1
 
     @classmethod
-    def providers(cls):
-        return [path_length_provider]
+    def providers(cls) -> list[type[Provider]]:
+        return [PathLengthProvider]
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        path_len = context["path_length"]
+        path_len = context[PathLengthProvider.name]["length"]
         self.value = path_len * self.multiplier
         self.diagnostic = (
             f"Path length {path_len} * multiplier {self.multiplier} = {self.value}"

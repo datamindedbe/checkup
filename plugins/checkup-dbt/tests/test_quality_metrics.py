@@ -2,6 +2,7 @@ from pathlib import Path
 
 from checkup.hub import CheckHub
 from checkup_dbt import DbtSupportedVersionMetric
+from checkup_dbt.provider import DbtManifestProvider
 
 from .conftest import FactDimNamingMetric, InternalModelNamingMetric
 
@@ -10,7 +11,8 @@ def test_naming_convention_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([InternalModelNamingMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]
@@ -22,7 +24,8 @@ def test_naming_convention_metric_custom_checker(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([FactDimNamingMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     assert len(result.errors) == 0, f"Errors: {result.errors}"
@@ -36,7 +39,8 @@ def test_supported_version_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtSupportedVersionMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     metric = result.metrics[0]

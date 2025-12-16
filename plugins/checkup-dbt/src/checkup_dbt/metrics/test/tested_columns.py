@@ -1,20 +1,22 @@
 import logging
+from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
+from checkup_dbt.provider import DbtManifestProvider
 
 logger = logging.getLogger(__name__)
 
 
 class DbtTestedColumnsMetric(DbtMetric):
-    name: str = "dbt_tested_columns"
-    description: str = "Number of columns with at least one test"
-    unit: str = "columns"
+    name: ClassVar[str] = "dbt_tested_columns"
+    description: ClassVar[str] = "Number of columns with at least one test"
+    unit: ClassVar[str] = "columns"
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context["dbt_manifest"]
+        manifest = context[DbtManifestProvider.name]["manifest"]
 
         all_columns = set(
             (node.unique_id, column_name)

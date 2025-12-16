@@ -25,7 +25,7 @@ def test_console_materializer():
     sys.stdout = captured_output
 
     materializer = ConsoleMaterializer()
-    materializer.materialize([metric])
+    materializer.materialize([metric], {"dummy"})
 
     # Reset stdout
     sys.stdout = sys.__stdout__
@@ -42,7 +42,7 @@ def test_csv_materializer(tmp_path):
 
     output_file = tmp_path / "metrics.csv"
     materializer = CSVMaterializer(output_path=output_file)
-    materializer.materialize([metric])
+    materializer.materialize([metric], {"dummy"})
 
     # Read and verify CSV content
     content = output_file.read_text()
@@ -69,7 +69,7 @@ def test_csv_materializer_multiple_metrics(tmp_path):
 
     output_file = tmp_path / "metrics.csv"
     materializer = CSVMaterializer(output_path=output_file)
-    materializer.materialize([metric1, metric2])
+    materializer.materialize([metric1, metric2], {"dummy", "other_metric"})
 
     content = output_file.read_text()
     lines = content.strip().split("\n")
@@ -83,10 +83,10 @@ def test_materializer_filters_indirect_by_default():
     """Test that materializers filter out indirect metrics by default."""
     from conftest import IndirectDummyMetric
 
-    direct_metric = DummyMetric(expected_value=42, is_direct=True)
+    direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
 
-    indirect_metric = IndirectDummyMetric(expected_value=100, is_direct=False)
+    indirect_metric = IndirectDummyMetric(expected_value=100)
     indirect_metric.value = 100
 
     # Capture stdout
@@ -94,7 +94,8 @@ def test_materializer_filters_indirect_by_default():
     sys.stdout = captured_output
 
     materializer = ConsoleMaterializer()
-    materializer.materialize([direct_metric, indirect_metric])
+    # Only "dummy" is direct, "indirect" is not
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
 
     sys.stdout = sys.__stdout__
 
@@ -107,10 +108,10 @@ def test_materializer_includes_indirect_when_configured():
     """Test that materializers can include indirect metrics."""
     from conftest import IndirectDummyMetric
 
-    direct_metric = DummyMetric(expected_value=42, is_direct=True)
+    direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
 
-    indirect_metric = IndirectDummyMetric(expected_value=100, is_direct=False)
+    indirect_metric = IndirectDummyMetric(expected_value=100)
     indirect_metric.value = 100
 
     # Capture stdout
@@ -118,7 +119,7 @@ def test_materializer_includes_indirect_when_configured():
     sys.stdout = captured_output
 
     materializer = ConsoleMaterializer(include_indirect=True)
-    materializer.materialize([direct_metric, indirect_metric])
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
 
     sys.stdout = sys.__stdout__
 
@@ -131,17 +132,18 @@ def test_csv_materializer_filters_indirect(tmp_path):
     """Test CSV materializer filtering of indirect metrics."""
     from conftest import IndirectDummyMetric
 
-    direct_metric = DummyMetric(expected_value=42, is_direct=True)
+    direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
 
-    indirect_metric = IndirectDummyMetric(expected_value=100, is_direct=False)
+    indirect_metric = IndirectDummyMetric(expected_value=100)
     indirect_metric.value = 100
 
     output_file = tmp_path / "metrics.csv"
 
     # Default: filter indirect
     materializer = CSVMaterializer(output_path=output_file)
-    materializer.materialize([direct_metric, indirect_metric])
+    # Only "dummy" is direct
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
 
     content = output_file.read_text()
     lines = content.strip().split("\n")
@@ -155,17 +157,17 @@ def test_csv_materializer_includes_indirect(tmp_path):
     """Test CSV materializer including indirect metrics."""
     from conftest import IndirectDummyMetric
 
-    direct_metric = DummyMetric(expected_value=42, is_direct=True)
+    direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
 
-    indirect_metric = IndirectDummyMetric(expected_value=100, is_direct=False)
+    indirect_metric = IndirectDummyMetric(expected_value=100)
     indirect_metric.value = 100
 
     output_file = tmp_path / "metrics.csv"
 
     # With include_indirect=True
     materializer = CSVMaterializer(output_path=output_file, include_indirect=True)
-    materializer.materialize([direct_metric, indirect_metric])
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
 
     content = output_file.read_text()
     lines = content.strip().split("\n")

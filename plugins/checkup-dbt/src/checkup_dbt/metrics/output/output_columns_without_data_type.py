@@ -1,19 +1,21 @@
 import logging
+from typing import ClassVar
 
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.output.output_models import is_output_model
+from checkup_dbt.provider import DbtManifestProvider
 
 logger = logging.getLogger(__name__)
 
 
 class DbtOutputColumnsWithoutDataTypeMetric(DbtMetric):
-    name: str = "dbt_output_columns_without_data_type"
-    description: str = "Number of columns in output models without data type"
-    unit: str = "columns"
+    name: ClassVar[str] = "dbt_output_columns_without_data_type"
+    description: ClassVar[str] = "Number of columns in output models without data type"
+    unit: ClassVar[str] = "columns"
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context["dbt_manifest"]
+        manifest = context[DbtManifestProvider.name]["manifest"]
         self.value = len(
             [
                 (node.name, column_name)

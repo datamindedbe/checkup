@@ -1,14 +1,19 @@
 from pathlib import Path
 
+import pytest
+
 from checkup.hub import CheckHub
+from checkup.providers.tags import TagProvider
 from checkup_dbt import DbtModelsMetric
+from checkup_dbt.provider import DbtManifestProvider
 
 
 def test_manifest_path_mode(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsMetric])
-        .measure(initial_context={"manifest_path": str(sample_manifest_path)})
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
     )
 
     assert len(result.metrics) == 1
@@ -19,35 +24,34 @@ def test_dbt_project_dir_mode(sample_dbt_project_dir: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsMetric])
-        .measure(
-            initial_context={
-                "dbt_project_dir": str(sample_dbt_project_dir),
-                "profiles_dir": str(sample_dbt_project_dir),
-            }
-        )
+        .with_providers([[
+            DbtManifestProvider(
+                dbt_project_dir=sample_dbt_project_dir,
+                profiles_dir=sample_dbt_project_dir,
+            )
+        ]])
+        .measure()
     )
 
     assert len(result.metrics) == 1
     assert result.metrics[0].value == 3
 
 
-def test_missing_context_raises_error():
-    result = CheckHub().with_metrics([DbtModelsMetric]).measure(initial_context={})
+def test_missing_args_raises_error():
+    with pytest.raises(ValueError) as exc_info:
+        DbtManifestProvider()
 
-    assert len(result.errors) == 1
-    assert "manifest_path" in str(result.errors[0][1])
+    assert "manifest_path" in str(exc_info.value) or "dbt_project_dir" in str(exc_info.value)
 
 
 def test_multiple_projects(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsMetric])
-        .with_contexts(
-            [
-                {"manifest_path": str(sample_manifest_path), "project": "project_a"},
-                {"manifest_path": str(sample_manifest_path), "project": "project_b"},
-            ]
-        )
+        .with_providers([
+            [DbtManifestProvider(manifest_path=sample_manifest_path), TagProvider(project="project_a")],
+            [DbtManifestProvider(manifest_path=sample_manifest_path), TagProvider(project="project_b")],
+        ])
         .measure()
     )
 

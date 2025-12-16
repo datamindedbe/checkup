@@ -21,25 +21,31 @@ class Materializer(ABC, BaseModel):
 
     include_indirect: bool = False
 
-    def _filter_metrics(self, metrics: list[Metric]) -> list[Metric]:
+    def _filter_metrics(
+        self, metrics: list[Metric], direct_metric_names: set[str]
+    ) -> list[Metric]:
         """Filter metrics based on include_indirect setting.
 
         Args:
             metrics: List of all calculated metrics
+            direct_metric_names: Set of names of directly requested metrics
 
         Returns:
             Filtered list of metrics
         """
         if self.include_indirect:
             return metrics
-        return [m for m in metrics if m.is_direct]
+        return [m for m in metrics if m.name in direct_metric_names]
 
     @abstractmethod
-    def materialize(self, metrics: list[Metric]) -> None:
+    def materialize(
+        self, metrics: list[Metric], direct_metric_names: set[str]
+    ) -> None:
         """Format and output metrics.
 
         Args:
             metrics: List of calculated metrics
+            direct_metric_names: Set of names of directly requested metrics
         """
         pass
 
@@ -50,9 +56,11 @@ class ConsoleMaterializer(Materializer):
     Simple text output for debugging and quick checks.
     """
 
-    def materialize(self, metrics: list[Metric]) -> None:
+    def materialize(
+        self, metrics: list[Metric], direct_metric_names: set[str]
+    ) -> None:
         """Print metrics to console."""
-        filtered = self._filter_metrics(metrics)
+        filtered = self._filter_metrics(metrics, direct_metric_names)
 
         print("\n=== Metrics Report ===\n")
 
@@ -71,9 +79,11 @@ class CSVMaterializer(Materializer):
 
     output_path: Path
 
-    def materialize(self, metrics: list[Metric]) -> None:
+    def materialize(
+        self, metrics: list[Metric], direct_metric_names: set[str]
+    ) -> None:
         """Write metrics to CSV file."""
-        filtered = self._filter_metrics(metrics)
+        filtered = self._filter_metrics(metrics, direct_metric_names)
 
         with open(self.output_path, "w", newline="") as f:
             writer = csv.writer(f)

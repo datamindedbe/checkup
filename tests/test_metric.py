@@ -3,8 +3,8 @@
 from conftest import (
     DependentDummyMetric,
     DummyMetric,
+    DummyProvider,
     ProviderDummyMetric,
-    dummy_provider,
 )
 from pydantic import BaseModel
 
@@ -128,34 +128,32 @@ def test_dependent_metric_calculate_custom_base(empty_context):
 # =============================================================================
 
 
-def test_dummy_provider_enriches_context():
-    """Test that dummy provider enriches context."""
-    context = {}
-    result = dummy_provider(context)
-
-    assert "dummy_data" in result
-    assert result["dummy_data"] == 100
+def test_dummy_provider_adds_data():
+    """Test DummyProvider adds data."""
+    provider = DummyProvider()
+    result = provider.provide()
+    assert result == {"data": 100}
 
 
-def test_dummy_provider_preserves_existing_context():
-    """Test that dummy provider preserves existing context."""
-    context = {"existing": "value"}
-    result = dummy_provider(context)
-
-    assert result["existing"] == "value"
-    assert result["dummy_data"] == 100
+def test_dummy_provider_with_custom_data():
+    """Test DummyProvider with custom data."""
+    provider = DummyProvider(data=42)
+    result = provider.provide()
+    assert result == {"data": 42}
 
 
 def test_provider_dummy_metric_has_provider():
     """Test that ProviderDummyMetric declares providers."""
     providers = ProviderDummyMetric.providers()
 
-    assert providers == [dummy_provider]
+    assert providers == [DummyProvider]
 
 
 def test_provider_dummy_metric_calculate():
     """Test that ProviderDummyMetric uses context from provider."""
-    context = dummy_provider({})
+    # Build context with namespaced provider data
+    provider = DummyProvider()
+    context = {DummyProvider.name: provider.provide()}
 
     metric = ProviderDummyMetric()
     metric.calculate(context=context, metrics={})

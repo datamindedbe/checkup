@@ -1,19 +1,21 @@
 import logging
+from typing import ClassVar
 
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.output.output_models import is_output_model
+from checkup_dbt.provider import DbtManifestProvider
 
 logger = logging.getLogger(__name__)
 
 
 class DbtOutputModelsWithoutContractsMetric(DbtMetric):
-    name: str = "dbt_output_models_without_contracts"
-    description: str = "Number of output models without enforced contracts"
-    unit: str = "models"
+    name: ClassVar[str] = "dbt_output_models_without_contracts"
+    description: ClassVar[str] = "Number of output models without enforced contracts"
+    unit: ClassVar[str] = "models"
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context["dbt_manifest"]
+        manifest = context[DbtManifestProvider.name]["manifest"]
         self.value = len(
             [
                 node
