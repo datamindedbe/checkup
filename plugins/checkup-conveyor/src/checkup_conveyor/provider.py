@@ -14,7 +14,7 @@ class ConveyorProvider(Provider):
             'project_name': self.project_name
         }
 
-    def __init__(self, project_name: str):
+    def __init__(self, project_name: str, api_key: str, environment_name: str):
         self.project_name = project_name
-        self.api_key = os.environ['CHECKUP__CONVEYOR__API_KEY']
-        self.environment_name = os.environ['CHECKUP__CONVEYOR__ENVIRONMENT_NAME']
+        self.api_key = api_key
+        self.environment_name = environment_name
