@@ -83,14 +83,14 @@ class TestHubExecution:
         assert metric.tags["env"] == "prod"
         assert metric.tags["team"] == "data"
 
-    def test_measure_validates_providers(self):
-        """Test that measure() validates providers before running."""
-        import pytest
+    def test_measure_warns_on_missing_providers(self, caplog):
+        """Test that measure() warns when providers are missing."""
+        import logging
 
-        with pytest.raises(ValueError) as exc_info:
+        with caplog.at_level(logging.WARNING):
             CheckHub().with_metrics([DataMetric]).with_providers([[]]).measure()
 
-        assert "data" in str(exc_info.value).lower()
+        assert "data" in caplog.text.lower()
 
     def test_measure_with_empty_provider_sets_and_no_requirements(self):
         """Test measuring without providers when none required."""

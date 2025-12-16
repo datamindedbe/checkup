@@ -1,9 +1,12 @@
 """CheckHub main orchestration."""
 
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 from checkup.config import load_config
 from checkup.graph import build_dependency_graph, topological_sort
@@ -95,12 +98,11 @@ class CheckHub:
     ) -> None:
         """Validate all required providers are present in each provider set.
 
+        Logs a warning for any missing providers instead of failing.
+
         Args:
             metrics: List of metric classes to check
             provider_sets: List of provider instance lists to validate
-
-        Raises:
-            ValueError: If any required provider is missing from a provider set
         """
         # Collect all required provider classes from metrics
         required: set[type[Provider]] = set()
@@ -117,8 +119,10 @@ class CheckHub:
 
             if missing:
                 missing_names = sorted(cls.name for cls in missing)
-                raise ValueError(
-                    f"Provider set {i} is missing required providers: {missing_names}"
+                logger.warning(
+                    "Provider set %d is missing required providers: %s",
+                    i,
+                    missing_names,
                 )
 
     def _execute_providers(

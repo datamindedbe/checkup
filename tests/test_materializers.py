@@ -29,7 +29,7 @@ def test_console_materializer():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    materializer = ConsoleMaterializer()
+    materializer = ConsoleMaterializer(group_tag_1="domain", group_tag_2="project")
     materializer.materialize([metric], {"dummy"})
 
     # Reset stdout
@@ -98,7 +98,7 @@ def test_materializer_filters_indirect_by_default():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    materializer = ConsoleMaterializer()
+    materializer = ConsoleMaterializer(group_tag_1="domain", group_tag_2="project")
     # Only "dummy" is direct, "indirect" is not
     materializer.materialize([direct_metric, indirect_metric], {"dummy"})
 
@@ -123,7 +123,7 @@ def test_materializer_includes_indirect_when_configured():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    materializer = ConsoleMaterializer(include_indirect=True)
+    materializer = ConsoleMaterializer(include_indirect=True, group_tag_1="domain", group_tag_2="project")
     materializer.materialize([direct_metric, indirect_metric], {"dummy"})
 
     sys.stdout = sys.__stdout__

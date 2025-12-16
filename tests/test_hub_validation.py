@@ -55,35 +55,35 @@ class TestProviderValidation:
         )
         # No exception raised
 
-    def test_validation_fails_with_missing_provider(self):
-        """Test validation fails when required provider missing."""
+    def test_validation_warns_with_missing_provider(self, caplog):
+        """Test validation warns when required provider missing."""
         hub = CheckHub().with_metrics([MetricWithProvider])
 
-        with pytest.raises(ValueError) as exc_info:
+        with caplog.at_level("WARNING"):
             hub._validate_providers(
                 metrics=[MetricWithProvider],
                 provider_sets=[[OtherProvider()]],
             )
 
-        assert "required" in str(exc_info.value).lower()
+        assert "required" in caplog.text.lower()
 
-    def test_validation_fails_with_empty_provider_set(self):
-        """Test validation fails with empty provider set."""
+    def test_validation_warns_with_empty_provider_set(self, caplog):
+        """Test validation warns with empty provider set."""
         hub = CheckHub().with_metrics([MetricWithProvider])
 
-        with pytest.raises(ValueError) as exc_info:
+        with caplog.at_level("WARNING"):
             hub._validate_providers(
                 metrics=[MetricWithProvider],
                 provider_sets=[[]],
             )
 
-        assert "required" in str(exc_info.value).lower()
+        assert "required" in caplog.text.lower()
 
-    def test_validation_checks_all_provider_sets(self):
-        """Test validation checks each provider set independently."""
+    def test_validation_warns_for_each_provider_set(self, caplog):
+        """Test validation warns for each provider set with missing providers."""
         hub = CheckHub().with_metrics([MetricWithProvider])
 
-        with pytest.raises(ValueError) as exc_info:
+        with caplog.at_level("WARNING"):
             hub._validate_providers(
                 metrics=[MetricWithProvider],
                 provider_sets=[
@@ -92,7 +92,7 @@ class TestProviderValidation:
                 ],
             )
 
-        assert "1" in str(exc_info.value)  # Provider set index
+        assert "1" in caplog.text  # Provider set index
 
     def test_validation_passes_with_no_required_providers(self):
         """Test validation passes when metrics need no providers."""
