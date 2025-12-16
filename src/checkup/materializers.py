@@ -1,4 +1,5 @@
 """Materializers for outputting metrics."""
+
 import csv
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -76,12 +77,15 @@ class CSVMaterializer(Materializer):
 
         with open(self.output_path, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["name", "value", "unit", "description"])
+            writer.writerow(["name", "value", "unit", "diagnostic", "description"])
 
             for metric in filtered:
-                writer.writerow([
-                    metric.name,
-                    metric.value,
-                    metric.unit,
-                    metric.description,
-                ])
+                writer.writerow(
+                    [
+                        metric.name,
+                        metric.value,
+                        metric.unit,
+                        metric.diagnostic,
+                        metric.description,
+                    ]
+                )

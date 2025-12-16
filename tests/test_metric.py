@@ -1,14 +1,14 @@
 """Tests for Metric ABC and test fixtures."""
-from pydantic import BaseModel
 
-from checkup.metric import Metric
 from conftest import (
-    DummyMetric,
     DependentDummyMetric,
+    DummyMetric,
     ProviderDummyMetric,
     dummy_provider,
 )
+from pydantic import BaseModel
 
+from checkup.metric import Metric
 
 # =============================================================================
 # DummyMetric instantiation tests
@@ -81,9 +81,15 @@ def test_metric_pydantic_model_dump():
     """Test that we can use Pydantic features."""
     metric = DummyMetric(expected_value=50)
 
+    # ClassVar fields are not included in model_dump, access them directly
+    assert metric.name == "dummy"
+    assert DummyMetric.name == "dummy"  # Can also access on class
+
+    # Instance fields are in model_dump
     data = metric.model_dump()
-    assert data["name"] == "dummy"
     assert data["expected_value"] == 50
+    assert data["value"] is None
+    assert "name" not in data  # ClassVar not included in dump
 
 
 # =============================================================================

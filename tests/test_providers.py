@@ -1,12 +1,11 @@
 """Tests for provider collection and execution (internal CheckHub methods)."""
-from checkup.hub import CheckHub
-from checkup.types import Context
+
+from typing import ClassVar
+
 from conftest import DummyMetric, ProviderDummyMetric, dummy_provider
 
-
-# =============================================================================
-# _collect_providers tests
-# =============================================================================
+from checkup.hub import CheckHub
+from checkup.types import Context
 
 
 def test_collect_providers_empty_for_metrics_without_providers():
@@ -29,7 +28,7 @@ def test_collect_providers_deduplication():
     """Test that duplicate providers are deduplicated."""
 
     class AnotherProviderMetric(ProviderDummyMetric):
-        name: str = "another_provider"
+        name: ClassVar[str] = "another_provider"
 
     hub = CheckHub()
     providers = hub._collect_providers([ProviderDummyMetric, AnotherProviderMetric])

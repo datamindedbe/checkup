@@ -22,6 +22,7 @@ class Metric(ABC, BaseModel):
     tags: dict = Field(default_factory=dict)
 
     value: Any = None
+    diagnostic: str = ""
 
     # Whether this metric was directly requested (vs auto-added as dependency)
     is_direct: bool = True
@@ -30,7 +31,7 @@ class Metric(ABC, BaseModel):
     def calculate(
         self, context: Context, metrics: dict[type["Metric"], "Metric"]
     ) -> None:
-        """Calculate metric value and set self.value.
+        """Calculate metric value and set self.value and self.diagnostic.
 
         Args:
             context: General context enriched by providers
