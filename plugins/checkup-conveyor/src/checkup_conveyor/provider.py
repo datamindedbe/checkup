@@ -9,10 +9,12 @@ class ConveyorProvider(Provider):
 
     def provide(self) -> dict[str, Any]:
         return {
-            'api_key': os.environ['CHECKUP__CONVEYOR__API_KEY'],
-            'environment_name': os.environ['CHECKUP__CONVEYOR__ENVIRONMENT_NAME'],
+            'api_key': self.api_key,
+            'environment_name': self.environment_name,
             'project_name': self.project_name
         }
 
     def __init__(self, project_name: str):
         self.project_name = project_name
+        self.api_key = os.environ['CHECKUP__CONVEYOR__API_KEY']
+        self.environment_name = os.environ['CHECKUP__CONVEYOR__ENVIRONMENT_NAME']
