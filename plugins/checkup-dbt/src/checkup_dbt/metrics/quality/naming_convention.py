@@ -37,10 +37,14 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
         checker = self.get_checker()
 
         non_adhering_models = [
-            node
+            node.name
             for node in manifest.nodes.values()
             if node.resource_type == NodeType.Model and not checker(context, node)
         ]
 
         self.value = len(non_adhering_models)
+        if non_adhering_models:
+            self.diagnostic = (
+                f"Models not adhering to naming convention: {', '.join(sorted(non_adhering_models))}"
+            )
         logger.info(f"Found {self.value} models not adhering to naming convention")

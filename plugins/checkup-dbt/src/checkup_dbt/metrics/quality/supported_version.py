@@ -27,4 +27,9 @@ class DbtSupportedVersionMetric(DbtMetric):
         supported = major_version == expected_major and minor_version >= expected_minor
 
         self.value = 1 if supported else 0
+        if not supported:
+            self.diagnostic = (
+                f"dbt version {version} does not meet minimum requirement of {self.expected_version}. "
+                f"Please upgrade dbt to version {self.expected_version} or later."
+            )
         logger.info(f"dbt version {version} supported: {bool(self.value)}")
