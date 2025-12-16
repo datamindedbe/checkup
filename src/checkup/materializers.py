@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from pydantic import BaseModel
+from rich.console import Console
+from rich.table import Table
 
 from checkup.metric import Metric
 
@@ -53,22 +55,37 @@ class Materializer(ABC, BaseModel):
 class ConsoleMaterializer(Materializer):
     """Output metrics to console.
 
-    Simple text output for debugging and quick checks.
+    Outputs a rich table with metric details.
     """
 
     def materialize(
         self, metrics: list[Metric], direct_metric_names: set[str]
     ) -> None:
-        """Print metrics to console."""
+        """Print metrics to console as a rich table."""
         filtered = self._filter_metrics(metrics, direct_metric_names)
 
-        print("\n=== Metrics Report ===\n")
+        console = Console()
+        table = Table(title="Metrics Report")
+
+        table.add_column("Name", style="cyan", no_wrap=True)
+        table.add_column("Description", style="dim")
+        table.add_column("Value", justify="right", style="green")
+        table.add_column("Unit", style="yellow")
+        table.add_column("Diagnostics", style="red")
+        table.add_column("Tags", style="magenta")
 
         for metric in filtered:
-            print(f"{metric.name}: {metric.value} {metric.unit}")
-            if metric.description:
-                print(f"  {metric.description}")
-            print()
+            tags_str = ", ".join(f"{k}={v}" for k, v in metric.tags.items())
+            table.add_row(
+                metric.name,
+                metric.description,
+                str(metric.value) if metric.value is not None else "",
+                metric.unit,
+                metric.diagnostic,
+                tags_str,
+            )
+
+        console.print(table)
 
         print("\n=== Error Report ===\n")
 
