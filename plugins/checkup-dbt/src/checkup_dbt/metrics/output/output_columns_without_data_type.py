@@ -16,13 +16,16 @@ class DbtOutputColumnsWithoutDataTypeMetric(DbtMetric):
 
     def calculate(self, context: Context, metrics: dict) -> None:
         manifest = context[DbtManifestProvider.name]["manifest"]
-        self.value = len(
-            [
-                (node.name, column_name)
-                for node in manifest.nodes.values()
-                if is_output_model(node)
-                for column_name, column in node.columns.items()
-                if column.data_type is None
-            ]
-        )
+        columns_without_data_type = [
+            f"{node.name}.{column_name}"
+            for node in manifest.nodes.values()
+            if is_output_model(node)
+            for column_name, column in node.columns.items()
+            if column.data_type is None
+        ]
+        self.value = len(columns_without_data_type)
+        if columns_without_data_type:
+            self.diagnostic = (
+                f"Output columns without data type: {', '.join(sorted(columns_without_data_type))}"
+            )
         logger.info(f"Found {self.value} output columns without data type")

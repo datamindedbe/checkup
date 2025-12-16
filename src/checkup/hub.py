@@ -23,7 +23,7 @@ class MeasurementResult(BaseModel):
 
     metrics: list[Metric]
     direct_metric_names: set[str] = Field(default_factory=set)
-    errors: list[tuple[dict, Exception]] = Field(default_factory=list)
+    errors: list[tuple[list[Provider], Exception]] = Field(default_factory=list)
 
     model_config = {"arbitrary_types_allowed": True}
 
