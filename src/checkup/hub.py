@@ -6,13 +6,14 @@ from typing import TYPE_CHECKING, Any, Iterable
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
-
 from checkup.config import load_config
 from checkup.graph import build_dependency_graph, topological_sort
 from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
+
+logger = logging.getLogger(__name__)
+
 
 if TYPE_CHECKING:
     from checkup.materializers import Materializer
@@ -71,9 +72,7 @@ class CheckHub:
         self._metrics.extend(metrics)
         return self
 
-    def with_providers(
-        self, provider_sets: Iterable[Iterable[Provider]]
-    ) -> "CheckHub":
+    def with_providers(self, provider_sets: Iterable[Iterable[Provider]]) -> "CheckHub":
         """Register provider sets to run metrics against.
 
         Each inner iterable is a set of providers for one measurement run.
@@ -88,8 +87,6 @@ class CheckHub:
         for provider_set in provider_sets:
             self._provider_sets.append(list(provider_set))
         return self
-
-
 
     def _validate_providers(
         self,

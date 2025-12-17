@@ -2,7 +2,6 @@
 
 from typing import Any, ClassVar
 
-import pytest
 
 from checkup.hub import CheckHub
 from checkup.metric import Metric

@@ -23,7 +23,5 @@ class DbtOutputModelsWithoutContractsMetric(DbtMetric):
         ]
         self.value = len(models_without_contracts)
         if models_without_contracts:
-            self.diagnostic = (
-                f"Output models without enforced contracts: {', '.join(sorted(models_without_contracts))}"
-            )
+            self.diagnostic = f"Output models without enforced contracts: {', '.join(sorted(models_without_contracts))}"
         logger.info(f"Found {self.value} output models without contracts")

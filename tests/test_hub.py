@@ -1,4 +1,5 @@
 """Tests for CheckHub main orchestration."""
+
 import sys
 from io import StringIO
 from pathlib import Path
@@ -158,8 +159,6 @@ def test_measurement_result_materialize():
     assert "dummy" in output
 
 
-
-
 def test_checkhub_measure_multiple_provider_sets():
     """Test measuring metrics across multiple provider sets."""
     from checkup.providers.tags import TagProvider
@@ -167,11 +166,13 @@ def test_checkhub_measure_multiple_provider_sets():
     result = (
         CheckHub()
         .with_metrics([DummyMetric])
-        .with_providers([
-            [TagProvider(path="/repo1")],
-            [TagProvider(path="/repo2")],
-            [TagProvider(path="/repo3")],
-        ])
+        .with_providers(
+            [
+                [TagProvider(path="/repo1")],
+                [TagProvider(path="/repo2")],
+                [TagProvider(path="/repo3")],
+            ]
+        )
         .measure()
     )
 
@@ -192,5 +193,3 @@ def test_checkhub_measure_parallel():
     )
 
     assert len(result.metrics) == 10
-
-

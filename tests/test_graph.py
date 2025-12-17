@@ -272,7 +272,7 @@ def test_shared_ancestor_calculated_once(empty_context):
 
     for metric_cls in order:
         calculation_counts[metric_cls] = calculation_counts.get(metric_cls, 0) + 1
-        metric = metric_cls() # type: ignore
+        metric = metric_cls()  # type: ignore
         metric.calculate(empty_context, calculated)
         calculated[metric_cls] = metric
 

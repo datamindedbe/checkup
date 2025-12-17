@@ -1,4 +1,5 @@
 """YAML configuration loading."""
+
 from pathlib import Path
 from typing import Any
 

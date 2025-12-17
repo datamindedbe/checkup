@@ -1,10 +1,8 @@
 """Integration tests for full checkup pipeline."""
 
 from checkup.hub import CheckHub
-from checkup.materializers import ConsoleMaterializer
 
 from conftest import (
-    DummyMetric,
     IntegrationBaseMetric,
     IntegrationDerivedMetric,
     IntegrationProvider,
@@ -48,10 +46,15 @@ def test_multi_provider_set_pipeline():
     result = (
         CheckHub()
         .with_metrics([PathMetric])
-        .with_providers([
-            [PathLengthProvider(path="/short"), TagProvider(name="short")],
-            [PathLengthProvider(path="/much/longer/path"), TagProvider(name="long")],
-        ])
+        .with_providers(
+            [
+                [PathLengthProvider(path="/short"), TagProvider(name="short")],
+                [
+                    PathLengthProvider(path="/much/longer/path"),
+                    TagProvider(name="long"),
+                ],
+            ]
+        )
         .measure()
     )
 

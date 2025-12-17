@@ -24,10 +24,12 @@ class TestWithProviders:
 
     def test_with_providers_stores_provider_sets(self):
         """Test that with_providers stores provider sets."""
-        hub = CheckHub().with_providers([
-            [SimpleProvider(value=1)],
-            [SimpleProvider(value=2)],
-        ])
+        hub = CheckHub().with_providers(
+            [
+                [SimpleProvider(value=1)],
+                [SimpleProvider(value=2)],
+            ]
+        )
 
         assert len(hub._provider_sets) == 2
         assert hub._provider_sets[0][0].value == 1
@@ -35,9 +37,11 @@ class TestWithProviders:
 
     def test_with_providers_accepts_iterables(self):
         """Test that with_providers accepts any iterables."""
-        hub = CheckHub().with_providers([
-            (SimpleProvider(), TagProvider(env="prod")),
-        ])
+        hub = CheckHub().with_providers(
+            [
+                (SimpleProvider(), TagProvider(env="prod")),
+            ]
+        )
 
         assert len(hub._provider_sets) == 1
         assert len(hub._provider_sets[0]) == 2

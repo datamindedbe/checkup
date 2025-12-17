@@ -44,7 +44,5 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
 
         self.value = len(non_adhering_models)
         if non_adhering_models:
-            self.diagnostic = (
-                f"Models not adhering to naming convention: {', '.join(sorted(non_adhering_models))}"
-            )
+            self.diagnostic = f"Models not adhering to naming convention: {', '.join(sorted(non_adhering_models))}"
         logger.info(f"Found {self.value} models not adhering to naming convention")

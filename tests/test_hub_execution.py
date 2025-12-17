@@ -80,11 +80,13 @@ class TestHubExecution:
         result = (
             CheckHub()
             .with_metrics([DataMetric])
-            .with_providers([
-                [DataProvider(value=10)],
-                [DataProvider(value=20)],
-                [DataProvider(value=30)],
-            ])
+            .with_providers(
+                [
+                    [DataProvider(value=10)],
+                    [DataProvider(value=20)],
+                    [DataProvider(value=30)],
+                ]
+            )
             .measure()
         )
 
@@ -97,9 +99,11 @@ class TestHubExecution:
         result = (
             CheckHub()
             .with_metrics([DataMetric])
-            .with_providers([
-                [DataProvider(value=42), TagProvider(env="prod", team="data")],
-            ])
+            .with_providers(
+                [
+                    [DataProvider(value=42), TagProvider(env="prod", team="data")],
+                ]
+            )
             .measure()
         )
 

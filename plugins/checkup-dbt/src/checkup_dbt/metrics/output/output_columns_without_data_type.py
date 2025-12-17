@@ -25,7 +25,5 @@ class DbtOutputColumnsWithoutDataTypeMetric(DbtMetric):
         ]
         self.value = len(columns_without_data_type)
         if columns_without_data_type:
-            self.diagnostic = (
-                f"Output columns without data type: {', '.join(sorted(columns_without_data_type))}"
-            )
+            self.diagnostic = f"Output columns without data type: {', '.join(sorted(columns_without_data_type))}"
         logger.info(f"Found {self.value} output columns without data type")

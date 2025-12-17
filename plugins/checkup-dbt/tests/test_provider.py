@@ -24,12 +24,16 @@ def test_dbt_project_dir_mode(sample_dbt_project_dir: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsMetric])
-        .with_providers([[
-            DbtManifestProvider(
-                dbt_project_dir=sample_dbt_project_dir,
-                profiles_dir=sample_dbt_project_dir,
-            )
-        ]])
+        .with_providers(
+            [
+                [
+                    DbtManifestProvider(
+                        dbt_project_dir=sample_dbt_project_dir,
+                        profiles_dir=sample_dbt_project_dir,
+                    )
+                ]
+            ]
+        )
         .measure()
     )
 
@@ -41,17 +45,27 @@ def test_missing_args_raises_error():
     with pytest.raises(ValueError) as exc_info:
         DbtManifestProvider()
 
-    assert "manifest_path" in str(exc_info.value) or "dbt_project_dir" in str(exc_info.value)
+    assert "manifest_path" in str(exc_info.value) or "dbt_project_dir" in str(
+        exc_info.value
+    )
 
 
 def test_multiple_projects(sample_manifest_path: Path):
     result = (
         CheckHub()
         .with_metrics([DbtModelsMetric])
-        .with_providers([
-            [DbtManifestProvider(manifest_path=sample_manifest_path), TagProvider(project="project_a")],
-            [DbtManifestProvider(manifest_path=sample_manifest_path), TagProvider(project="project_b")],
-        ])
+        .with_providers(
+            [
+                [
+                    DbtManifestProvider(manifest_path=sample_manifest_path),
+                    TagProvider(project="project_a"),
+                ],
+                [
+                    DbtManifestProvider(manifest_path=sample_manifest_path),
+                    TagProvider(project="project_b"),
+                ],
+            ]
+        )
         .measure()
     )
 

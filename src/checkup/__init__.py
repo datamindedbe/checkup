@@ -1,7 +1,12 @@
 """Checkup - Extensible metrics calculation framework."""
 
 from checkup.hub import CheckHub, MeasurementResult
-from checkup.materializers import ConsoleMaterializer, CSVMaterializer, HTMLMaterializer, Materializer
+from checkup.materializers import (
+    ConsoleMaterializer,
+    CSVMaterializer,
+    HTMLMaterializer,
+    Materializer,
+)
 from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider

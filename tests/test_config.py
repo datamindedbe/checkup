@@ -1,4 +1,5 @@
 """Tests for YAML configuration loading."""
+
 from pathlib import Path
 
 from checkup.config import load_config

@@ -13,44 +13,46 @@ class ConveyorLastDeploymentTime(ConveyorMetric):
     name: ClassVar[str] = "Conveyor Last Deployment Time"
     description: ClassVar[str] = "Time of the last deployment in Conveyor"
     unit: ClassVar[str] = "timestamp"
-    diagnostic: str = 'Deploy the project again to update this value.'
+    diagnostic: str = "Deploy the project again to update this value."
 
     def calculate(self, context: Context, metrics: dict) -> None:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
             self.value = None
             return
-        r = requests.get(f'{self.base_url}/projects/{proj_id}/deployments',
-                     headers=self.get_conveyor_api_headers(context)).json()
-        deployments = r.get('deployment', [])
+        r = requests.get(
+            f"{self.base_url}/projects/{proj_id}/deployments",
+            headers=self.get_conveyor_api_headers(context),
+        ).json()
+        deployments = r.get("deployment", [])
         if not deployments:
             logger.warning("No deployments found for project %s", proj_id)
             self.value = None
             return
-        self.value = deployments[0]['deployedOn']
+        self.value = deployments[0]["deployedOn"]
 
 
 class ConveyorIsDirtyDeployment(ConveyorMetric):
     name: ClassVar[str] = "Conveyor Is Dirty Deployment"
     description: ClassVar[str] = "True if the last deployment was dirty"
     unit: ClassVar[str] = "boolean"
-    diagnostic: str = 'Commit changes to git, and deploy the project again.'
+    diagnostic: str = "Commit changes to git, and deploy the project again."
 
-    def calculate(
-        self, context: Context, metrics: dict
-    ) -> None:
+    def calculate(self, context: Context, metrics: dict) -> None:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
             self.value = None
             return
-        r = requests.get(f'{self.base_url}/projects/{proj_id}/builds',
-                     headers=self.get_conveyor_api_headers(context)).json()
-        builds = r.get('builds', [])
+        r = requests.get(
+            f"{self.base_url}/projects/{proj_id}/builds",
+            headers=self.get_conveyor_api_headers(context),
+        ).json()
+        builds = r.get("builds", [])
         if not builds:
             logger.warning("No builds found for project %s", proj_id)
             self.value = None
             return
-        self.value = builds[0]['gitHash'].endswith('.dirty')
+        self.value = builds[0]["gitHash"].endswith(".dirty")
 
 
 class ConveyorLastRunStatus(ConveyorMetric):
@@ -67,12 +69,22 @@ class ConveyorLastRunStatus(ConveyorMetric):
         if env_id is None:
             self.value = None
             return
-        r = requests.get(f'{self.base_url}/environments/{env_id}/application_runs',
-                         params={'sortedOn': 'SortedOn_None', 'sortedOrder': 'SortedOrder_None', 'projectId': proj_id},
-                     headers=self.get_conveyor_api_headers(context)).json()
-        runs = r.get('applicationRuns', [])
+        r = requests.get(
+            f"{self.base_url}/environments/{env_id}/application_runs",
+            params={
+                "sortedOn": "SortedOn_None",
+                "sortedOrder": "SortedOrder_None",
+                "projectId": proj_id,
+            },
+            headers=self.get_conveyor_api_headers(context),
+        ).json()
+        runs = r.get("applicationRuns", [])
         if not runs:
-            logger.warning("No application runs found for project %s in environment %s", proj_id, env_id)
+            logger.warning(
+                "No application runs found for project %s in environment %s",
+                proj_id,
+                env_id,
+            )
             self.value = None
             return
-        self.value = runs[0]['phase']
+        self.value = runs[0]["phase"]
