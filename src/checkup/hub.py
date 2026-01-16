@@ -108,15 +108,14 @@ class CheckHub:
             metrics: List of metric classes to check
             provider_sets: List of provider instance lists to validate
         """
-        # Collect all required provider classes from metrics
+
         required: set[type[Provider]] = set()
         for metric_cls in metrics:
             required.update(metric_cls.providers())
 
         if not required:
-            return  # No providers required
+            return
 
-        # Check each provider set
         for i, provider_set in enumerate(provider_sets):
             provided_classes = {type(p) for p in provider_set}
             missing = required - provided_classes
@@ -174,9 +173,9 @@ class CheckHub:
         Returns:
             List of calculated metrics with tags merged
         """
+
         context, tags = self._execute_providers(provider_set)
 
-        # Determine which provider types are available
         provided_classes = {type(p) for p in provider_set}
 
         calculated: dict[type[Metric], Metric] = {}
@@ -226,15 +225,11 @@ class CheckHub:
         execution_order = topological_sort(graph)
         direct_metric_names = {m.name for m in self._metrics}
 
-        # Collect required providers from metrics
         required_providers: set[type[Provider]] = set()
         for metric_cls in execution_order:
             required_providers.update(metric_cls.providers())
 
-        # Use empty provider set if none specified and none required
         provider_sets = self._provider_sets if self._provider_sets else [[]]
-
-        # Validate providers before running
         self._validate_providers(list(execution_order), provider_sets)
 
         all_metrics: list[Metric] = []
@@ -245,19 +240,19 @@ class CheckHub:
             future_to_provider_set = {
                 executor.submit(
                     self._measure_single_provider_set,
-                    provider_set=ps,
+                    provider_set=provider_set,
                     execution_order=execution_order,
                     metric_configs=metric_configs,
-                ): ps
-                for ps in provider_sets
+                ): provider_set
+                for provider_set in provider_sets
             }
 
             for future in as_completed(future_to_provider_set):
-                ps = future_to_provider_set[future]
+                provider_set = future_to_provider_set[future]
                 try:
                     all_metrics.extend(future.result())
                 except Exception as e:
-                    all_errors.append((ps, e))
+                    all_errors.append((provider_set, e))
 
         return MeasurementResult(
             metrics=all_metrics,
