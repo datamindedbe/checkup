@@ -7,7 +7,8 @@ import yaml
 
 
 def load_config(config_path: Path) -> dict[str, dict[str, Any]]:
-    """Load metric configurations from YAML file.
+    """
+    Load metric configurations from YAML file.
 
     Args:
         config_path: Path to YAML config file

@@ -42,20 +42,16 @@ class PythonVersionMetric(Metric):
         """
         Read version from `.python-version`.
         """
-
         version_file = path / ".python-version"
         if not version_file.exists():
             return None
 
-        return (
-            version_file.read_text().strip().removeprefix("python-").removeprefix("py")
-        )
+        return version_file.read_text().strip().removeprefix("python-").removeprefix("py")
 
     def _read_pyproject_toml(self, path: Path) -> Optional[str]:
         """
         Extract Python version from `pyproject.toml`.
         """
-
         pyproject_file = path / "pyproject.toml"
         if not pyproject_file.exists():
             return None
@@ -78,7 +74,6 @@ class PythonVersionMetric(Metric):
         """
         Get the current runtime Python version.
         """
-
         return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
     def __lt__(self, other) -> bool:

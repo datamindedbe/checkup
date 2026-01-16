@@ -344,7 +344,8 @@ def test_html_materializer_escape_html(tmp_path):
 
 
 def test_html_materializer_end_to_end(tmp_path):
-    """End-to-end test with multiple metrics grouped by domain and project.
+    """
+    End-to-end test with multiple metrics grouped by domain and project.
 
     This test creates a realistic scenario with multiple domains and projects,
     generates the HTML, and opens it for visual inspection.

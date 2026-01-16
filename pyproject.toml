@@ -1,9 +1,13 @@
 [project]
 name = "checkup"
 version = "0.1.0"
-description = "Add your description here"
+description = "Computational governance framework for measuring data product health"
 readme = "README.md"
-authors = [{ name = "Jan Vanbuel", email = "jan.vanbuel@ond.vlaanderen.be" }]
+authors = [
+    { name = "Jan Vanbuel", email = "jan.vanbuel@ond.vlaanderen.be" },
+    { name = "Gergely Soti", email = "gergely.soti@dataminded.com" },
+    { name = "Casper Teirlinck", email = "casper.teirlinck@dataminded.com" }
+]
 requires-python = ">=3.12"
 dependencies = [
     "jinja2>=3.1.6",
@@ -29,3 +33,35 @@ members = [
 
 [dependency-groups]
 dev = ["pytest>=9.0.2", "pytest-cov>=7.0.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 80
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "D",   # pydocstyle
+]
+extend-select = [
+    "D213",  # multi-line-summary-second-line (override google convention)
+]
+ignore = [
+    "D100",  # Missing docstring in public module
+    "D200",  # One-line docstring should fit on one line
+    "D202",  # No blank lines allowed after function docstring
+    "D203",  # one-blank-line-before-class (incompatible with D211)
+    "D212",  # multi-line-summary-first-line (incompatible with D213)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

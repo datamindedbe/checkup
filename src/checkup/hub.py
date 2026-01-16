@@ -1,6 +1,6 @@
-"""CheckHub main orchestration."""
-
 import logging
+import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
@@ -10,17 +10,18 @@ from checkup.config import load_config
 from checkup.graph import build_dependency_graph, topological_sort
 from checkup.metric import Metric
 from checkup.provider import Provider
+from checkup.providers.tags import TagProvider
 from checkup.types import Context
-
-logger = logging.getLogger(__name__)
-
 
 if TYPE_CHECKING:
     from checkup.materializers import Materializer
 
+logger = logging.getLogger(__name__)
+
 
 class MeasurementResult(BaseModel):
-    """Result of measuring metrics.
+    """
+    Result of measuring metrics.
 
     Contains all calculated metrics and any errors from failed contexts.
     """
@@ -32,7 +33,8 @@ class MeasurementResult(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
     def materialize(self, materializer: "Materializer") -> None:
-        """Output results using materializer.
+        """
+        Output results using materializer.
 
         Args:
             materializer: Materializer instance for output
@@ -41,7 +43,8 @@ class MeasurementResult(BaseModel):
 
 
 class CheckHub:
-    """Main entry point for metrics calculation.
+    """
+    Main entry point for metrics calculation.
 
     Usage:
         CheckHub()
@@ -51,7 +54,8 @@ class CheckHub:
     """
 
     def __init__(self, config_path: Path | None = None) -> None:
-        """Initialize CheckHub.
+        """
+        Initialize CheckHub.
 
         Args:
             config_path: Optional path to YAML config file
@@ -61,7 +65,8 @@ class CheckHub:
         self._config_path = config_path
 
     def with_metrics(self, metrics: Iterable[type[Metric]]) -> "CheckHub":
-        """Register metrics to calculate.
+        """
+        Register metrics to calculate.
 
         Args:
             metrics: Iterable of metric classes
@@ -73,7 +78,8 @@ class CheckHub:
         return self
 
     def with_providers(self, provider_sets: Iterable[Iterable[Provider]]) -> "CheckHub":
-        """Register provider sets to run metrics against.
+        """
+        Register provider sets to run metrics against.
 
         Each inner iterable is a set of providers for one measurement run.
         Metrics are calculated once per provider set.
@@ -93,7 +99,8 @@ class CheckHub:
         metrics: list[type[Metric]],
         provider_sets: list[list[Provider]],
     ) -> None:
-        """Validate all required providers are present in each provider set.
+        """
+        Validate all required providers are present in each provider set.
 
         Logs a warning for any missing providers instead of failing.
 
@@ -126,7 +133,8 @@ class CheckHub:
         self,
         provider_set: list[Provider],
     ) -> tuple[Context, dict[str, Any]]:
-        """Execute all providers and build namespaced context.
+        """
+        Execute all providers and build namespaced context.
 
         Each provider's data is added under its namespace (provider.name).
         TagProvider data is returned separately for merging into tags.
@@ -137,8 +145,6 @@ class CheckHub:
         Returns:
             Tuple of (context dict, tags dict)
         """
-        from checkup.providers.tags import TagProvider
-
         context: Context = {}
         tags: dict[str, Any] = {}
 
@@ -157,7 +163,8 @@ class CheckHub:
         execution_order: list[type[Metric]],
         metric_configs: dict,
     ) -> list[Metric]:
-        """Calculate all metrics for a single provider set.
+        """
+        Calculate all metrics for a single provider set.
 
         Args:
             provider_set: List of provider instances
@@ -202,7 +209,8 @@ class CheckHub:
         self,
         max_workers: int | None = None,
     ) -> MeasurementResult:
-        """Execute the measurement pipeline.
+        """
+        Execute the measurement pipeline.
 
         Args:
             max_workers: Max parallel workers. None = use all CPUs.
@@ -210,9 +218,6 @@ class CheckHub:
         Returns:
             MeasurementResult containing all calculated metrics and errors
         """
-        import os
-        from concurrent.futures import ProcessPoolExecutor, as_completed
-
         metric_configs: dict = {}
         if self._config_path:
             metric_configs = load_config(self._config_path)

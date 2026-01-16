@@ -1,11 +1,10 @@
-"""Provider base class for context enrichment."""
-
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
 
 class Provider(ABC):
-    """Base class for context providers.
+    """
+    Base class for context providers.
 
     Providers enrich the context with data that metrics can use.
     Each provider adds data under its own namespace in the context.
@@ -33,7 +32,8 @@ class Provider(ABC):
 
     @abstractmethod
     def provide(self) -> dict[str, Any]:
-        """Generate data to add to context under this provider's namespace.
+        """
+        Generate data to add to context under this provider's namespace.
 
         Returns:
             Dict of data to add under context[cls.name]

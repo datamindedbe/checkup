@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import pytest
+from checkup_dbt import DbtModelsMetric
+from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
 from checkup.providers.tags import TagProvider
-from checkup_dbt import DbtModelsMetric
-from checkup_dbt.provider import DbtManifestProvider
 
 
 def test_manifest_path_mode(sample_manifest_path: Path):
@@ -45,9 +45,7 @@ def test_missing_args_raises_error():
     with pytest.raises(ValueError) as exc_info:
         DbtManifestProvider()
 
-    assert "manifest_path" in str(exc_info.value) or "dbt_project_dir" in str(
-        exc_info.value
-    )
+    assert "manifest_path" in str(exc_info.value) or "dbt_project_dir" in str(exc_info.value)
 
 
 def test_multiple_projects(sample_manifest_path: Path):

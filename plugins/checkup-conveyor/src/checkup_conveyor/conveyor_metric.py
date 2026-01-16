@@ -1,10 +1,10 @@
 import logging
 from typing import ClassVar
 
+import requests
+
 from checkup import Context
 from checkup_conveyor import ConveyorMetric
-
-import requests
 
 logger = logging.getLogger(__name__)
 

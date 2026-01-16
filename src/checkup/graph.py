@@ -9,7 +9,8 @@ from checkup.metric import Metric
 def build_dependency_graph(
     metrics: list[Type[Metric]],
 ) -> dict[Type[Metric], list[Type[Metric]]]:
-    """Build dependency graph from metric classes.
+    """
+    Build dependency graph from metric classes.
 
     Args:
         metrics: List of metric classes
@@ -30,7 +31,6 @@ def build_dependency_graph(
         deps = metric_cls.depends_on()
         graph[metric_cls] = deps
 
-        # Add dependencies to processing queue
         for dep in deps:
             if dep not in graph:
                 to_process.append(dep)
@@ -41,7 +41,8 @@ def build_dependency_graph(
 def topological_sort(
     graph: dict[Type[Metric], list[Type[Metric]]],
 ) -> list[Type[Metric]]:
-    """Perform topological sort on dependency graph.
+    """
+    Perform topological sort on dependency graph.
 
     Uses Python's graphlib.TopologicalSorter for reliable sorting.
 

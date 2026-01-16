@@ -2,7 +2,6 @@
 
 from typing import Any, ClassVar
 
-
 from checkup.hub import CheckHub
 from checkup.metric import Metric
 from checkup.provider import Provider

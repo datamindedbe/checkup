@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class DbtManifestProvider(Provider):
-    """Provides dbt manifest from file or by parsing project.
+    """
+    Provides dbt manifest from file or by parsing project.
 
     Supports two modes:
     1. manifest_path: Load from pre-generated manifest.json
@@ -37,7 +38,8 @@ class DbtManifestProvider(Provider):
         dbt_project_dir: str | Path | None = None,
         profiles_dir: str | Path | None = None,
     ):
-        """Initialize DbtManifestProvider.
+        """
+        Initialize DbtManifestProvider.
 
         Args:
             manifest_path: Path to pre-generated manifest.json
@@ -55,7 +57,8 @@ class DbtManifestProvider(Provider):
         self.profiles_dir = Path(profiles_dir) if profiles_dir else None
 
     def provide(self) -> dict[str, Any]:
-        """Load dbt manifest from file or by parsing project.
+        """
+        Load dbt manifest from file or by parsing project.
 
         Returns:
             Dict with 'manifest' key containing Manifest object

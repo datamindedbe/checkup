@@ -10,7 +10,8 @@ from checkup.types import Context
 
 
 class DummyMetric(Metric):
-    """Simple test metric with no dependencies.
+    """
+    Simple test metric with no dependencies.
 
     Always returns the expected_value from config.
     Used for testing the framework.
@@ -25,13 +26,12 @@ class DummyMetric(Metric):
     def calculate(self, context: Context, metrics: dict) -> None:
         """Set value to expected_value."""
         self.value = self.expected_value
-        self.diagnostic = (
-            f"Dummy metric calculated with expected_value={self.expected_value}"
-        )
+        self.diagnostic = f"Dummy metric calculated with expected_value={self.expected_value}"
 
 
 class DependentDummyMetric(Metric):
-    """Test metric that depends on DummyMetric.
+    """
+    Test metric that depends on DummyMetric.
 
     Doubles the value of DummyMetric.
     Used for testing dependency resolution.
@@ -189,9 +189,7 @@ class SharedAB(Metric):
         root_a_val = metrics[RootA].value
         root_b_val = metrics[RootB].value
         self.value = root_a_val + root_b_val
-        self.diagnostic = (
-            f"Sum of RootA ({root_a_val}) and RootB ({root_b_val}) = {self.value}"
-        )
+        self.diagnostic = f"Sum of RootA ({root_a_val}) and RootB ({root_b_val}) = {self.value}"
 
 
 class BranchB(Metric):
@@ -244,9 +242,7 @@ class MidShared(Metric):
     def calculate(self, context: Context, metrics: dict) -> None:
         shared_ab_val = metrics[SharedAB].value
         self.value = shared_ab_val + 5
-        self.diagnostic = (
-            f"Added 5 to SharedAB value: {shared_ab_val} + 5 = {self.value}"
-        )
+        self.diagnostic = f"Added 5 to SharedAB value: {shared_ab_val} + 5 = {self.value}"
 
 
 class MidBranch(Metric):
@@ -357,9 +353,7 @@ class IntegrationBaseMetric(Metric):
 
     def calculate(self, context: Context, metrics: dict) -> None:
         self.value = context[IntegrationProvider.name]["base_value"]
-        self.diagnostic = (
-            f"Retrieved base_value from integration provider: {self.value}"
-        )
+        self.diagnostic = f"Retrieved base_value from integration provider: {self.value}"
 
 
 class IntegrationDerivedMetric(Metric):
@@ -377,7 +371,9 @@ class IntegrationDerivedMetric(Metric):
     def calculate(self, context: Context, metrics: dict) -> None:
         base_val = metrics[IntegrationBaseMetric].value
         self.value = base_val * self.multiplier
-        self.diagnostic = f"Multiplied base metric value: {base_val} * {self.multiplier} = {self.value}"
+        self.diagnostic = (
+            f"Multiplied base metric value: {base_val} * {self.multiplier} = {self.value}"
+        )
 
 
 class PathLengthProvider(Provider):
@@ -407,13 +403,12 @@ class PathMetric(Metric):
     def calculate(self, context: Context, metrics: dict) -> None:
         path_len = context[PathLengthProvider.name]["length"]
         self.value = path_len * self.multiplier
-        self.diagnostic = (
-            f"Path length {path_len} * multiplier {self.multiplier} = {self.value}"
-        )
+        self.diagnostic = f"Path length {path_len} * multiplier {self.multiplier} = {self.value}"
 
 
 class OtherDummyMetric(Metric):
-    """Another test metric with a different name.
+    """
+    Another test metric with a different name.
 
     Used for testing multiple metrics.
     """
@@ -427,13 +422,12 @@ class OtherDummyMetric(Metric):
     def calculate(self, context: Context, metrics: dict) -> None:
         """Set value to expected_value."""
         self.value = self.expected_value
-        self.diagnostic = (
-            f"Other metric calculated with expected_value={self.expected_value}"
-        )
+        self.diagnostic = f"Other metric calculated with expected_value={self.expected_value}"
 
 
 class IndirectDummyMetric(Metric):
-    """Test metric for testing indirect metric filtering.
+    """
+    Test metric for testing indirect metric filtering.
 
     Used for testing materializer filtering.
     """
@@ -447,9 +441,7 @@ class IndirectDummyMetric(Metric):
     def calculate(self, context: Context, metrics: dict) -> None:
         """Set value to expected_value."""
         self.value = self.expected_value
-        self.diagnostic = (
-            f"Indirect metric calculated with expected_value={self.expected_value}"
-        )
+        self.diagnostic = f"Indirect metric calculated with expected_value={self.expected_value}"
 
 
 @pytest.fixture

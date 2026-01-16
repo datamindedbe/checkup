@@ -6,7 +6,8 @@ from checkup.provider import Provider
 
 
 class TagProvider(Provider):
-    """Special provider for adding tags to metrics.
+    """
+    Special provider for adding tags to metrics.
 
     Unlike regular providers, TagProvider's data is auto-merged
     into metric.tags by the framework rather than added to context.
@@ -20,7 +21,8 @@ class TagProvider(Provider):
     name: ClassVar[str] = "tags"
 
     def __init__(self, **tags: Any):
-        """Initialize with arbitrary key-value tags.
+        """
+        Initialize with arbitrary key-value tags.
 
         Args:
             **tags: Key-value pairs to add as metric tags
@@ -28,7 +30,8 @@ class TagProvider(Provider):
         self.tags = tags
 
     def provide(self) -> dict[str, Any]:
-        """Return tags dict.
+        """
+        Return tags dict.
 
         Returns:
             Dict of tags to merge into metric.tags

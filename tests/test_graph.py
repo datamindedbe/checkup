@@ -74,7 +74,8 @@ def test_topological_sort_with_dependencies():
 
 
 def test_topological_sort_deep_chain():
-    """Test topological sort with depth 3 dependency chain.
+    """
+    Test topological sort with depth 3 dependency chain.
 
     Chain: DummyMetric → DependentDummyMetric → Level2Metric → Level3Metric
     """
@@ -94,7 +95,8 @@ def test_topological_sort_deep_chain():
 
 
 def test_deep_chain_calculation(empty_context):
-    """Test that deep dependency chain calculates correctly.
+    """
+    Test that deep dependency chain calculates correctly.
 
     DummyMetric(10) → DependentDummyMetric(20) → Level2Metric(30) → Level3Metric(900)
     """
@@ -147,7 +149,8 @@ def test_cycle_detection_via_build_graph():
 
 
 def test_complex_graph_structure():
-    """Test building graph with shared ancestors and multiple branches.
+    """
+    Test building graph with shared ancestors and multiple branches.
 
     Graph structure:
         RootA     RootB                   RootC
@@ -203,7 +206,8 @@ def test_complex_graph_topological_order():
 
 
 def test_complex_graph_calculation(empty_context):
-    """Test full calculation of complex dependency graph.
+    """
+    Test full calculation of complex dependency graph.
 
     Expected values:
     - RootA: 10
@@ -258,7 +262,8 @@ def test_complex_graph_via_checkhub():
 
 
 def test_shared_ancestor_calculated_once(empty_context):
-    """Test that RootB (shared by SharedAB and BranchB) is only calculated once.
+    """
+    Test that RootB (shared by SharedAB and BranchB) is only calculated once.
 
     This verifies the framework doesn't re-calculate metrics that appear
     multiple times in the dependency graph.

@@ -1,5 +1,3 @@
-"""Materializers for outputting metrics."""
-
 import csv
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -14,7 +12,8 @@ from checkup.metric import Metric
 
 
 class Materializer(ABC, BaseModel):
-    """Base class for metric materializers.
+    """
+    Base class for metric materializers.
 
     Materializers format and output metrics to various formats.
 
@@ -25,10 +24,9 @@ class Materializer(ABC, BaseModel):
 
     include_indirect: bool = False
 
-    def _filter_metrics(
-        self, metrics: list[Metric], direct_metric_names: set[str]
-    ) -> list[Metric]:
-        """Filter metrics based on include_indirect setting.
+    def _filter_metrics(self, metrics: list[Metric], direct_metric_names: set[str]) -> list[Metric]:
+        """
+        Filter metrics based on include_indirect setting.
 
         Args:
             metrics: List of all calculated metrics
@@ -43,7 +41,8 @@ class Materializer(ABC, BaseModel):
 
     @abstractmethod
     def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
-        """Format and output metrics.
+        """
+        Format and output metrics.
 
         Args:
             metrics: List of calculated metrics
@@ -53,7 +52,8 @@ class Materializer(ABC, BaseModel):
 
 
 class ConsoleMaterializer(Materializer):
-    """Output metrics to console.
+    """
+    Output metrics to console.
 
     Outputs a rich table with metric details.
     """
@@ -62,9 +62,10 @@ class ConsoleMaterializer(Materializer):
     group_tag_2: str
 
     def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
-        """Print metrics to console as a rich table, grouped by tags."""
+        """
+        Print metrics to console as a rich table, grouped by tags.
+        """
         filtered = self._filter_metrics(metrics, direct_metric_names)
-
         console = Console()
 
         # Group metrics by group_tag_1 and group_tag_2 values
@@ -100,11 +101,12 @@ class ConsoleMaterializer(Materializer):
                 )
 
             console.print(table)
-            console.print()  # Add spacing between tables
+            console.print()
 
 
 class CSVMaterializer(Materializer):
-    """Output metrics to a CSV file.
+    """
+    Output metrics to a CSV file.
 
     Writes metrics data in CSV format for further analysis.
     """
@@ -112,7 +114,9 @@ class CSVMaterializer(Materializer):
     output_path: Path
 
     def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
-        """Write metrics to CSV file."""
+        """
+        Write metrics to CSV file.
+        """
         filtered = self._filter_metrics(metrics, direct_metric_names)
 
         with open(self.output_path, "w", newline="") as f:
@@ -132,7 +136,8 @@ class CSVMaterializer(Materializer):
 
 
 class HTMLMaterializer(Materializer):
-    """Output metrics to an HTML file with hierarchical grouping.
+    """
+    Output metrics to an HTML file with hierarchical grouping.
 
     Generates a styled HTML report with metrics grouped by two levels of tags.
     Uses Bootstrap accordions for collapsible groups.
@@ -148,22 +153,20 @@ class HTMLMaterializer(Materializer):
     group_tag_2: str
 
     def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
-        """Generate and write HTML report to file."""
+        """
+        Generate and write HTML report to file.
+        """
         filtered = self._filter_metrics(metrics, direct_metric_names)
-
-        # Group metrics hierarchically
         grouped = self._group_metrics(filtered)
-
-        # Generate HTML
         html = self._generate_html(grouped)
 
-        # Write to file
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.output_path, "w") as f:
             f.write(html)
 
     def _group_metrics(self, metrics: list[Metric]) -> dict:
-        """Group metrics by group_tag_1 and group_tag_2.
+        """
+        Group metrics by group_tag_1 and group_tag_2.
 
         Returns:
             Nested dict: {group1_value: {group2_value: [metrics]}}
@@ -178,11 +181,12 @@ class HTMLMaterializer(Materializer):
         return dict(grouped)
 
     def _generate_html(self, grouped: dict) -> str:
-        """Generate complete HTML document using Jinja2 template."""
+        """
+        Generate complete HTML document using Jinja2 template.
+        """
         # Set up Jinja2 environment
         template_dir = Path(__file__).parent / "templates"
         env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
         template = env.get_template("metrics_report.html")
 
-        # Render template with data
         return template.render(grouped=grouped)

@@ -4,14 +4,15 @@ import sys
 from io import StringIO
 from pathlib import Path
 
-from checkup.hub import CheckHub, MeasurementResult
-from checkup.materializers import ConsoleMaterializer
 from conftest import (
     DependentDummyMetric,
     DummyMetric,
     Level3Metric,
     ProviderDummyMetric,
 )
+
+from checkup.hub import CheckHub, MeasurementResult
+from checkup.materializers import ConsoleMaterializer
 
 
 def test_checkhub_creation():
@@ -69,7 +70,8 @@ def test_checkhub_measure_simple():
 
 
 def test_checkhub_measure_with_dependencies():
-    """Test measuring metrics with dependencies.
+    """
+    Test measuring metrics with dependencies.
 
     DependentDummyMetric depends on DummyMetric and doubles its value.
     """
@@ -87,7 +89,8 @@ def test_checkhub_measure_with_dependencies():
 
 
 def test_checkhub_measure_deep_dependency_chain():
-    """Test measuring metrics with deep dependency chain.
+    """
+    Test measuring metrics with deep dependency chain.
 
     DummyMetric(42) → DependentDummyMetric(84) → Level2Metric(94) → Level3Metric(8836)
     """
@@ -104,17 +107,15 @@ def test_checkhub_measure_deep_dependency_chain():
 
 
 def test_checkhub_measure_with_provider():
-    """Test measuring a metric that uses a provider.
+    """
+    Test measuring a metric that uses a provider.
 
     ProviderDummyMetric requires DummyProvider.
     """
     from conftest import DummyProvider
 
     result = (
-        CheckHub()
-        .with_metrics([ProviderDummyMetric])
-        .with_providers([[DummyProvider()]])
-        .measure()
+        CheckHub().with_metrics([ProviderDummyMetric]).with_providers([[DummyProvider()]]).measure()
     )
 
     assert len(result.metrics) == 1
@@ -127,10 +128,7 @@ def test_checkhub_measure_with_providers():
     from conftest import DummyProvider, ProviderDummyMetric
 
     result = (
-        CheckHub()
-        .with_metrics([ProviderDummyMetric])
-        .with_providers([[DummyProvider()]])
-        .measure()
+        CheckHub().with_metrics([ProviderDummyMetric]).with_providers([[DummyProvider()]]).measure()
     )
 
     assert result.metrics[0].value == 100  # Provider works

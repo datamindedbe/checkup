@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from checkup.hub import CheckHub
 from checkup_dbt import (
     DbtColumnTestCoverageMetric,
     DbtColumnTestsMetric,
@@ -9,6 +8,8 @@ from checkup_dbt import (
     DbtUnitTestsMetric,
 )
 from checkup_dbt.provider import DbtManifestProvider
+
+from checkup.hub import CheckHub
 
 
 def test_unit_tests_metric(sample_manifest_path: Path):
@@ -73,8 +74,6 @@ def test_column_test_coverage_metric(sample_manifest_path: Path):
 
     assert len(result.metrics) == 3
 
-    coverage_metric = next(
-        m for m in result.metrics if m.name == "dbt_column_test_coverage"
-    )
+    coverage_metric = next(m for m in result.metrics if m.name == "dbt_column_test_coverage")
     assert coverage_metric.unit == "percent"
     assert coverage_metric.value == 41
