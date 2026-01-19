@@ -56,51 +56,35 @@ class DbtMetric(Metric):
         return ManifestQuery(self.get_manifest(context))
 
 
-class DbtNodeCountMetric(DbtMetric):
-    """Base class for metrics that count nodes matching criteria.
+class DbtCountMetric(DbtMetric):
+    """Base class for metrics that count nodes or columns.
 
     Subclasses should define:
     - name, description, unit (ClassVars)
     - resource_type: The NodeType to filter by
-    - node_predicate (optional): Additional filter function
+    - count_target: What to count (NODES or COLUMNS)
+    - predicate (optional): Filter function
+      - For NODES: Callable[[node], bool]
+      - For COLUMNS: Callable[[node, col_name, col], bool]
     - log_message: Template for log message (uses {value})
     """
 
     resource_type: ClassVar[NodeType] = NodeType.Model
-    node_predicate: ClassVar[Callable[[Any], bool] | None] = None
-    log_message: ClassVar[str] = "Found {value} nodes"
+    count_target: ClassVar[CountTarget] = CountTarget.NODES
+    predicate: ClassVar[Callable[..., bool] | None] = None
+    log_message: ClassVar[str] = "Found {value} items"
 
     def calculate(self, context: Context, metrics: dict) -> None:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
-        if cls.node_predicate:
-            query = query.filter(cls.node_predicate)
-        self.value = query.count()
-        logger.info(cls.log_message.format(value=self.value))
 
+        if cls.count_target == CountTarget.COLUMNS:
+            self.value = query.count_columns(cls.predicate)
+        else:
+            if cls.predicate:
+                query = query.filter(cls.predicate)
+            self.value = query.count()
 
-class DbtColumnCountMetric(DbtMetric):
-    """Base class for metrics that count columns matching criteria.
-
-    Subclasses should define:
-    - name, description, unit (ClassVars)
-    - resource_type: The NodeType to filter by (default: Model)
-    - node_predicate (optional): Filter for nodes
-    - column_predicate (optional): Filter for columns
-    - log_message: Template for log message (uses {value})
-    """
-
-    resource_type: ClassVar[NodeType] = NodeType.Model
-    node_predicate: ClassVar[Callable[[Any], bool] | None] = None
-    column_predicate: ClassVar[Callable[[Any, str, Any], bool] | None] = None
-    log_message: ClassVar[str] = "Found {value} columns"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        cls = type(self)
-        query = self.query(context).filter_by_type(cls.resource_type)
-        if cls.node_predicate:
-            query = query.filter(cls.node_predicate)
-        self.value = query.count_columns(cls.column_predicate)
         logger.info(cls.log_message.format(value=self.value))
 
 
@@ -112,29 +96,29 @@ class DbtDiagnosticMetric(DbtMetric):
     Subclasses should define:
     - name, description, unit (ClassVars)
     - resource_type: The NodeType to filter by
-    - node_predicate (optional): Filter for nodes
-    - column_predicate (optional): Filter for columns (when count_target=COLUMNS)
+    - count_target: What to count (NODES or COLUMNS)
+    - predicate (optional): Filter function
+      - For NODES: Callable[[node], bool]
+      - For COLUMNS: Callable[[node, col_name, col], bool]
     - diagnostic_prefix: Prefix for diagnostic message
     - log_message: Template for log message (uses {value})
-    - count_target: What to count (NODES or COLUMNS)
     """
 
     resource_type: ClassVar[NodeType] = NodeType.Model
-    node_predicate: ClassVar[Callable[[Any], bool] | None] = None
-    column_predicate: ClassVar[Callable[[Any, str, Any], bool] | None] = None
+    count_target: ClassVar[CountTarget] = CountTarget.NODES
+    predicate: ClassVar[Callable[..., bool] | None] = None
     diagnostic_prefix: ClassVar[str] = "Items"
     log_message: ClassVar[str] = "Found {value} items"
-    count_target: ClassVar[CountTarget] = CountTarget.NODES
 
     def calculate(self, context: Context, metrics: dict) -> None:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
-        if cls.node_predicate:
-            query = query.filter(cls.node_predicate)
 
         if cls.count_target == CountTarget.COLUMNS:
-            names = query.column_names(cls.column_predicate)
+            names = query.column_names(cls.predicate)
         else:
+            if cls.predicate:
+                query = query.filter(cls.predicate)
             names = query.names()
 
         self.value = len(names)

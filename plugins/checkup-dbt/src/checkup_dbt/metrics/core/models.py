@@ -1,9 +1,9 @@
 from typing import ClassVar
 
-from checkup_dbt.metrics.base import DbtNodeCountMetric
+from checkup_dbt.metrics.base import DbtCountMetric
 
 
-class DbtModelsMetric(DbtNodeCountMetric):
+class DbtModelsMetric(DbtCountMetric):
     name: ClassVar[str] = "dbt_models"
     description: ClassVar[str] = "Total number of dbt models"
     unit: ClassVar[str] = "models"

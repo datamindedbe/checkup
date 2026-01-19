@@ -3,13 +3,13 @@ from typing import ClassVar
 from dbt.artifacts.resources.types import NodeType
 
 from checkup_dbt.manifest_query import is_singular_test
-from checkup_dbt.metrics.base import DbtNodeCountMetric
+from checkup_dbt.metrics.base import DbtCountMetric
 
 
-class DbtUnitTestsMetric(DbtNodeCountMetric):
+class DbtUnitTestsMetric(DbtCountMetric):
     name: ClassVar[str] = "dbt_unit_tests"
     description: ClassVar[str] = "Number of singular (unit) tests"
     unit: ClassVar[str] = "tests"
     resource_type: ClassVar[NodeType] = NodeType.Test
-    node_predicate = is_singular_test
+    predicate = is_singular_test
     log_message: ClassVar[str] = "Found {value} unit tests"

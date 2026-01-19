@@ -2,10 +2,10 @@ from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
-from checkup_dbt.metrics.base import DbtNodeCountMetric
+from checkup_dbt.metrics.base import DbtCountMetric
 
 
-class DbtTestsMetric(DbtNodeCountMetric):
+class DbtTestsMetric(DbtCountMetric):
     name: ClassVar[str] = "dbt_tests"
     description: ClassVar[str] = "Total number of dbt tests"
     unit: ClassVar[str] = "tests"

@@ -1,12 +1,12 @@
 from typing import ClassVar
 
 from checkup_dbt.manifest_query import has_description
-from checkup_dbt.metrics.base import DbtNodeCountMetric
+from checkup_dbt.metrics.base import DbtCountMetric
 
 
-class DbtModelsWithDescriptionMetric(DbtNodeCountMetric):
+class DbtModelsWithDescriptionMetric(DbtCountMetric):
     name: ClassVar[str] = "dbt_models_with_description"
     description: ClassVar[str] = "Number of models with descriptions"
     unit: ClassVar[str] = "models"
-    node_predicate = has_description
+    predicate = has_description
     log_message: ClassVar[str] = "Found {value} models with descriptions"
