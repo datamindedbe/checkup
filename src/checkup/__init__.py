@@ -1,6 +1,12 @@
 """Checkup - Extensible metrics calculation framework."""
 
-from checkup.hub import CheckHub, MeasurementResult
+from checkup.hub import (
+    CheckHub,
+    DuplicateMetricNameError,
+    MeasurementResult,
+    MetricPicklingError,
+    ProviderError,
+)
 from checkup.materializers import (
     ConsoleMaterializer,
     CSVMaterializer,
@@ -24,6 +30,10 @@ __all__ = [
     "CSVMaterializer",
     "HTMLMaterializer",
     "Context",
+    # Exceptions
+    "ProviderError",
+    "MetricPicklingError",
+    "DuplicateMetricNameError",
 ]
 
 

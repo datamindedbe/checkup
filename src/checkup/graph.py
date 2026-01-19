@@ -1,14 +1,16 @@
 """Dependency graph construction and topological sorting."""
 
-from graphlib import TopologicalSorter
-from typing import Type
+import logging
+from graphlib import CycleError, TopologicalSorter
 
 from checkup.metric import Metric
 
+logger = logging.getLogger(__name__)
+
 
 def build_dependency_graph(
-    metrics: list[Type[Metric]],
-) -> dict[Type[Metric], list[Type[Metric]]]:
+    metrics: list[type[Metric]],
+) -> dict[type[Metric], list[type[Metric]]]:
     """Build dependency graph from metric classes.
 
     Args:
@@ -17,7 +19,7 @@ def build_dependency_graph(
     Returns:
         Dict mapping each metric to its dependencies
     """
-    graph: dict[Type[Metric], list[Type[Metric]]] = {}
+    graph: dict[type[Metric], list[type[Metric]]] = {}
 
     # Use a queue to process all metrics and their dependencies recursively
     to_process = list(metrics)
@@ -29,18 +31,24 @@ def build_dependency_graph(
 
         deps = metric_cls.depends_on()
         graph[metric_cls] = deps
+        logger.debug(
+            "Added metric %s with %d dependencies",
+            metric_cls.name,
+            len(deps),
+        )
 
         # Add dependencies to processing queue
         for dep in deps:
             if dep not in graph:
                 to_process.append(dep)
 
+    logger.debug("Built dependency graph with %d metrics", len(graph))
     return graph
 
 
 def topological_sort(
-    graph: dict[Type[Metric], list[Type[Metric]]],
-) -> list[Type[Metric]]:
+    graph: dict[type[Metric], list[type[Metric]]],
+) -> list[type[Metric]]:
     """Perform topological sort on dependency graph.
 
     Uses Python's graphlib.TopologicalSorter for reliable sorting.
@@ -52,7 +60,13 @@ def topological_sort(
         List of metrics in topological order (dependencies first)
 
     Raises:
-        ValueError: If graph contains cycles
+        CycleError: If graph contains cycles
     """
-    sorter = TopologicalSorter(graph)
-    return list(sorter.static_order())
+    try:
+        sorter = TopologicalSorter(graph)
+        result = list(sorter.static_order())
+        logger.debug("Topological sort produced %d metrics", len(result))
+        return result
+    except CycleError as e:
+        logger.error("Circular dependency detected in metric graph: %s", e)
+        raise

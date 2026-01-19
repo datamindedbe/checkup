@@ -4,6 +4,7 @@ import asyncio
 import inspect
 import logging
 import os
+import pickle
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
@@ -17,6 +18,72 @@ from checkup.provider import Provider
 from checkup.types import Context
 
 logger = logging.getLogger(__name__)
+
+
+class MetricPicklingError(Exception):
+    """Exception raised when a metric cannot be pickled for process execution."""
+
+    def __init__(self, metric_cls: type[Metric], original_error: Exception):
+        self.metric_cls = metric_cls
+        self.original_error = original_error
+        super().__init__(
+            f"Metric '{metric_cls.name}' cannot be pickled for process execution. "
+            f"Consider using ExecutorType.THREAD instead. Original error: {original_error}"
+        )
+
+
+def _validate_pickleable(metric_cls: type[Metric]) -> None:
+    """Validate that a metric class can be pickled.
+
+    Args:
+        metric_cls: Metric class to validate
+
+    Raises:
+        MetricPicklingError: If the metric cannot be pickled
+    """
+    try:
+        # Try to pickle the class itself
+        pickle.dumps(metric_cls)
+    except (pickle.PicklingError, TypeError, AttributeError) as e:
+        raise MetricPicklingError(metric_cls, e) from e
+
+
+class DuplicateMetricNameError(Exception):
+    """Exception raised when multiple metrics have the same name."""
+
+    def __init__(self, name: str, metric_classes: list[type[Metric]]):
+        self.name = name
+        self.metric_classes = metric_classes
+        class_names = ", ".join(cls.__name__ for cls in metric_classes)
+        super().__init__(
+            f"Duplicate metric name '{name}' found in classes: {class_names}. "
+            f"Each metric must have a unique name."
+        )
+
+
+def _validate_unique_metric_names(metrics: list[type[Metric]]) -> None:
+    """Validate that all metrics have unique names.
+
+    Args:
+        metrics: List of metric classes to validate
+
+    Raises:
+        DuplicateMetricNameError: If multiple metrics share the same name
+    """
+    name_to_classes: dict[str, list[type[Metric]]] = {}
+    for metric_cls in metrics:
+        name = metric_cls.name
+        if name not in name_to_classes:
+            name_to_classes[name] = []
+        name_to_classes[name].append(metric_cls)
+
+    duplicates = {
+        name: classes for name, classes in name_to_classes.items() if len(classes) > 1
+    }
+    if duplicates:
+        # Report the first duplicate found
+        name, classes = next(iter(duplicates.items()))
+        raise DuplicateMetricNameError(name, classes)
 
 
 if TYPE_CHECKING:
@@ -76,6 +143,17 @@ class MeasurementResult(BaseModel):
         materializer.materialize(self.metrics, self.direct_metric_names)
 
 
+class ProviderError(Exception):
+    """Exception raised when a provider fails during execution."""
+
+    def __init__(self, provider: Provider, original_error: Exception):
+        self.provider = provider
+        self.original_error = original_error
+        super().__init__(
+            f"Provider '{provider.name}' failed: {original_error}"
+        )
+
+
 class ProviderExecutor:
     """Executes providers and builds context.
 
@@ -83,8 +161,8 @@ class ProviderExecutor:
     """
 
     def execute(
-        self, provider_set: list[Provider]
-    ) -> tuple[Context, dict[str, Any]]:
+        self, provider_set: list[Provider], fail_fast: bool = True
+    ) -> tuple[Context, dict[str, Any], list[ProviderError]]:
         """Execute all providers and build namespaced context.
 
         Each provider's data is added under its namespace (provider.name).
@@ -93,21 +171,36 @@ class ProviderExecutor:
 
         Args:
             provider_set: List of provider instances
+            fail_fast: If True, raise on first provider error.
+                       If False, collect errors and continue.
 
         Returns:
-            Tuple of (context dict, tags dict)
+            Tuple of (context dict, tags dict, list of errors)
+
+        Raises:
+            ProviderError: If fail_fast=True and a provider fails
         """
         context: Context = {}
         tags: dict[str, Any] = {}
+        errors: list[ProviderError] = []
 
         for provider in provider_set:
-            data = provider.provide()
-            if provider.is_tag_provider():
-                tags.update(data)
-            else:
-                context[provider.name] = data
+            try:
+                logger.debug("Executing provider: %s", provider.name)
+                data = provider.provide()
+                if provider.is_tag_provider():
+                    tags.update(data)
+                else:
+                    context[provider.name] = data
+                logger.debug("Provider %s completed successfully", provider.name)
+            except Exception as e:
+                error = ProviderError(provider, e)
+                logger.error("Provider %s failed: %s", provider.name, e)
+                if fail_fast:
+                    raise error from e
+                errors.append(error)
 
-        return context, tags
+        return context, tags, errors
 
 
 class MetricCalculator:
@@ -142,11 +235,15 @@ class MetricCalculator:
         Returns:
             List of calculated metrics
         """
+        logger.debug(
+            "Starting metric calculation for %d metrics", len(execution_order)
+        )
         calculated: dict[type[Metric], Metric] = {}
         skipped: set[type[Metric]] = set()
         result_metrics: list[Metric] = []
 
         i = 0
+        batch_num = 0
         while i < len(execution_order):
             metric_cls = execution_order[i]
 
@@ -184,13 +281,30 @@ class MetricCalculator:
                 i += 1
 
             # Execute the batch with appropriate executor
+            batch_num += 1
+            logger.debug(
+                "Executing batch %d with %d metrics using %s executor",
+                batch_num,
+                len(batch),
+                current_executor.value,
+            )
             batch_results = self._execute_batch(
                 batch, current_executor, context, tags, calculated
             )
             for metric_cls_result, metric in batch_results.items():
                 calculated[metric_cls_result] = metric
                 result_metrics.append(metric)
+                logger.debug(
+                    "Metric %s calculated: value=%s",
+                    metric_cls_result.name,
+                    metric.value,
+                )
 
+        logger.info(
+            "Metric calculation complete: %d calculated, %d skipped",
+            len(result_metrics),
+            len(skipped),
+        )
         return result_metrics
 
     def _should_skip(
@@ -316,7 +430,14 @@ class MetricCalculator:
 
         Returns:
             Dict mapping metric classes to calculated metric instances
+
+        Raises:
+            MetricPicklingError: If a metric class cannot be pickled
         """
+        # Validate all metrics in batch are pickleable before starting
+        for metric_cls in batch:
+            _validate_pickleable(metric_cls)
+
         results: dict[type[Metric], Metric] = {}
 
         with ProcessPoolExecutor(max_workers=len(batch)) as executor:
@@ -334,9 +455,17 @@ class MetricCalculator:
 
             for future in as_completed(future_to_cls):
                 metric_cls = future_to_cls[future]
-                metric = future.result()
-                results[metric_cls] = metric
-                calculated[metric_cls] = metric
+                try:
+                    metric = future.result()
+                    results[metric_cls] = metric
+                    calculated[metric_cls] = metric
+                except Exception as e:
+                    logger.error(
+                        "Metric %s failed in process executor: %s",
+                        metric_cls.name,
+                        e,
+                    )
+                    raise
 
         return results
 
@@ -497,8 +626,12 @@ def _measure_single_provider_set(
 
     Returns:
         List of calculated metrics with tags merged
+
+    Raises:
+        ProviderError: If a provider fails during execution
     """
-    context, tags = ProviderExecutor().execute(provider_set)
+    context, tags, errors = ProviderExecutor().execute(provider_set, fail_fast=True)
+    # errors list will be empty if fail_fast=True since it raises on error
     return MetricCalculator(metric_configs).calculate(
         execution_order, context, tags, {type(p) for p in provider_set}
     )
@@ -563,12 +696,28 @@ class CheckHub:
 
         Returns:
             MeasurementResult containing all calculated metrics and errors
+
+        Raises:
+            DuplicateMetricNameError: If multiple metrics have the same name
         """
+        logger.info(
+            "Starting measurement with %d metrics and %d provider sets",
+            len(self._metrics),
+            len(self._provider_sets),
+        )
+
         metric_configs: dict = {}
         if self._config_path:
+            logger.debug("Loading config from %s", self._config_path)
             metric_configs = load_config(self._config_path)
 
+        # Build dependency graph and get execution order
+        logger.debug("Building dependency graph")
         execution_order = topological_sort(build_dependency_graph(self._metrics))
+
+        # Validate unique metric names across all metrics (including dependencies)
+        _validate_unique_metric_names(list(execution_order))
+
         direct_metric_names = {m.name for m in self._metrics}
 
         # Use empty provider set if none specified and none required
@@ -581,6 +730,7 @@ class CheckHub:
         all_errors: list[tuple[list[Provider], Exception]] = []
         workers = max_workers if max_workers is not None else os.cpu_count()
 
+        logger.debug("Executing with %d workers", workers)
         with ProcessPoolExecutor(max_workers=workers) as executor:
             future_to_provider_set = {
                 executor.submit(
@@ -597,8 +747,18 @@ class CheckHub:
                 try:
                     all_metrics.extend(future.result())
                 except Exception as e:
+                    logger.error(
+                        "Provider set failed: %s",
+                        e,
+                        exc_info=True,
+                    )
                     all_errors.append((ps, e))
 
+        logger.info(
+            "Measurement complete: %d metrics calculated, %d errors",
+            len(all_metrics),
+            len(all_errors),
+        )
         return MeasurementResult(
             metrics=all_metrics,
             direct_metric_names=direct_metric_names,
