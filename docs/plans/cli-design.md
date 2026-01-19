@@ -36,164 +36,119 @@ Key complexity factors:
 3. **Some providers need complex initialization** - database connections, API clients, etc.
 4. **Type safety** - Python's type system catches errors that YAML cannot
 
-### Alternative Approaches
+### Recommendation: Python Configuration Files (Airflow-style)
 
-#### Option A: Python Configuration File (Recommended)
-
-Keep providers in Python, use YAML only for metrics/output settings.
+Following Airflow's proven pattern, use **Python files as the configuration format**. The CLI discovers and operates on these files.
 
 ```python
-# checkup_config.py
-from checkup_dbt import DbtManifestProvider
+# checkup_dbt.py - A "checkfile" (like an Airflow DAG file)
+from checkup import Checkfile
+from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtTestsMetric
 from checkup.providers.tags import TagProvider
 
-def get_provider_sets():
-    """Return provider sets for measurement."""
-    return [
-        [DbtManifestProvider(manifest_path="./project_a/manifest.json"), TagProvider(project="a")],
-        [DbtManifestProvider(manifest_path="./project_b/manifest.json"), TagProvider(project="b")],
-    ]
+# Define the measurement configuration
+checkfile = Checkfile(
+    name="dbt-metrics",
+    description="dbt project health metrics",
+)
+
+checkfile.add_metrics([
+    DbtModelsMetric,
+    DbtTestsMetric,
+])
+
+checkfile.add_provider_set([
+    DbtManifestProvider(manifest_path="./project_a/target/manifest.json"),
+    TagProvider(project="project_a", domain="sales"),
+])
+
+checkfile.add_provider_set([
+    DbtManifestProvider(manifest_path="./project_b/target/manifest.json"),
+    TagProvider(project="project_b", domain="marketing"),
+])
 ```
 
-```yaml
-# checkup.yaml
-metrics:
-  - DbtModelsMetric
-  - DbtColumnTestCoverageMetric
-
-output:
-  format: html
-  file: ./report.html
-```
-
+**CLI usage:**
 ```bash
-checkup run -c checkup.yaml --providers checkup_config.py
+checkup run checkup_dbt.py              # Run the checkfile
+checkup run checkup_dbt.py -o report.html  # Output to HTML
+checkup validate checkup_dbt.py         # Validate without running
+checkup list checkup_dbt.py             # List metrics/providers
 ```
 
-**Pros:**
-- Full type safety and IDE support
-- Can handle any provider complexity
-- Python developers already comfortable with this
-- Clear separation: YAML for "what", Python for "how"
+**Why this approach:**
 
-**Cons:**
-- Requires Python knowledge
-- Two config files to manage
+| Benefit | Explanation |
+|---------|-------------|
+| **Familiar pattern** | Data engineers know this from Airflow |
+| **Full type safety** | IDE autocomplete, mypy, runtime validation |
+| **No config split** | Single source of truth in one file |
+| **Maximum flexibility** | Loops, conditionals, imports, functions |
+| **Testable** | Can unit test configuration logic |
+| **Discoverable** | CLI can scan directories for checkfiles |
 
-#### Option B: Context Generators (Auto-Discovery)
+### Alternative: Builder Pattern (Current API)
 
-Define scanners that automatically discover measurement targets.
-
-```yaml
-# checkup.yaml
-metrics:
-  - DbtModelsMetric
-  - DbtColumnTestCoverageMetric
-
-contexts:
-  # Auto-discover dbt projects
-  - generator: dbt_projects
-    path: ./projects/*
-    tags_from_path:
-      project: "{dirname}"  # Extract project name from directory
-
-  # Or explicit list with template
-  - generator: list
-    items:
-      - manifest_path: ./sales/target/manifest.json
-        tags: {domain: sales}
-      - manifest_path: ./marketing/target/manifest.json
-        tags: {domain: marketing}
-```
-
-**Pros:**
-- Fully declarative
-- Scales well for many similar targets
-- Good for CI/CD pipelines
-
-**Cons:**
-- Limited to supported generator types
-- Complex providers still need Python
-
-#### Option C: Hybrid with Provider Registry
-
-Providers register default configurations; YAML provides simple overrides.
-
-```yaml
-# checkup.yaml
-metrics:
-  - DbtModelsMetric
-
-contexts:
-  - providers:
-      dbt:  # References DbtManifestProvider by its `name`
-        manifest_path: ./target/manifest.json
-      tags:
-        project: myproject
-```
-
-**Pros:**
-- Simpler YAML for common cases
-- Leverages plugin discovery
-
-**Cons:**
-- Magic/implicit behavior
-- Can't handle all provider types
-- Type validation happens at runtime
-
-#### Option D: Pure Python Entry Point
-
-No YAML at all - use Python scripts as the entry point.
+For users who prefer the existing fluent API:
 
 ```python
-#!/usr/bin/env python
-# measure.py
-from checkup import CheckHub, ConsoleMaterializer
+# checkup_dbt.py
+from checkup import CheckHub
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric
+from checkup.providers.tags import TagProvider
 
-if __name__ == "__main__":
-    CheckHub()
-        .with_metrics([DbtModelsMetric])
-        .with_providers([[DbtManifestProvider(manifest_path="./manifest.json")]])
-        .measure()
-        .materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
+hub = (
+    CheckHub(name="dbt-metrics")
+    .with_metrics([DbtModelsMetric])
+    .with_providers([
+        [DbtManifestProvider(manifest_path="./manifest.json"), TagProvider(project="a")],
+    ])
+)
 ```
 
-```bash
-python measure.py
-# or: checkup exec measure.py
+The CLI detects either a `checkfile` or `hub` variable in the module.
+
+### Dynamic Configuration Example
+
+The Python approach shines for dynamic setups:
+
+```python
+# checkup_all_projects.py
+from pathlib import Path
+from checkup import Checkfile
+from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtColumnTestCoverageMetric
+from checkup.providers.tags import TagProvider
+
+checkfile = Checkfile(name="all-dbt-projects")
+
+checkfile.add_metrics([
+    DbtModelsMetric,
+    DbtColumnTestCoverageMetric,
+])
+
+# Dynamically discover all dbt projects
+for project_dir in Path("./projects").iterdir():
+    manifest = project_dir / "target" / "manifest.json"
+    if manifest.exists():
+        checkfile.add_provider_set([
+            DbtManifestProvider(manifest_path=manifest),
+            TagProvider(
+                project=project_dir.name,
+                domain=project_dir.parent.name,
+            ),
+        ])
 ```
 
-**Pros:**
-- Maximum flexibility
-- No new concepts to learn
-- Full IDE support
+### Why Not YAML?
 
-**Cons:**
-- Not declarative
-- Harder to template/generate
-- More boilerplate
-
-### Recommendation
-
-**Primary: Option A (Python config file)** with **Option B (generators)** for common patterns.
-
-This gives us:
-1. **Simple cases**: Use built-in generators for dbt project discovery
-2. **Complex cases**: Fall back to Python for custom provider logic
-3. **Type safety**: Python handles the type-sensitive parts
-4. **Flexibility**: Can always escape to full Python when needed
-
-```bash
-# Simple: auto-discover dbt projects in ./projects/
-checkup run --discover-dbt ./projects/*
-
-# Standard: YAML metrics + Python providers
-checkup run -c checkup.yaml --providers checkup_config.py
-
-# Advanced: full Python control
-checkup exec measure.py
-```
+| YAML Approach | Python Approach |
+|---------------|-----------------|
+| Two files (YAML + Python for complex cases) | One file |
+| Runtime type errors | Caught by IDE/mypy |
+| Limited expressiveness | Full language power |
+| Custom DSL to learn | Just Python |
+| Hard to test | Standard pytest |
+| Magic string references | Direct imports |
 
 ---
 
@@ -217,52 +172,66 @@ Typer is built on Click but leverages Python type hints for automatic argument p
 
 ```
 checkup
-├── run           # Execute metrics (main command)
-├── list          # List available metrics/providers
-├── validate      # Validate configuration
-├── init          # Generate starter configuration
+├── run           # Execute a checkfile
+├── validate      # Validate a checkfile without running
+├── list          # List metrics/providers in a checkfile
+├── init          # Generate starter checkfile
 └── version       # Show version info
 ```
 
 ### Command Details
 
-#### `checkup run`
+#### `checkup run <checkfile>`
 
-Primary command for executing metrics.
+Execute metrics defined in a Python checkfile.
 
 ```bash
-# Run with config file
-checkup run -c checkup.yaml
+# Run a checkfile
+checkup run checkup_dbt.py
 
-# Run with config and output to CSV
-checkup run -c checkup.yaml -o results.csv
+# Output to file (format inferred from extension)
+checkup run checkup_dbt.py -o results.csv
+checkup run checkup_dbt.py -o report.html
+checkup run checkup_dbt.py -o metrics.json
+
+# Explicit output format
+checkup run checkup_dbt.py --format json
 
 # Run specific metrics only
-checkup run -c checkup.yaml --metric dbt_models --metric dbt_tests
+checkup run checkup_dbt.py --metric dbt_models --metric dbt_tests
 
-# Run with specific output format
-checkup run -c checkup.yaml --format json
+# Control parallelism
+checkup run checkup_dbt.py --workers 4
 
-# Run with verbose logging
-checkup run -c checkup.yaml -v
+# Verbose logging
+checkup run checkup_dbt.py -v
 
-# Run with max workers
-checkup run -c checkup.yaml --workers 4
+# Include dependency metrics in output
+checkup run checkup_dbt.py --include-indirect
 
-# Run and include indirect (dependency) metrics in output
-checkup run -c checkup.yaml --include-indirect
+# Dry run - validate and show plan without executing
+checkup run checkup_dbt.py --dry-run
+
+# CI mode - exit with error if any metric calculation fails
+checkup run checkup_dbt.py --fail-on-error
 ```
+
+**Arguments:**
+
+| Argument | Type | Required | Description |
+|----------|------|----------|-------------|
+| `checkfile` | Path | Yes | Python checkfile to execute |
 
 **Options:**
 
 | Flag | Short | Type | Default | Description |
 |------|-------|------|---------|-------------|
-| `--config` | `-c` | Path | `checkup.yaml` | Configuration file path |
-| `--output` | `-o` | Path | None | Output file path (format inferred from extension) |
+| `--output` | `-o` | Path | None | Output file (format from extension) |
 | `--format` | `-f` | Choice | `console` | Output format: console, csv, json, html |
-| `--metric` | `-m` | List | All | Specific metrics to run (can repeat) |
+| `--metric` | `-m` | List | All | Specific metrics to run (repeatable) |
 | `--workers` | `-w` | Int | CPU count | Max parallel workers |
 | `--include-indirect` | | Flag | False | Include dependency metrics in output |
+| `--group-by` | `-g` | Str | None | Tag names for grouping (e.g., `-g domain -g project`) |
 | `--verbose` | `-v` | Count | 0 | Increase verbosity (-v, -vv, -vvv) |
 | `--quiet` | `-q` | Flag | False | Suppress non-error output |
 | `--dry-run` | | Flag | False | Validate and show plan without executing |
@@ -273,148 +242,153 @@ checkup run -c checkup.yaml --include-indirect
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | Configuration error |
-| 2 | Execution error (with `--fail-on-error`) |
+| 1 | Configuration/checkfile error |
+| 2 | Metric execution error (with `--fail-on-error`) |
 | 3 | Invalid arguments |
 
 ---
 
-#### `checkup list`
+#### `checkup list <checkfile>`
 
-Discover available metrics and providers.
-
-```bash
-# List all available metrics
-checkup list metrics
-
-# List metrics with details
-checkup list metrics --verbose
-
-# List metrics from specific plugin
-checkup list metrics --plugin checkup-dbt
-
-# List all providers
-checkup list providers
-
-# List in JSON format (for tooling)
-checkup list metrics --format json
-
-# Search metrics by name pattern
-checkup list metrics --filter "dbt_*"
-```
-
-**Subcommands:**
-
-- `checkup list metrics` - List available metric classes
-- `checkup list providers` - List available provider classes
-- `checkup list plugins` - List installed plugins
-
-**Output Example (metrics):**
-
-```
-Available Metrics:
-
-checkup-dbt:
-  dbt_models              Count of dbt models                    [count]
-  dbt_columns             Count of dbt columns                   [count]
-  dbt_tests               Count of dbt tests                     [count]
-  dbt_models_with_desc    Models with descriptions               [count]
-  dbt_column_test_cov     Column test coverage                   [percentage]
-  ...
-
-checkup-python:
-  python_version          Python interpreter version             [version]
-
-Total: 18 metrics from 2 plugins
-```
-
----
-
-#### `checkup validate`
-
-Validate configuration without executing.
+Inspect a checkfile's metrics and providers.
 
 ```bash
-# Validate config file
-checkup validate -c checkup.yaml
+# List metrics in a checkfile
+checkup list checkup_dbt.py
 
-# Validate with verbose output
-checkup validate -c checkup.yaml -v
+# Detailed output
+checkup list checkup_dbt.py --verbose
+
+# JSON format for tooling
+checkup list checkup_dbt.py --format json
+
+# List only metrics
+checkup list checkup_dbt.py --metrics
+
+# List only providers
+checkup list checkup_dbt.py --providers
 ```
-
-**Checks performed:**
-
-1. YAML syntax validity
-2. Required fields present
-3. Referenced metrics exist
-4. Referenced providers exist
-5. Metric dependencies resolvable
-6. Provider requirements satisfiable
-7. No duplicate metric names
 
 **Output Example:**
 
 ```
-Validating checkup.yaml...
+Checkfile: checkup_dbt.py
+Name: dbt-metrics
+Description: dbt project health metrics
 
-✓ YAML syntax valid
-✓ Configuration schema valid
-✓ All 5 metrics found
-✓ All 2 providers found
+Metrics (3):
+  dbt_models              Count of dbt models                    [count]
+  dbt_tests               Count of dbt tests                     [count]
+  dbt_column_test_cov     Column test coverage                   [percentage]
+
+Provider Sets (2):
+  Set 1:
+    - DbtManifestProvider (manifest_path=./project_a/target/manifest.json)
+    - TagProvider (project=project_a, domain=sales)
+  Set 2:
+    - DbtManifestProvider (manifest_path=./project_b/target/manifest.json)
+    - TagProvider (project=project_b, domain=marketing)
+
+Dependency Graph:
+  dbt_column_test_cov
+  └── dbt_tested_columns
+      └── dbt_columns
+```
+
+---
+
+#### `checkup validate <checkfile>`
+
+Validate a checkfile without executing.
+
+```bash
+# Validate checkfile
+checkup validate checkup_dbt.py
+
+# Verbose output
+checkup validate checkup_dbt.py -v
+```
+
+**Checks performed:**
+
+1. Python syntax valid
+2. Checkfile or hub variable found
+3. All metric classes importable
+4. All provider instances valid
+5. Dependency graph valid (no cycles)
+6. Provider requirements satisfied
+7. No duplicate metric names
+8. Metrics are pickleable (for ProcessPoolExecutor)
+
+**Output Example:**
+
+```
+Validating checkup_dbt.py...
+
+✓ Python syntax valid
+✓ Checkfile 'dbt-metrics' found
+✓ 3 metrics registered
+✓ 2 provider sets configured
 ✓ Dependency graph valid (no cycles)
 ✓ Provider requirements satisfied
+✓ All metrics pickleable
 
-Configuration is valid.
+Checkfile is valid.
 ```
 
 ---
 
 #### `checkup init`
 
-Generate starter configuration.
+Generate a starter checkfile.
 
 ```bash
-# Interactive initialization
+# Interactive - prompts for plugin selection
 checkup init
 
-# Generate for specific plugins
-checkup init --plugin checkup-dbt
+# Generate for specific plugin
+checkup init --plugin dbt
 
-# Generate to specific file
-checkup init -o my-config.yaml
+# Output to specific file
+checkup init -o my_checkfile.py
 
 # Non-interactive with defaults
 checkup init --defaults
 ```
 
-**Generated config example:**
+**Generated checkfile example:**
 
-```yaml
-# checkup.yaml - Generated by checkup init
+```python
+# checkup_dbt.py - Generated by checkup init
+"""dbt project health metrics."""
+
+from checkup import Checkfile
+from checkup_dbt import (
+    DbtManifestProvider,
+    DbtModelsMetric,
+    DbtTestsMetric,
+    DbtColumnTestCoverageMetric,
+)
+from checkup.providers.tags import TagProvider
+
+checkfile = Checkfile(
+    name="dbt-metrics",
+    description="dbt project health metrics",
+)
 
 # Metrics to calculate
-metrics:
-  - checkup_dbt.DbtModelsMetric
-  - checkup_dbt.DbtTestsMetric
-  - checkup_dbt.DbtColumnTestCoverageMetric
+checkfile.add_metrics([
+    DbtModelsMetric,
+    DbtTestsMetric,
+    DbtColumnTestCoverageMetric,
+])
 
-# Provider configurations
-providers:
-  - type: checkup_dbt.DbtManifestProvider
-    # manifest_path: ./target/manifest.json  # Optional: path to pre-built manifest
-
-# Output configuration
-output:
-  format: console
-  group_by:
-    - domain
-    - project
-
-# Optional: metric-specific configuration
-metric_config:
-  # Example: configure naming convention checker
-  # dbt_naming_convention:
-  #   model_prefix: stg_
+# Provider configuration
+# TODO: Update manifest_path to your dbt project
+checkfile.add_provider_set([
+    DbtManifestProvider(manifest_path="./target/manifest.json"),
+    TagProvider(project="my-project"),
+])
 ```
 
 ---
@@ -429,212 +403,164 @@ checkup version
 # Output:
 # checkup 0.1.0
 # Python 3.12.0
-# Plugins:
+# Installed plugins:
 #   checkup-dbt 0.1.0
 #   checkup-python 0.1.0
+#   checkup-git 0.1.0
 ```
 
 ---
 
-## Configuration File Format
+## Checkfile API
 
-### Recommended: YAML + Python Hybrid
+A checkfile is a Python module containing a `checkfile` or `hub` variable that defines the measurement configuration.
 
-The recommended approach uses YAML for metrics/output and Python for providers.
-
-#### YAML Configuration (checkup.yaml)
-
-```yaml
-# checkup.yaml
-
-# === METRICS ===
-# List of metrics to calculate
-# Can be fully qualified names or short names (if unambiguous)
-metrics:
-  # Fully qualified
-  - checkup_dbt.DbtModelsMetric
-  - checkup_dbt.DbtTestsMetric
-
-  # Or use short names (resolved via plugin discovery)
-  - DbtColumnsMetric
-  - python_version  # Resolved by metric.name attribute
-
-# === CONTEXT GENERATORS (Optional) ===
-# For simple cases, use built-in generators instead of Python config
-contexts:
-  # Option 1: Auto-discover dbt projects
-  - generator: dbt_projects
-    path: ./projects/*
-    tags_from_path:
-      project: "{dirname}"
-
-  # Option 2: Explicit list (simple providers only)
-  - generator: dbt_manifest_list
-    items:
-      - manifest_path: ./sales/target/manifest.json
-        tags: {domain: sales, project: sales-analytics}
-      - manifest_path: ./marketing/target/manifest.json
-        tags: {domain: marketing, project: campaign-metrics}
-
-# === OUTPUT ===
-output:
-  # Default format for console output
-  format: console  # console | csv | json | html
-
-  # Grouping for console/html output
-  group_by:
-    level1: domain
-    level2: project
-
-  # File output (optional)
-  file: ./reports/metrics.html
-
-  # Include indirect metrics (dependencies)
-  include_indirect: false
-
-# === METRIC CONFIG ===
-# Per-metric configuration (passed to metric __init__)
-metric_config:
-  dbt_naming_convention:
-    model_prefix: stg_
-
-  custom_threshold_metric:
-    threshold: 0.8
-    warning_level: 0.6
-
-# === EXECUTION ===
-execution:
-  # Max parallel workers
-  workers: 4
-
-  # Fail fast on provider errors
-  fail_fast: true
-
-  # Timeout per provider set (seconds)
-  timeout: 300
-```
-
-#### Python Provider Configuration (checkup_config.py)
-
-For complex provider configurations, use a Python file:
+### Checkfile Class
 
 ```python
-# checkup_config.py
-"""Provider configuration for checkup."""
+from checkup import Checkfile
+
+checkfile = Checkfile(
+    name="my-metrics",                    # Required: unique identifier
+    description="My project metrics",     # Optional: human-readable description
+)
+
+# Add metrics (list of metric classes)
+checkfile.add_metrics([MetricA, MetricB])
+
+# Add provider set (list of provider instances)
+checkfile.add_provider_set([ProviderA(), ProviderB()])
+
+# Add multiple provider sets at once
+checkfile.add_provider_sets([
+    [ProviderA(config="a"), TagProvider(env="a")],
+    [ProviderA(config="b"), TagProvider(env="b")],
+])
+```
+
+### Using the Existing Builder API
+
+The CLI also supports the existing `CheckHub` builder pattern:
+
+```python
+from checkup import CheckHub
+
+hub = (
+    CheckHub(name="my-metrics")
+    .with_metrics([MetricA, MetricB])
+    .with_providers([
+        [ProviderA(), TagProvider(env="prod")],
+    ])
+)
+```
+
+The CLI detects either `checkfile` or `hub` at module level.
+
+### Complete Example
+
+```python
+# checkup_dbt.py
+"""dbt project health metrics for all projects."""
 
 from pathlib import Path
-from checkup_dbt import DbtManifestProvider
+from checkup import Checkfile
+from checkup_dbt import (
+    DbtManifestProvider,
+    DbtModelsMetric,
+    DbtTestsMetric,
+    DbtModelsWithDescriptionMetric,
+    DbtColumnTestCoverageMetric,
+)
 from checkup.providers.tags import TagProvider
 
-def get_provider_sets():
-    """Return provider sets for measurement.
+# Configuration
+PROJECTS_DIR = Path("./dbt_projects")
+DOMAIN_MAP = {
+    "sales-mart": "sales",
+    "marketing-analytics": "marketing",
+    "finance-reporting": "finance",
+}
 
-    Each inner list is a provider set that runs together.
-    Provider sets run in parallel, each producing metrics with their tags.
-    """
-    projects_dir = Path("./projects")
+# Create checkfile
+checkfile = Checkfile(
+    name="dbt-health",
+    description="dbt project health metrics across all projects",
+)
 
-    provider_sets = []
-    for project_dir in projects_dir.iterdir():
-        if not project_dir.is_dir():
-            continue
+# Define metrics to calculate
+checkfile.add_metrics([
+    DbtModelsMetric,
+    DbtTestsMetric,
+    DbtModelsWithDescriptionMetric,
+    DbtColumnTestCoverageMetric,
+])
 
-        manifest_path = project_dir / "target" / "manifest.json"
-        if not manifest_path.exists():
-            continue
+# Dynamically discover and configure provider sets
+for project_dir in sorted(PROJECTS_DIR.iterdir()):
+    if not project_dir.is_dir():
+        continue
 
-        provider_sets.append([
-            DbtManifestProvider(manifest_path=manifest_path),
-            TagProvider(
-                project=project_dir.name,
-                domain=_get_domain(project_dir.name),
-            ),
-        ])
+    manifest = project_dir / "target" / "manifest.json"
+    if not manifest.exists():
+        print(f"Warning: No manifest found for {project_dir.name}")
+        continue
 
-    return provider_sets
+    checkfile.add_provider_set([
+        DbtManifestProvider(manifest_path=manifest),
+        TagProvider(
+            project=project_dir.name,
+            domain=DOMAIN_MAP.get(project_dir.name, "other"),
+        ),
+    ])
 
-def _get_domain(project_name: str) -> str:
-    """Map project name to domain."""
-    domain_map = {
-        "sales-analytics": "sales",
-        "campaign-metrics": "marketing",
-        "customer-360": "customer",
+# Validate at import time (optional, helps catch errors early)
+checkfile.validate()
+```
+
+### Metric Configuration
+
+Pass configuration to metrics via the checkfile:
+
+```python
+from checkup_dbt import DbtModelsNotAdheringToNamingConventionMetric
+
+checkfile = Checkfile(name="configured-metrics")
+
+# Configure specific metrics
+checkfile.add_metrics([
+    DbtModelsNotAdheringToNamingConventionMetric,
+], config={
+    "dbt_naming_convention": {
+        "model_prefix": "stg_",
+        "staging_prefix": "stg_",
+        "mart_prefix": "fct_",
     }
-    return domain_map.get(project_name, "unknown")
+})
 ```
 
-Usage:
-```bash
-# Use Python providers file
-checkup run -c checkup.yaml --providers checkup_config.py
+### Environment-Based Configuration
 
-# Or set in YAML
-# providers_file: ./checkup_config.py
+```python
+import os
+from checkup import Checkfile
+
+ENV = os.getenv("CHECKUP_ENV", "dev")
+
+checkfile = Checkfile(name=f"metrics-{ENV}")
+
+if ENV == "prod":
+    # Production: all projects
+    projects = ["sales", "marketing", "finance"]
+else:
+    # Dev: only sales for faster iteration
+    projects = ["sales"]
+
+for project in projects:
+    checkfile.add_provider_set([
+        DbtManifestProvider(manifest_path=f"./{project}/target/manifest.json"),
+        TagProvider(project=project, environment=ENV),
+    ])
 ```
-
-### Minimal Configuration
-
-```yaml
-# Minimal checkup.yaml for single dbt project
-metrics:
-  - DbtModelsMetric
-  - DbtTestsMetric
-  - DbtColumnTestCoverageMetric
-
-contexts:
-  - generator: dbt_manifest_list
-    items:
-      - manifest_path: ./target/manifest.json
-```
-
-### Context Generators
-
-Built-in generators for common patterns:
-
-#### `dbt_projects` - Auto-discover dbt projects
-
-```yaml
-contexts:
-  - generator: dbt_projects
-    path: ./projects/*              # Glob pattern for project directories
-    manifest_subpath: target/manifest.json  # Default
-    tags_from_path:
-      project: "{dirname}"          # Directory name becomes 'project' tag
-      domain: "{parent.dirname}"    # Parent directory becomes 'domain' tag
-```
-
-#### `dbt_manifest_list` - Explicit manifest list
-
-```yaml
-contexts:
-  - generator: dbt_manifest_list
-    items:
-      - manifest_path: ./project_a/target/manifest.json
-        tags:
-          project: project_a
-          environment: prod
-      - manifest_path: ./project_b/target/manifest.json
-        tags:
-          project: project_b
-          environment: prod
-```
-
-#### `matrix` - Cartesian product of variables
-
-```yaml
-contexts:
-  - generator: matrix
-    template:
-      manifest_path: "./projects/{project}/target/manifest.json"
-      tags:
-        project: "{project}"
-        env: "{env}"
-    variables:
-      project: [sales, marketing, finance]
-      env: [prod]
-```
-
-This generates 3 provider sets (sales×prod, marketing×prod, finance×prod).
 
 ---
 
@@ -907,64 +833,101 @@ dependencies = [
 ### Scenario 1: Quick dbt Project Check
 
 ```bash
-# In a dbt project directory
-cd my-dbt-project
-checkup init --plugin checkup-dbt
-checkup run
+# Generate starter checkfile
+checkup init --plugin dbt -o checkup_dbt.py
+
+# Edit the generated file to point to your manifest
+# Then run
+checkup run checkup_dbt.py
 ```
 
 ### Scenario 2: Multi-Project Report
 
-```yaml
-# checkup.yaml
-metrics:
-  - DbtModelsMetric
-  - DbtColumnTestCoverageMetric
+```python
+# checkup_projects.py
+from pathlib import Path
+from checkup import Checkfile
+from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtColumnTestCoverageMetric
+from checkup.providers.tags import TagProvider
 
-providers:
-  - set:
-      - type: DbtManifestProvider
-        manifest_path: ./projects/sales/target/manifest.json
-      - type: TagProvider
-        tags: {project: sales}
-  - set:
-      - type: DbtManifestProvider
-        manifest_path: ./projects/marketing/target/manifest.json
-      - type: TagProvider
-        tags: {project: marketing}
+checkfile = Checkfile(name="multi-project")
+checkfile.add_metrics([DbtModelsMetric, DbtColumnTestCoverageMetric])
 
-output:
-  format: html
-  file: ./reports/metrics.html
-  group_by:
-    level1: project
+for project in ["sales", "marketing", "finance"]:
+    checkfile.add_provider_set([
+        DbtManifestProvider(manifest_path=f"./projects/{project}/target/manifest.json"),
+        TagProvider(project=project),
+    ])
 ```
 
 ```bash
-checkup run -c checkup.yaml
+checkup run checkup_projects.py -o report.html -g project
 ```
 
 ### Scenario 3: CI/CD Integration
 
-```bash
-# In CI pipeline
-checkup run -c checkup.yaml --format json -o metrics.json --fail-on-error
+```yaml
+# .github/workflows/metrics.yml
+name: Metrics Check
+on: [push]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install checkup checkup-dbt
+      - run: dbt parse  # Generate manifest
+      - run: checkup validate checkup_ci.py
+      - run: checkup run checkup_ci.py --format json -o metrics.json --fail-on-error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metrics
+          path: metrics.json
+```
 
-# Parse with jq
+```bash
+# Parse metrics in CI
 cat metrics.json | jq '.metrics[] | select(.name == "dbt_column_test_cov") | .value'
 ```
 
-### Scenario 4: Comparing Metrics
+### Scenario 4: Comparing Metrics Over Time
 
 ```bash
-# Run for baseline
-checkup run -c checkup.yaml -o baseline.csv
+# Run for baseline (e.g., main branch)
+checkup run checkup_dbt.py -o baseline.csv
 
-# After changes
-checkup run -c checkup.yaml -o current.csv
+# After changes (e.g., feature branch)
+checkup run checkup_dbt.py -o current.csv
 
-# Compare (using external tool)
+# Compare
 diff baseline.csv current.csv
+
+# Or use a dedicated comparison tool
+checkup diff baseline.csv current.csv  # Future feature
+```
+
+### Scenario 5: Development Workflow
+
+```python
+# checkup_dev.py - Fast iteration during development
+import os
+from checkup import Checkfile
+from checkup_dbt import DbtManifestProvider, DbtModelsMetric
+
+checkfile = Checkfile(name="dev-check")
+
+# Only run lightweight metrics during development
+checkfile.add_metrics([DbtModelsMetric])
+
+# Use dbt_project_dir to parse on-the-fly (no pre-built manifest needed)
+checkfile.add_provider_set([
+    DbtManifestProvider(dbt_project_dir="./"),
+])
+```
+
+```bash
+# Quick check during development
+checkup run checkup_dev.py
 ```
 
 ---
