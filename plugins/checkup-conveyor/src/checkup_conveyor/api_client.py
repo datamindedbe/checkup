@@ -44,9 +44,9 @@ class ConveyorApiClient:
         Returns:
             JSON response as dict
         """
-        url = f"{self._base_url}{endpoint}"
-        response = requests.get(url, headers=self._get_headers(), params=params)
-        return response.json()
+        return requests.get(
+            f"{self._base_url}{endpoint}", headers=self._get_headers(), params=params
+        ).json()
 
     def get_project_id(self, project_name: str) -> str | None:
         """Get project ID by name.
@@ -57,8 +57,7 @@ class ConveyorApiClient:
         Returns:
             Project ID if found, None otherwise
         """
-        response = self._get("/projects", params={"name": project_name})
-        projects = response.get("projects", [])
+        projects = self._get("/projects", params={"name": project_name}).get("projects", [])
 
         if not projects:
             logger.warning("No Conveyor project found with name: %s", project_name)
@@ -75,8 +74,9 @@ class ConveyorApiClient:
         Returns:
             Environment ID if found, None otherwise
         """
-        response = self._get("/environments", params={"name": environment_name})
-        environments = response.get("environments", [])
+        environments = self._get(
+            "/environments", params={"name": environment_name}
+        ).get("environments", [])
 
         if not environments:
             logger.warning("No Conveyor environment found with name: %s", environment_name)

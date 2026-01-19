@@ -118,8 +118,7 @@ class MetricCalculator:
                 )
                 continue
 
-            config = self._configs.get(metric_cls.name, {})
-            metric = metric_cls(**config)
+            metric = metric_cls(**self._configs.get(metric_cls.name, {}))
             metric.tags.update(tags)
             metric.calculate(context, calculated)
             calculated[metric_cls] = metric
@@ -181,11 +180,10 @@ def _validate_providers(
         missing = required - provided_classes
 
         if missing:
-            missing_names = sorted(cls.name for cls in missing)
             logger.warning(
                 "Provider set %d is missing required providers: %s",
                 i,
-                missing_names,
+                sorted(cls.name for cls in missing),
             )
 
 
@@ -206,13 +204,10 @@ def _measure_single_provider_set(
     Returns:
         List of calculated metrics with tags merged
     """
-    executor = ProviderExecutor()
-    context, tags = executor.execute(provider_set)
-
-    provided_classes = {type(p) for p in provider_set}
-
-    calculator = MetricCalculator(metric_configs)
-    return calculator.calculate(execution_order, context, tags, provided_classes)
+    context, tags = ProviderExecutor().execute(provider_set)
+    return MetricCalculator(metric_configs).calculate(
+        execution_order, context, tags, {type(p) for p in provider_set}
+    )
 
 
 class CheckHub:
@@ -279,8 +274,7 @@ class CheckHub:
         if self._config_path:
             metric_configs = load_config(self._config_path)
 
-        graph = build_dependency_graph(self._metrics)
-        execution_order = topological_sort(graph)
+        execution_order = topological_sort(build_dependency_graph(self._metrics))
         direct_metric_names = {m.name for m in self._metrics}
 
         # Use empty provider set if none specified and none required

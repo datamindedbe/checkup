@@ -29,8 +29,7 @@ class ConveyorMetric(Metric):
         Returns:
             Configured ConveyorApiClient instance
         """
-        provider_data = context[ConveyorProvider.name]
-        return ConveyorApiClient(api_key=provider_data["api_key"])
+        return ConveyorApiClient(api_key=context[ConveyorProvider.name]["api_key"])
 
     def get_project_name(self, context: Context) -> str:
         """Get project name from context.
