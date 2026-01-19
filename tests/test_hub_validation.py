@@ -2,8 +2,7 @@
 
 from typing import Any, ClassVar
 
-
-from checkup.hub import CheckHub
+from checkup.hub import CheckHub, _validate_providers
 from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
@@ -47,8 +46,7 @@ class TestProviderValidation:
 
     def test_validation_passes_with_required_providers(self):
         """Test validation passes when all required providers present."""
-        hub = CheckHub().with_metrics([MetricWithProvider])
-        hub._validate_providers(
+        _validate_providers(
             metrics=[MetricWithProvider],
             provider_sets=[[RequiredProvider()]],
         )
@@ -56,10 +54,8 @@ class TestProviderValidation:
 
     def test_validation_warns_with_missing_provider(self, caplog):
         """Test validation warns when required provider missing."""
-        hub = CheckHub().with_metrics([MetricWithProvider])
-
         with caplog.at_level("WARNING"):
-            hub._validate_providers(
+            _validate_providers(
                 metrics=[MetricWithProvider],
                 provider_sets=[[OtherProvider()]],
             )
@@ -68,10 +64,8 @@ class TestProviderValidation:
 
     def test_validation_warns_with_empty_provider_set(self, caplog):
         """Test validation warns with empty provider set."""
-        hub = CheckHub().with_metrics([MetricWithProvider])
-
         with caplog.at_level("WARNING"):
-            hub._validate_providers(
+            _validate_providers(
                 metrics=[MetricWithProvider],
                 provider_sets=[[]],
             )
@@ -80,10 +74,8 @@ class TestProviderValidation:
 
     def test_validation_warns_for_each_provider_set(self, caplog):
         """Test validation warns for each provider set with missing providers."""
-        hub = CheckHub().with_metrics([MetricWithProvider])
-
         with caplog.at_level("WARNING"):
-            hub._validate_providers(
+            _validate_providers(
                 metrics=[MetricWithProvider],
                 provider_sets=[
                     [RequiredProvider()],  # OK
@@ -97,8 +89,7 @@ class TestProviderValidation:
         """Test validation passes when metrics need no providers."""
         from conftest import DummyMetric
 
-        hub = CheckHub().with_metrics([DummyMetric])
-        hub._validate_providers(
+        _validate_providers(
             metrics=[DummyMetric],
             provider_sets=[[]],
         )

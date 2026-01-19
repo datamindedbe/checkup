@@ -3,12 +3,13 @@ from typing import ClassVar
 
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
-from checkup_dbt.provider import DbtManifestProvider
 
 logger = logging.getLogger(__name__)
 
 
 class DbtSupportedVersionMetric(DbtMetric):
+    """Metric for checking dbt version compatibility."""
+
     name: ClassVar[str] = "dbt_supported_version"
     description: ClassVar[str] = "Whether dbt version meets minimum requirement"
     unit: ClassVar[str] = "boolean"
@@ -16,7 +17,7 @@ class DbtSupportedVersionMetric(DbtMetric):
     expected_version: str = "1.9"
 
     def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context[DbtManifestProvider.name]["manifest"]
+        manifest = self.get_manifest(context)
         version = manifest.metadata.dbt_version
 
         major_version = int(version.split(".")[0])

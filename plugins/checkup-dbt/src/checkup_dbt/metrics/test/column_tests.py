@@ -1,29 +1,15 @@
-import logging
 from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
-from checkup.types import Context
-from checkup_dbt.metrics.base import DbtMetric
-from checkup_dbt.provider import DbtManifestProvider
-
-logger = logging.getLogger(__name__)
+from checkup_dbt.manifest_query import is_column_test
+from checkup_dbt.metrics.base import DbtNodeCountMetric
 
 
-class DbtColumnTestsMetric(DbtMetric):
+class DbtColumnTestsMetric(DbtNodeCountMetric):
     name: ClassVar[str] = "dbt_column_tests"
     description: ClassVar[str] = "Number of tests targeting specific columns"
     unit: ClassVar[str] = "tests"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context[DbtManifestProvider.name]["manifest"]
-        self.value = len(
-            [
-                node
-                for node in manifest.nodes.values()
-                if node.resource_type == NodeType.Test
-                and hasattr(node, "column_name")
-                and node.column_name is not None
-            ]
-        )
-        logger.info(f"Found {self.value} column tests")
+    resource_type: ClassVar[NodeType] = NodeType.Test
+    node_predicate = is_column_test
+    log_message: ClassVar[str] = "Found {value} column tests"

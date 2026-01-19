@@ -10,7 +10,7 @@ from checkup.materializers import (
 from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
-from checkup.types import Context, ContextDict
+from checkup.types import Context
 
 __all__ = [
     "CheckHub",
@@ -23,7 +23,6 @@ __all__ = [
     "CSVMaterializer",
     "HTMLMaterializer",
     "Context",
-    "ContextDict",
 ]
 
 

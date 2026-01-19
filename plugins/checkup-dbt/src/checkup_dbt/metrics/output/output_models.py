@@ -1,27 +1,15 @@
-import logging
 from typing import ClassVar
 
-from dbt.artifacts.resources.types import NodeType
+from checkup_dbt.manifest_query import is_output_model
+from checkup_dbt.metrics.base import DbtNodeCountMetric
 
-from checkup.types import Context
-from checkup_dbt.metrics.base import DbtMetric
-from checkup_dbt.provider import DbtManifestProvider
-
-logger = logging.getLogger(__name__)
+# Re-export for backward compatibility
+__all__ = ["DbtOutputModelsMetric", "is_output_model"]
 
 
-def is_output_model(node) -> bool:
-    return node.resource_type == NodeType.Model and not node.schema.endswith("__int")
-
-
-class DbtOutputModelsMetric(DbtMetric):
+class DbtOutputModelsMetric(DbtNodeCountMetric):
     name: ClassVar[str] = "dbt_output_models"
     description: ClassVar[str] = "Number of output models (non-internal schema)"
     unit: ClassVar[str] = "models"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context[DbtManifestProvider.name]["manifest"]
-        self.value = len(
-            [node for node in manifest.nodes.values() if is_output_model(node)]
-        )
-        logger.info(f"Found {self.value} output models")
+    node_predicate = is_output_model
+    log_message: ClassVar[str] = "Found {value} output models"

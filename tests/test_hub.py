@@ -39,16 +39,19 @@ def test_measurement_result_creation():
 
 def test_measurement_result_with_errors():
     """Test MeasurementResult can hold errors."""
+    from checkup.providers.tags import TagProvider
+
     metric = DummyMetric(expected_value=42)
     metric.value = 42
 
-    errors = [({"path": "/bad/path"}, ValueError("Path not found"))]
+    provider = TagProvider(path="/bad/path")
+    errors = [([provider], ValueError("Path not found"))]
 
     result = MeasurementResult(metrics=[metric], errors=errors)
 
     assert len(result.metrics) == 1
     assert len(result.errors) == 1
-    assert result.errors[0][0] == {"path": "/bad/path"}
+    assert result.errors[0][0] == [provider]
 
 
 def test_measurement_result_errors_default_empty():
@@ -151,7 +154,9 @@ def test_measurement_result_materialize():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    CheckHub().with_metrics([DummyMetric]).measure().materialize(ConsoleMaterializer())
+    CheckHub().with_metrics([DummyMetric]).measure().materialize(
+        ConsoleMaterializer(group_tag_1="env", group_tag_2="team")
+    )
 
     sys.stdout = sys.__stdout__
 
