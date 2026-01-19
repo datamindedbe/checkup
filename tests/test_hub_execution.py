@@ -150,3 +150,21 @@ class TestHubExecution:
 
         # Warning should be logged for the missing provider
         assert "other" in caplog.text.lower()
+
+    def test_measure_skips_dependent_metrics_when_dependency_skipped(self):
+        """When a metric's dependency is skipped due to missing provider, the dependent is also skipped."""
+        from conftest import IntegrationBaseMetric, IntegrationDerivedMetric
+
+        # IntegrationBaseMetric requires IntegrationProvider
+        # IntegrationDerivedMetric depends on IntegrationBaseMetric
+        # If we don't provide IntegrationProvider, both should be skipped
+        result = (
+            CheckHub()
+            .with_metrics([IntegrationBaseMetric, IntegrationDerivedMetric])
+            .with_providers([[]])  # No providers
+            .measure()
+        )
+
+        # Both metrics should be skipped - no errors should occur
+        assert len(result.metrics) == 0
+        assert len(result.errors) == 0  # No exceptions from trying to access missing dependency

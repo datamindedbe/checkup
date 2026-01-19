@@ -106,16 +106,28 @@ class MetricCalculator:
             List of calculated metrics
         """
         calculated: dict[type[Metric], Metric] = {}
+        skipped: set[type[Metric]] = set()
         result_metrics: list[Metric] = []
 
         for metric_cls in execution_order:
-            missing = self._get_missing_providers(metric_cls, provided_classes)
-            if missing:
+            missing_providers = set(metric_cls.providers()) - provided_classes
+            if missing_providers:
                 logger.warning(
                     "Skipping metric %s: missing providers %s",
                     metric_cls.name,
-                    sorted(cls.name for cls in missing),
+                    sorted(cls.name for cls in missing_providers),
                 )
+                skipped.add(metric_cls)
+                continue
+
+            skipped_deps = set(metric_cls.depends_on()) & skipped
+            if skipped_deps:
+                logger.warning(
+                    "Skipping metric %s: dependencies were skipped %s",
+                    metric_cls.name,
+                    sorted(cls.name for cls in skipped_deps),
+                )
+                skipped.add(metric_cls)
                 continue
 
             metric = metric_cls(**self._configs.get(metric_cls.name, {}))
@@ -125,22 +137,6 @@ class MetricCalculator:
             result_metrics.append(metric)
 
         return result_metrics
-
-    def _get_missing_providers(
-        self,
-        metric_cls: type[Metric],
-        provided_classes: set[type[Provider]],
-    ) -> set[type[Provider]]:
-        """Get providers required by metric but not available.
-
-        Args:
-            metric_cls: Metric class to check
-            provided_classes: Available provider classes
-
-        Returns:
-            Set of missing provider classes
-        """
-        return set(metric_cls.providers()) - provided_classes
 
 
 def _collect_required_providers(metrics: list[type[Metric]]) -> set[type[Provider]]:
