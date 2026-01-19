@@ -340,20 +340,151 @@ Checkfile is valid.
 
 #### `checkup init`
 
-Generate a starter checkfile.
+Generate a starter checkfile, optionally tailored to a specific plugin.
 
 ```bash
-# Interactive - prompts for plugin selection
+# Interactive - prompts for plugin selection and configuration
 checkup init
 
 # Generate for specific plugin
 checkup init --plugin dbt
 
 # Output to specific file
-checkup init -o my_checkfile.py
+checkup init --plugin dbt -o my_checkfile.py
 
 # Non-interactive with defaults
-checkup init --defaults
+checkup init --plugin dbt --defaults
+
+# List available plugins that support init
+checkup init --list
+```
+
+**How `--plugin dbt` works:**
+
+1. **Plugin Discovery**: The CLI discovers installed plugins via entry points
+2. **Template Lookup**: Each plugin can register an init template via entry point:
+   ```toml
+   # In checkup-dbt's pyproject.toml
+   [project.entry-points."checkup.init_templates"]
+   dbt = "checkup_dbt.templates:DbtInitTemplate"
+   ```
+3. **Template Execution**: The template class generates the checkfile content
+
+**Plugin Init Template Interface:**
+
+```python
+# In checkup-dbt: src/checkup_dbt/templates.py
+from checkup.cli.init import InitTemplate
+
+class DbtInitTemplate(InitTemplate):
+    """Init template for dbt projects."""
+
+    name = "dbt"
+    description = "dbt project health metrics"
+
+    # Metrics to include by default
+    default_metrics = [
+        "DbtModelsMetric",
+        "DbtTestsMetric",
+        "DbtColumnTestCoverageMetric",
+    ]
+
+    # All available metrics (for interactive selection)
+    available_metrics = [
+        ("DbtModelsMetric", "Count of dbt models"),
+        ("DbtTestsMetric", "Count of dbt tests"),
+        ("DbtModelsWithDescriptionMetric", "Models with descriptions"),
+        ("DbtColumnTestCoverageMetric", "Column test coverage"),
+        # ... more
+    ]
+
+    def get_imports(self) -> list[str]:
+        """Return import statements for the checkfile."""
+        return [
+            "from checkup import Checkfile",
+            "from checkup_dbt import (",
+            "    DbtManifestProvider,",
+            *[f"    {m}," for m in self.selected_metrics],
+            ")",
+            "from checkup.providers.tags import TagProvider",
+        ]
+
+    def get_provider_setup(self) -> str:
+        """Return provider configuration code."""
+        return '''
+# Provider configuration
+# Option 1: Use pre-built manifest (faster, requires dbt build first)
+checkfile.add_provider_set([
+    DbtManifestProvider(manifest_path="./target/manifest.json"),
+    TagProvider(project="my-project"),
+])
+
+# Option 2: Parse dbt project on-the-fly (slower, but no pre-build needed)
+# checkfile.add_provider_set([
+#     DbtManifestProvider(dbt_project_dir="./"),
+#     TagProvider(project="my-project"),
+# ])
+'''
+
+    def detect_config(self) -> dict:
+        """Auto-detect configuration from current directory."""
+        config = {}
+
+        # Check for dbt_project.yml
+        if Path("dbt_project.yml").exists():
+            with open("dbt_project.yml") as f:
+                dbt_config = yaml.safe_load(f)
+                config["project_name"] = dbt_config.get("name", "my-project")
+
+        # Check for existing manifest
+        if Path("target/manifest.json").exists():
+            config["manifest_exists"] = True
+            config["manifest_path"] = "./target/manifest.json"
+
+        return config
+```
+
+**Interactive Flow (`checkup init --plugin dbt`):**
+
+```
+$ checkup init --plugin dbt
+
+Initializing checkfile for: dbt
+Detected dbt project: sales-analytics
+
+Select metrics to include:
+  [x] DbtModelsMetric - Count of dbt models
+  [x] DbtTestsMetric - Count of dbt tests
+  [ ] DbtModelsWithDescriptionMetric - Models with descriptions
+  [x] DbtColumnTestCoverageMetric - Column test coverage
+  [ ] DbtUnitTestsMetric - Count of unit tests
+  (Use arrow keys to navigate, space to toggle, enter to confirm)
+
+Manifest configuration:
+  Found existing manifest at ./target/manifest.json
+  [x] Use existing manifest (faster)
+  [ ] Parse project on-the-fly (no pre-build needed)
+
+Output file: checkup_dbt.py
+
+✓ Created checkup_dbt.py
+
+Next steps:
+  1. Review and customize the generated checkfile
+  2. Run: checkup validate checkup_dbt.py
+  3. Run: checkup run checkup_dbt.py
+```
+
+**Non-Interactive Flow (`checkup init --plugin dbt --defaults`):**
+
+```
+$ checkup init --plugin dbt --defaults
+
+✓ Created checkup_dbt.py with default configuration
+
+Next steps:
+  1. Edit checkup_dbt.py to configure your manifest path
+  2. Run: checkup run checkup_dbt.py
 ```
 
 **Generated checkfile example:**
@@ -389,6 +520,20 @@ checkfile.add_provider_set([
     DbtManifestProvider(manifest_path="./target/manifest.json"),
     TagProvider(project="my-project"),
 ])
+```
+
+**Fallback (no plugin specified):**
+
+```
+$ checkup init
+
+Available plugins with init templates:
+  dbt     - dbt project health metrics
+  python  - Python project metrics
+  git     - Git repository metrics
+
+Select a plugin: dbt
+...
 ```
 
 ---
