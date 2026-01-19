@@ -47,10 +47,7 @@ from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtTestsMetric
 from checkup.providers.tags import TagProvider
 
 # Define the measurement configuration
-checkup = Checkup(
-    name="dbt-metrics",
-    description="dbt project health metrics",
-)
+checkup = Checkup()
 
 checkup.add_metrics([
     DbtModelsMetric,
@@ -98,7 +95,7 @@ from checkup_dbt import DbtManifestProvider, DbtModelsMetric
 from checkup.providers.tags import TagProvider
 
 hub = (
-    CheckHub(name="dbt-metrics")
+    CheckHub()
     .with_metrics([DbtModelsMetric])
     .with_providers([
         [DbtManifestProvider(manifest_path="./manifest.json"), TagProvider(project="a")],
@@ -119,7 +116,7 @@ from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtColumnTestCoverageMetric
 from checkup.providers.tags import TagProvider
 
-checkup = Checkup(name="all-dbt-projects")
+checkup = Checkup()
 
 checkup.add_metrics([
     DbtModelsMetric,
@@ -273,8 +270,6 @@ checkup list checkup_dbt.py --providers
 
 ```
 Checkup: checkup_dbt.py
-Name: dbt-metrics
-Description: dbt project health metrics
 
 Metrics (3):
   dbt_models              Count of dbt models                    [count]
@@ -326,7 +321,7 @@ checkup validate checkup_dbt.py -v
 Validating checkup_dbt.py...
 
 ✓ Python syntax valid
-✓ Checkup 'dbt-metrics' found
+✓ Checkup variable found
 ✓ 3 metrics registered
 ✓ 2 provider sets configured
 ✓ Dependency graph valid (no cycles)
@@ -383,10 +378,7 @@ checkup init -o my_checkup.py
 from checkup import Checkup
 from checkup.providers.tags import TagProvider
 
-checkup = Checkup(
-    name="my-metrics",
-    description="Project health metrics",
-)
+checkup = Checkup()
 
 # Add your metrics here
 # checkup.add_metrics([...])
@@ -415,10 +407,7 @@ from checkup_dbt import (
 )
 from checkup.providers.tags import TagProvider
 
-checkup = Checkup(
-    name="dbt-metrics",
-    description="dbt project health metrics",
-)
+checkup = Checkup()
 
 checkup.add_metrics([
     DbtModelsMetric,
@@ -517,10 +506,7 @@ A checkup is a Python module containing a `checkup` or `hub` variable that defin
 ```python
 from checkup import Checkup
 
-checkup = Checkup(
-    name="my-metrics",                    # Required: unique identifier
-    description="My project metrics",     # Optional: human-readable description
-)
+checkup = Checkup()
 
 # Add metrics (list of metric classes)
 checkup.add_metrics([MetricA, MetricB])
@@ -543,7 +529,7 @@ The CLI also supports the existing `CheckHub` builder pattern:
 from checkup import CheckHub
 
 hub = (
-    CheckHub(name="my-metrics")
+    CheckHub()
     .with_metrics([MetricA, MetricB])
     .with_providers([
         [ProviderA(), TagProvider(env="prod")],
@@ -579,10 +565,7 @@ DOMAIN_MAP = {
 }
 
 # Create checkup
-checkup = Checkup(
-    name="dbt-health",
-    description="dbt project health metrics across all projects",
-)
+checkup = Checkup()
 
 # Define metrics to calculate
 checkup.add_metrics([
@@ -621,7 +604,7 @@ Pass configuration to metrics via the checkup:
 ```python
 from checkup_dbt import DbtModelsNotAdheringToNamingConventionMetric
 
-checkup = Checkup(name="configured-metrics")
+checkup = Checkup()
 
 # Configure specific metrics
 checkup.add_metrics([
@@ -643,7 +626,7 @@ from checkup import Checkup
 
 ENV = os.getenv("CHECKUP_ENV", "dev")
 
-checkup = Checkup(name=f"metrics-{ENV}")
+checkup = Checkup()
 
 if ENV == "prod":
     # Production: all projects
@@ -947,7 +930,7 @@ from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtColumnTestCoverageMetric
 from checkup.providers.tags import TagProvider
 
-checkup = Checkup(name="multi-project")
+checkup = Checkup()
 checkup.add_metrics([DbtModelsMetric, DbtColumnTestCoverageMetric])
 
 for project in ["sales", "marketing", "finance"]:
@@ -1011,7 +994,7 @@ import os
 from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric
 
-checkup = Checkup(name="dev-check")
+checkup = Checkup()
 
 # Only run lightweight metrics during development
 checkup.add_metrics([DbtModelsMetric])
