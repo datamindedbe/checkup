@@ -7,7 +7,7 @@ from checkup.materializers import (
     HTMLMaterializer,
     Materializer,
 )
-from checkup.metric import Metric
+from checkup.metric import ExecutorType, Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
@@ -16,6 +16,7 @@ __all__ = [
     "CheckHub",
     "MeasurementResult",
     "Metric",
+    "ExecutorType",
     "Provider",
     "TagProvider",
     "Materializer",

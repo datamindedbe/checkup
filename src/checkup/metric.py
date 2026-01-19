@@ -1,6 +1,7 @@
 """Metric base class."""
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import BaseModel, Field
@@ -9,6 +10,20 @@ from checkup.types import Context
 
 if TYPE_CHECKING:
     from checkup.provider import Provider
+
+
+class ExecutorType(Enum):
+    """Executor types for metric calculation.
+
+    Metrics can specify which executor to use for their calculation:
+    - THREAD: ThreadPoolExecutor (default) - best for I/O-bound operations
+    - PROCESS: ProcessPoolExecutor - best for CPU-bound operations
+    - ASYNCIO: asyncio event loop - best for async I/O operations
+    """
+
+    THREAD = "thread"
+    PROCESS = "process"
+    ASYNCIO = "asyncio"
 
 
 class Metric(ABC, BaseModel):
@@ -21,6 +36,7 @@ class Metric(ABC, BaseModel):
     name: ClassVar[str]
     description: ClassVar[str]
     unit: ClassVar[str]
+    executor: ClassVar[ExecutorType] = ExecutorType.THREAD
 
     tags: dict = Field(default_factory=dict)
 
