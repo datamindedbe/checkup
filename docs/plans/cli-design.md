@@ -361,160 +361,49 @@ checkup init --list
 
 **How `checkup init` works:**
 
-1. **Auto-Detection Mode** (no `--plugin`): Scans for all data product types
-2. **Plugin-Specific Mode** (`--plugin dbt`): Only scans for that type
-3. **Entry Points**: Each plugin registers detection logic via entry points:
-   ```toml
-   # In checkup-dbt's pyproject.toml
-   [project.entry-points."checkup.init_templates"]
-   dbt = "checkup_dbt.templates:DbtInitTemplate"
-   ```
+The init command generates a starter checkfile. It's intentionally simple - the user customizes it for their specific setup.
 
-**Typical Data Platform Structure:**
+```bash
+# Basic: generate minimal template
+checkup init
 
-```
-data-platform/
-├── projects/
-│   ├── sales-mart/              # dbt project
-│   │   ├── dbt_project.yml
-│   │   └── target/manifest.json
-│   ├── marketing-analytics/     # dbt project
-│   │   ├── dbt_project.yml
-│   │   └── target/manifest.json
-│   ├── customer-segmentation/   # Python project (ML)
-│   │   ├── pyproject.toml
-│   │   └── src/
-│   └── data-ingestion/          # Python project (pipelines)
-│       ├── pyproject.toml
-│       └── src/
-└── checkup.py  # Generated checkfile (covers all)
+# With plugin: get plugin-specific boilerplate
+checkup init --plugin dbt
+
+# Output to specific file
+checkup init -o my_checkfile.py
 ```
 
-**Auto-Detection Flow:**
-
-```
-$ checkup init
-
-Scanning for data products...
-
-Found 4 data products:
-  dbt:
-    ✓ projects/sales-mart (manifest: yes)
-    ✓ projects/marketing-analytics (manifest: yes)
-  python:
-    ✓ projects/customer-segmentation
-    ✓ projects/data-ingestion
-
-Generate checkfile for:
-  [x] All products (recommended)
-  [ ] dbt projects only
-  [ ] Python projects only
-
-Output file [checkup.py]:
-
-✓ Created checkup.py (4 projects)
-```
-
-**Plugin Init Template Interface:**
-
-Each plugin implements an `InitTemplate` class:
-
-```python
-# Base interface in checkup.cli.init
-class InitTemplate(ABC):
-    """Base class for plugin init templates."""
-
-    name: str                    # Plugin identifier (e.g., "dbt", "python")
-    description: str             # Human-readable description
-    default_metrics: list[str]   # Metrics included by default
-    marker_files: list[str]      # Files that identify this project type
-
-    @abstractmethod
-    def detect_contexts(self, root: Path) -> list[dict]:
-        """Discover data products of this type."""
-        ...
-
-    @abstractmethod
-    def generate_provider_code(self, context: dict) -> str:
-        """Generate provider setup code for a single context."""
-        ...
-```
-
-**dbt Plugin Template:**
-
-```python
-# checkup-dbt: src/checkup_dbt/templates.py
-class DbtInitTemplate(InitTemplate):
-    name = "dbt"
-    description = "dbt project health metrics"
-    marker_files = ["dbt_project.yml"]
-
-    default_metrics = [
-        "DbtModelsMetric",
-        "DbtTestsMetric",
-        "DbtColumnTestCoverageMetric",
-    ]
-
-    def detect_contexts(self, root: Path) -> list[dict]:
-        contexts = []
-        for dbt_project_file in root.rglob("dbt_project.yml"):
-            if "dbt_packages" in str(dbt_project_file):
-                continue
-            project_dir = dbt_project_file.parent
-            contexts.append({
-                "type": "dbt",
-                "name": project_dir.name,
-                "path": project_dir,
-                "has_manifest": (project_dir / "target/manifest.json").exists(),
-            })
-        return contexts
-
-    def generate_provider_code(self, context: dict) -> str:
-        return f'''DbtManifestProvider(manifest_path="{context["path"]}/target/manifest.json")'''
-```
-
-**Python Plugin Template:**
-
-```python
-# checkup-python: src/checkup_python/templates.py
-class PythonInitTemplate(InitTemplate):
-    name = "python"
-    description = "Python project metrics"
-    marker_files = ["pyproject.toml", "setup.py"]
-
-    default_metrics = [
-        "PythonVersionMetric",
-        "DependencyCountMetric",
-        "TestCoverageMetric",
-    ]
-
-    def detect_contexts(self, root: Path) -> list[dict]:
-        contexts = []
-        for pyproject in root.rglob("pyproject.toml"):
-            # Skip if it's a dbt project (has dbt_project.yml)
-            if (pyproject.parent / "dbt_project.yml").exists():
-                continue
-            # Skip nested virtualenvs
-            if ".venv" in str(pyproject) or "site-packages" in str(pyproject):
-                continue
-            contexts.append({
-                "type": "python",
-                "name": pyproject.parent.name,
-                "path": pyproject.parent,
-            })
-        return contexts
-
-    def generate_provider_code(self, context: dict) -> str:
-        return f'''PythonProjectProvider(project_path="{context["path"]}")'''
-```
-
-**Generated checkfile (mixed project types):**
-
-When auto-detection finds multiple project types:
+**Basic template (no plugin):**
 
 ```python
 # checkup.py - Generated by checkup init
-"""Data platform health metrics."""
+"""Project health metrics."""
+
+from checkup import Checkfile
+from checkup.providers.tags import TagProvider
+
+checkfile = Checkfile(
+    name="my-metrics",
+    description="Project health metrics",
+)
+
+# Add your metrics here
+# checkfile.add_metrics([...])
+
+# Add your provider sets here
+# Each provider set represents one context (project, environment, etc.)
+# checkfile.add_provider_set([
+#     SomeProvider(...),
+#     TagProvider(project="my-project"),
+# ])
+```
+
+**Plugin-specific template (`--plugin dbt`):**
+
+```python
+# checkup.py - Generated by checkup init --plugin dbt
+"""dbt project health metrics."""
 
 from pathlib import Path
 from checkup import Checkfile
@@ -524,103 +413,79 @@ from checkup_dbt import (
     DbtTestsMetric,
     DbtColumnTestCoverageMetric,
 )
-from checkup_python import (
-    PythonProjectProvider,
-    PythonVersionMetric,
-    DependencyCountMetric,
-)
-from checkup.providers.tags import TagProvider
-
-PROJECTS_DIR = Path("./projects")
-
-checkfile = Checkfile(
-    name="data-platform-health",
-    description="Health metrics for all data products",
-)
-
-# dbt metrics
-checkfile.add_metrics([
-    DbtModelsMetric,
-    DbtTestsMetric,
-    DbtColumnTestCoverageMetric,
-])
-
-# Python metrics
-checkfile.add_metrics([
-    PythonVersionMetric,
-    DependencyCountMetric,
-])
-
-# Discover and configure all projects
-for project_dir in sorted(PROJECTS_DIR.iterdir()):
-    if not project_dir.is_dir():
-        continue
-
-    # dbt project
-    if (project_dir / "dbt_project.yml").exists():
-        manifest = project_dir / "target" / "manifest.json"
-        if manifest.exists():
-            checkfile.add_provider_set([
-                DbtManifestProvider(manifest_path=manifest),
-                TagProvider(project=project_dir.name, type="dbt"),
-            ])
-
-    # Python project (but not dbt)
-    elif (project_dir / "pyproject.toml").exists():
-        checkfile.add_provider_set([
-            PythonProjectProvider(project_path=project_dir),
-            TagProvider(project=project_dir.name, type="python"),
-        ])
-```
-
-**Plugin-specific mode (`--plugin dbt`):**
-
-When you only want one project type:
-
-```
-$ checkup init --plugin dbt
-
-Scanning for dbt projects...
-
-Found 2 dbt projects:
-  ✓ projects/sales-mart (manifest: yes)
-  ✓ projects/marketing-analytics (manifest: yes)
-
-(Skipping 2 Python projects - use --plugin python or no flag for all)
-
-✓ Created checkup_dbt.py (2 projects, 3 metrics)
-```
-
-**Single project fallback:**
-
-If only one project is detected, generate simpler static config:
-
-```python
-# checkup.py - Generated by checkup init
-"""Project health metrics."""
-
-from checkup import Checkfile
-from checkup_dbt import (
-    DbtManifestProvider,
-    DbtModelsMetric,
-    DbtTestsMetric,
-)
 from checkup.providers.tags import TagProvider
 
 checkfile = Checkfile(
-    name="sales-mart-metrics",
+    name="dbt-metrics",
     description="dbt project health metrics",
 )
 
 checkfile.add_metrics([
     DbtModelsMetric,
     DbtTestsMetric,
+    DbtColumnTestCoverageMetric,
 ])
 
+# Configure your dbt project(s) here
+# Option 1: Single project with pre-built manifest
 checkfile.add_provider_set([
     DbtManifestProvider(manifest_path="./target/manifest.json"),
-    TagProvider(project="sales-mart"),
+    TagProvider(project="my-project"),
 ])
+
+# Option 2: Single project, parse on-the-fly
+# checkfile.add_provider_set([
+#     DbtManifestProvider(dbt_project_dir="./"),
+#     TagProvider(project="my-project"),
+# ])
+
+# Option 3: Multiple projects (uncomment and customize)
+# PROJECTS = ["sales", "marketing", "finance"]
+# for project in PROJECTS:
+#     checkfile.add_provider_set([
+#         DbtManifestProvider(manifest_path=f"./{project}/target/manifest.json"),
+#         TagProvider(project=project),
+#     ])
+```
+
+**Plugin template registration:**
+
+Plugins register templates via entry points:
+
+```toml
+# In checkup-dbt's pyproject.toml
+[project.entry-points."checkup.init_templates"]
+dbt = "checkup_dbt.templates:get_init_template"
+```
+
+```python
+# checkup_dbt/templates.py
+def get_init_template() -> str:
+    """Return the init template for dbt projects."""
+    return '''
+"""dbt project health metrics."""
+
+from pathlib import Path
+from checkup import Checkfile
+from checkup_dbt import (
+    DbtManifestProvider,
+    DbtModelsMetric,
+    ...
+)
+...
+'''
+```
+
+**Available plugins:**
+
+```
+$ checkup init --list
+
+Available plugins:
+  dbt      - dbt project health metrics
+  python   - Python project metrics
+  git      - Git repository metrics
+  conveyor - Conveyor deployment metrics
 ```
 
 ---
