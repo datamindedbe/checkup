@@ -1,5 +1,11 @@
 """Checkup - Extensible metrics calculation framework."""
 
+from checkup.errors import (
+    DuplicateMetricNameError,
+    MetricPicklingError,
+    ProviderError,
+)
+from checkup.executor import MetricCalculator, ProviderExecutor
 from checkup.hub import CheckHub, MeasurementResult
 from checkup.materializers import (
     ConsoleMaterializer,
@@ -13,17 +19,26 @@ from checkup.providers.tags import TagProvider
 from checkup.types import Context
 
 __all__ = [
+    # Core
     "CheckHub",
     "MeasurementResult",
     "Metric",
     "ExecutorType",
     "Provider",
     "TagProvider",
+    "Context",
+    # Executors
+    "ProviderExecutor",
+    "MetricCalculator",
+    # Materializers
     "Materializer",
     "ConsoleMaterializer",
     "CSVMaterializer",
     "HTMLMaterializer",
-    "Context",
+    # Exceptions
+    "ProviderError",
+    "MetricPicklingError",
+    "DuplicateMetricNameError",
 ]
 
 
