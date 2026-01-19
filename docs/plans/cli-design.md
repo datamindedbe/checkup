@@ -6,9 +6,9 @@ This document outlines the design for a comprehensive CLI for the checkup metric
 
 ## Design Goals
 
-1. **Declarative configuration** - Define what to measure in YAML, not code
+1. **Python-first configuration** - Define what to measure in Python (Airflow-style)
 2. **Plugin discovery** - Automatically find installed metrics and providers
-3. **Multiple output formats** - Console, CSV, HTML, JSON
+3. **Multiple output formats** - Console, CSV, HTML (JSON planned)
 4. **Composable** - Chain with other Unix tools
 5. **Progressive disclosure** - Simple for basic use, powerful for advanced use
 
@@ -166,13 +166,9 @@ checkup run checkup_dbt.py
 # Output to file (format inferred from extension)
 checkup run checkup_dbt.py -o results.csv
 checkup run checkup_dbt.py -o report.html
-checkup run checkup_dbt.py -o metrics.json
 
 # Explicit output format
-checkup run checkup_dbt.py --format json
-
-# Run specific metrics only
-checkup run checkup_dbt.py --metric dbt_models --metric dbt_tests
+checkup run checkup_dbt.py --format csv
 
 # Control parallelism
 checkup run checkup_dbt.py --workers 4
@@ -194,18 +190,16 @@ checkup run checkup_dbt.py --fail-on-error
 
 | Argument | Type | Required | Description |
 |----------|------|----------|-------------|
-| `checkup` | Path | Yes | Python checkup to execute |
+| `checkup_file` | Path | Yes | Python checkup file to execute |
 
 **Options:**
 
 | Flag | Short | Type | Default | Description |
 |------|-------|------|---------|-------------|
 | `--output` | `-o` | Path | None | Output file (format from extension) |
-| `--format` | `-f` | Choice | `console` | Output format: console, csv, json, html |
-| `--metric` | `-m` | List | All | Specific metrics to run (repeatable) |
+| `--format` | `-f` | Choice | `console` | Output format: console, csv, html |
 | `--workers` | `-w` | Int | CPU count | Max parallel workers |
 | `--include-indirect` | | Flag | False | Include dependency metrics in output |
-| `--group-by` | `-g` | Str | None | Tag names for grouping (e.g., `-g domain -g project`) |
 | `--verbose` | `-v` | Count | 0 | Increase verbosity (-v, -vv, -vvv) |
 | `--quiet` | `-q` | Flag | False | Suppress non-error output |
 | `--dry-run` | | Flag | False | Validate and show plan without executing |
@@ -285,12 +279,12 @@ checkup validate checkup_dbt.py -v
 
 1. Python syntax valid
 2. `hub` variable found (CheckUp instance)
-3. All metric classes importable
-4. All provider instances valid
+3. Metrics registered (error if none)
+4. Provider sets configured (informational)
 5. Dependency graph valid (no cycles)
-6. Provider requirements satisfied
-7. No duplicate metric names
-8. Metrics are pickleable (for ProcessPoolExecutor)
+6. No duplicate metric names
+7. Provider requirements satisfied
+8. All metrics pickleable (for ProcessPoolExecutor)
 
 **Output Example:**
 
@@ -302,6 +296,7 @@ Validating checkup_dbt.py...
 ✓ 3 metrics registered
 ✓ 2 provider sets configured
 ✓ Dependency graph valid (no cycles)
+✓ No duplicate metric names
 ✓ Provider requirements satisfied
 ✓ All metrics pickleable
 
@@ -315,21 +310,30 @@ Valid.
 Generate a starter checkup, optionally tailored to a specific plugin.
 
 ```bash
-# Interactive - prompts for plugin selection and configuration
+# Generate basic template (creates checkup.py)
 checkup init
 
 # Generate for specific plugin
 checkup init --plugin dbt
 
 # Output to specific file
-checkup init --plugin dbt -o my_checkup.py
-
-# Non-interactive with defaults
-checkup init --plugin dbt --defaults
+checkup init -o my_checkup.py
 
 # List available plugins that support init
 checkup init --list
+
+# Overwrite existing file
+checkup init --force
 ```
+
+**Options:**
+
+| Flag | Short | Type | Default | Description |
+|------|-------|------|---------|-------------|
+| `--output` | `-o` | Path | `checkup.py` | Output file path |
+| `--plugin` | `-p` | Str | None | Plugin to generate template for |
+| `--list` | `-l` | Flag | False | List available plugins |
+| `--force` | `-f` | Flag | False | Overwrite existing file |
 
 **How `checkup init` works:**
 
@@ -650,7 +654,7 @@ dbt_manifest = "checkup_dbt:DbtManifestProvider"
 ```python
 # src/checkup/discovery.py
 
-from importlib.metadata import entry_points
+from importlib.metadata import distributions, entry_points
 
 def discover_metrics() -> dict[str, type[Metric]]:
     """Discover all registered metrics from installed plugins."""
@@ -668,12 +672,25 @@ def discover_providers() -> dict[str, type[Provider]]:
         providers[ep.name] = ep.load()
     return providers
 
-def discover_plugins() -> list[str]:
+def discover_init_templates() -> dict[str, callable]:
+    """Discover init templates from installed plugins."""
+    templates = {}
+    eps = entry_points(group="checkup.init_templates")
+    for ep in eps:
+        templates[ep.name] = ep.load()
+    return templates
+
+def discover_plugins() -> list[dict[str, str]]:
     """List all installed checkup plugins."""
-    # Plugins follow naming convention: checkup-*
-    from importlib.metadata import distributions
-    return [d.metadata["Name"] for d in distributions()
-            if d.metadata["Name"].startswith("checkup-")]
+    plugins = []
+    for dist in distributions():
+        name = dist.metadata["Name"]
+        if name and name.startswith("checkup-"):
+            plugins.append({
+                "name": name,
+                "version": dist.metadata.get("Version", "unknown"),
+            })
+    return plugins
 ```
 
 ---
@@ -728,20 +745,20 @@ Current `HTMLMaterializer` with Bootstrap accordions.
 
 ```
 src/checkup/
-├── __init__.py          # Existing + CLI entry point
+├── __init__.py          # Package exports
 ├── cli/
-│   ├── __init__.py
+│   ├── __init__.py      # CLI entry point
 │   ├── app.py           # Main typer app
-│   ├── commands/
-│   │   ├── __init__.py
-│   │   ├── run.py       # checkup run
-│   │   ├── list.py      # checkup list
-│   │   ├── validate.py  # checkup validate
-│   │   ├── init.py      # checkup init
-│   │   └── version.py   # checkup version
-│   ├── config.py        # Extended config loading
-│   └── discovery.py     # Plugin discovery
-├── hub.py               # Existing
+│   ├── loader.py        # Module loader for Python checkup files
+│   └── commands/
+│       ├── __init__.py
+│       ├── run.py       # checkup run
+│       ├── list_cmd.py  # checkup list
+│       ├── validate.py  # checkup validate
+│       ├── init.py      # checkup init
+│       └── version.py   # checkup version
+├── discovery.py         # Plugin discovery via entry points
+├── hub.py               # CheckUp class
 ├── ...
 ```
 
@@ -751,9 +768,8 @@ src/checkup/
 """Checkup CLI application."""
 
 import typer
-from rich.console import Console
 
-from checkup.cli.commands import run, list_cmd, validate, init, version
+from checkup.cli.commands import init, list_cmd, run, validate, version
 
 app = typer.Typer(
     name="checkup",
@@ -762,15 +778,14 @@ app = typer.Typer(
 )
 
 # Register commands
-app.add_typer(run.app, name="run")
-app.add_typer(list_cmd.app, name="list")
-app.command()(validate.validate)
-app.command()(init.init)
-app.command()(version.version)
+app.command(name="run")(run.run)
+app.command(name="list")(list_cmd.list_checkup)
+app.command(name="validate")(validate.validate)
+app.command(name="init")(init.init)
+app.command(name="version")(version.version)
 
-console = Console()
 
-def main():
+def main() -> None:
     """CLI entry point."""
     app()
 ```
@@ -787,41 +802,65 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from checkup import CheckUp, ConsoleMaterializer, CSVMaterializer, HTMLMaterializer
-from checkup.cli.config import load_cli_config
-from checkup.cli.discovery import resolve_metrics, resolve_providers
+from checkup.cli.loader import LoadError, load_checkup
+from checkup.materializers import ConsoleMaterializer, CSVMaterializer, HTMLMaterializer
 
-app = typer.Typer()
 console = Console()
 
-@app.callback(invoke_without_command=True)
-def run(
-    config: Annotated[Path, typer.Option("--config", "-c", help="Config file")] = Path("checkup.yaml"),
-    output: Annotated[Optional[Path], typer.Option("--output", "-o", help="Output file")] = None,
-    format: Annotated[str, typer.Option("--format", "-f", help="Output format")] = "console",
-    metrics: Annotated[Optional[list[str]], typer.Option("--metric", "-m", help="Specific metrics")] = None,
-    workers: Annotated[Optional[int], typer.Option("--workers", "-w", help="Max workers")] = None,
-    include_indirect: Annotated[bool, typer.Option(help="Include dependency metrics")] = False,
-    verbose: Annotated[int, typer.Option("--verbose", "-v", count=True, help="Verbosity")] = 0,
-    quiet: Annotated[bool, typer.Option("--quiet", "-q", help="Quiet mode")] = False,
-    dry_run: Annotated[bool, typer.Option("--dry-run", help="Validate only")] = False,
-    fail_on_error: Annotated[bool, typer.Option(help="Exit 2 on metric errors")] = False,
-):
-    """Execute metrics measurement."""
-    # Load and validate config
-    cfg = load_cli_config(config)
 
-    # Resolve metrics and providers
-    metric_classes = resolve_metrics(metrics or cfg.metrics)
-    provider_sets = resolve_providers(cfg.providers)
+def run(
+    checkup_file: Annotated[
+        Path,
+        typer.Argument(help="Python checkup file to execute"),
+    ],
+    output: Annotated[
+        Optional[Path],
+        typer.Option("--output", "-o", help="Output file (format inferred from extension)"),
+    ] = None,
+    format: Annotated[
+        str,
+        typer.Option("--format", "-f", help="Output format: console, csv, html"),
+    ] = "console",
+    workers: Annotated[
+        Optional[int],
+        typer.Option("--workers", "-w", help="Max parallel workers"),
+    ] = None,
+    include_indirect: Annotated[
+        bool,
+        typer.Option("--include-indirect", help="Include dependency metrics in output"),
+    ] = False,
+    verbose: Annotated[
+        int,
+        typer.Option("--verbose", "-v", count=True, help="Increase verbosity"),
+    ] = 0,
+    quiet: Annotated[
+        bool,
+        typer.Option("--quiet", "-q", help="Suppress non-error output"),
+    ] = False,
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Validate and show plan without executing"),
+    ] = False,
+    fail_on_error: Annotated[
+        bool,
+        typer.Option("--fail-on-error", help="Exit with error code if any metric fails"),
+    ] = False,
+) -> None:
+    """Execute metrics measurement from a checkup file."""
+    # Load the checkup
+    try:
+        hub = load_checkup(checkup_file)
+    except LoadError as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(1)
 
     if dry_run:
-        console.print("[green]✓[/green] Configuration valid")
-        console.print(f"  Metrics: {len(metric_classes)}")
-        console.print(f"  Provider sets: {len(provider_sets)}")
+        console.print(f"[green]Checkup valid:[/green] {checkup_file}")
+        console.print(f"  Metrics: {len(hub._metrics)}")
+        console.print(f"  Provider sets: {len(hub._provider_sets)}")
         return
 
-    # Execute
+    # Execute measurement
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -829,16 +868,10 @@ def run(
         disable=quiet,
     ) as progress:
         progress.add_task("Measuring metrics...", total=None)
-
-        result = (
-            CheckUp(config_path=config)
-            .with_metrics(metric_classes)
-            .with_providers(provider_sets)
-            .measure(max_workers=workers)
-        )
+        result = hub.measure(max_workers=workers)
 
     # Output results
-    materializer = _get_materializer(format, output, cfg, include_indirect)
+    materializer = _get_materializer(format, output, include_indirect)
     result.materialize(materializer)
 
     # Handle errors
