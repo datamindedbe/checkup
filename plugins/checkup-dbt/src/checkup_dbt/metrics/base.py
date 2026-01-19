@@ -97,62 +97,44 @@ class DbtColumnCountMetric(DbtMetric):
 
 
 class DbtDiagnosticMetric(DbtMetric):
-    """Base class for metrics that count and list items.
+    """Base class for metrics that count and list items with diagnostics.
 
     Produces both a count and a diagnostic listing the items.
+    Can count either nodes or columns based on the count_columns flag.
 
     Subclasses should define:
     - name, description, unit (ClassVars)
     - resource_type: The NodeType to filter by
-    - node_predicate (optional): Additional filter function
-    - diagnostic_prefix: Prefix for diagnostic message
-    - log_message: Template for log message (uses {value})
-    """
-
-    resource_type: ClassVar[NodeType] = NodeType.Model
-    node_predicate: ClassVar[Callable[[Any], bool] | None] = None
-    diagnostic_prefix: ClassVar[str] = "Items"
-    log_message: ClassVar[str] = "Found {value} items"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        cls = type(self)
-        query = self.query(context).filter_by_type(cls.resource_type)
-        if cls.node_predicate:
-            query = query.filter(cls.node_predicate)
-        names = query.names()
-        self.value = len(names)
-        if names:
-            self.diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
-        logger.info(cls.log_message.format(value=self.value))
-
-
-class DbtColumnDiagnosticMetric(DbtMetric):
-    """Base class for metrics that count and list columns.
-
-    Produces both a count and a diagnostic listing the columns.
-
-    Subclasses should define:
-    - name, description, unit (ClassVars)
-    - resource_type: The NodeType to filter by (default: Model)
     - node_predicate (optional): Filter for nodes
-    - column_predicate (optional): Filter for columns
+    - column_predicate (optional): Filter for columns (when count_columns=True)
     - diagnostic_prefix: Prefix for diagnostic message
     - log_message: Template for log message (uses {value})
+    - count_columns: Set to True to count columns instead of nodes
     """
 
     resource_type: ClassVar[NodeType] = NodeType.Model
     node_predicate: ClassVar[Callable[[Any], bool] | None] = None
     column_predicate: ClassVar[Callable[[Any, str, Any], bool] | None] = None
-    diagnostic_prefix: ClassVar[str] = "Columns"
-    log_message: ClassVar[str] = "Found {value} columns"
+    diagnostic_prefix: ClassVar[str] = "Items"
+    log_message: ClassVar[str] = "Found {value} items"
+    count_columns: ClassVar[bool] = False
 
     def calculate(self, context: Context, metrics: dict) -> None:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
         if cls.node_predicate:
             query = query.filter(cls.node_predicate)
-        names = query.column_names(cls.column_predicate)
+
+        if cls.count_columns:
+            names = query.column_names(cls.column_predicate)
+        else:
+            names = query.names()
+
         self.value = len(names)
         if names:
             self.diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
         logger.info(cls.log_message.format(value=self.value))
+
+
+# Alias for backward compatibility
+DbtColumnDiagnosticMetric = DbtDiagnosticMetric

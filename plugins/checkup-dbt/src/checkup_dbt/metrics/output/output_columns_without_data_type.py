@@ -12,3 +12,4 @@ class DbtOutputColumnsWithoutDataTypeMetric(DbtColumnDiagnosticMetric):
     column_predicate = column_missing_data_type
     diagnostic_prefix: ClassVar[str] = "Output columns without data type"
     log_message: ClassVar[str] = "Found {value} output columns without data type"
+    count_columns: ClassVar[bool] = True
