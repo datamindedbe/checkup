@@ -187,8 +187,3 @@ def column_has_description(_node: Any, _col_name: str, col: Any) -> bool:
 def column_missing_data_type(_node: Any, _col_name: str, col: Any) -> bool:
     """Check if column is missing a data type."""
     return col.data_type is None
-
-
-def output_column_missing_data_type(node: Any, _col_name: str, col: Any) -> bool:
-    """Check if column in output model is missing a data type."""
-    return is_output_model(node) and col.data_type is None
