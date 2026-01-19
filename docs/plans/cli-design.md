@@ -41,28 +41,28 @@ Key complexity factors:
 Following Airflow's proven pattern, use **Python files as the configuration format**. The CLI discovers and operates on these files.
 
 ```python
-# checkup_dbt.py - A "checkfile" (like an Airflow DAG file)
-from checkup import Checkfile
+# checkup_dbt.py - A "checkup" (like an Airflow DAG file)
+from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtTestsMetric
 from checkup.providers.tags import TagProvider
 
 # Define the measurement configuration
-checkfile = Checkfile(
+checkup = Checkup(
     name="dbt-metrics",
     description="dbt project health metrics",
 )
 
-checkfile.add_metrics([
+checkup.add_metrics([
     DbtModelsMetric,
     DbtTestsMetric,
 ])
 
-checkfile.add_provider_set([
+checkup.add_provider_set([
     DbtManifestProvider(manifest_path="./project_a/target/manifest.json"),
     TagProvider(project="project_a", domain="sales"),
 ])
 
-checkfile.add_provider_set([
+checkup.add_provider_set([
     DbtManifestProvider(manifest_path="./project_b/target/manifest.json"),
     TagProvider(project="project_b", domain="marketing"),
 ])
@@ -70,7 +70,7 @@ checkfile.add_provider_set([
 
 **CLI usage:**
 ```bash
-checkup run checkup_dbt.py              # Run the checkfile
+checkup run checkup_dbt.py              # Run the checkup
 checkup run checkup_dbt.py -o report.html  # Output to HTML
 checkup validate checkup_dbt.py         # Validate without running
 checkup list checkup_dbt.py             # List metrics/providers
@@ -85,7 +85,7 @@ checkup list checkup_dbt.py             # List metrics/providers
 | **No config split** | Single source of truth in one file |
 | **Maximum flexibility** | Loops, conditionals, imports, functions |
 | **Testable** | Can unit test configuration logic |
-| **Discoverable** | CLI can scan directories for checkfiles |
+| **Discoverable** | CLI can scan directories for checkups |
 
 ### Alternative: Builder Pattern (Current API)
 
@@ -106,7 +106,7 @@ hub = (
 )
 ```
 
-The CLI detects either a `checkfile` or `hub` variable in the module.
+The CLI detects either a `checkup` or `hub` variable in the module.
 
 ### Dynamic Configuration Example
 
@@ -115,13 +115,13 @@ The Python approach shines for dynamic setups:
 ```python
 # checkup_all_projects.py
 from pathlib import Path
-from checkup import Checkfile
+from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtColumnTestCoverageMetric
 from checkup.providers.tags import TagProvider
 
-checkfile = Checkfile(name="all-dbt-projects")
+checkup = Checkup(name="all-dbt-projects")
 
-checkfile.add_metrics([
+checkup.add_metrics([
     DbtModelsMetric,
     DbtColumnTestCoverageMetric,
 ])
@@ -130,7 +130,7 @@ checkfile.add_metrics([
 for project_dir in Path("./projects").iterdir():
     manifest = project_dir / "target" / "manifest.json"
     if manifest.exists():
-        checkfile.add_provider_set([
+        checkup.add_provider_set([
             DbtManifestProvider(manifest_path=manifest),
             TagProvider(
                 project=project_dir.name,
@@ -172,21 +172,21 @@ Typer is built on Click but leverages Python type hints for automatic argument p
 
 ```
 checkup
-├── run           # Execute a checkfile
-├── validate      # Validate a checkfile without running
-├── list          # List metrics/providers in a checkfile
-├── init          # Generate starter checkfile
+├── run           # Execute a checkup
+├── validate      # Validate a checkup without running
+├── list          # List metrics/providers in a checkup
+├── init          # Generate starter checkup
 └── version       # Show version info
 ```
 
 ### Command Details
 
-#### `checkup run <checkfile>`
+#### `checkup run <checkup>`
 
-Execute metrics defined in a Python checkfile.
+Execute metrics defined in a Python checkup.
 
 ```bash
-# Run a checkfile
+# Run a checkup
 checkup run checkup_dbt.py
 
 # Output to file (format inferred from extension)
@@ -220,7 +220,7 @@ checkup run checkup_dbt.py --fail-on-error
 
 | Argument | Type | Required | Description |
 |----------|------|----------|-------------|
-| `checkfile` | Path | Yes | Python checkfile to execute |
+| `checkup` | Path | Yes | Python checkup to execute |
 
 **Options:**
 
@@ -242,18 +242,18 @@ checkup run checkup_dbt.py --fail-on-error
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | Configuration/checkfile error |
+| 1 | Configuration/checkup error |
 | 2 | Metric execution error (with `--fail-on-error`) |
 | 3 | Invalid arguments |
 
 ---
 
-#### `checkup list <checkfile>`
+#### `checkup list <checkup>`
 
-Inspect a checkfile's metrics and providers.
+Inspect a checkup's metrics and providers.
 
 ```bash
-# List metrics in a checkfile
+# List metrics in a checkup
 checkup list checkup_dbt.py
 
 # Detailed output
@@ -272,7 +272,7 @@ checkup list checkup_dbt.py --providers
 **Output Example:**
 
 ```
-Checkfile: checkup_dbt.py
+Checkup: checkup_dbt.py
 Name: dbt-metrics
 Description: dbt project health metrics
 
@@ -297,12 +297,12 @@ Dependency Graph:
 
 ---
 
-#### `checkup validate <checkfile>`
+#### `checkup validate <checkup>`
 
-Validate a checkfile without executing.
+Validate a checkup without executing.
 
 ```bash
-# Validate checkfile
+# Validate checkup
 checkup validate checkup_dbt.py
 
 # Verbose output
@@ -312,7 +312,7 @@ checkup validate checkup_dbt.py -v
 **Checks performed:**
 
 1. Python syntax valid
-2. Checkfile or hub variable found
+2. Checkup or hub variable found
 3. All metric classes importable
 4. All provider instances valid
 5. Dependency graph valid (no cycles)
@@ -326,21 +326,21 @@ checkup validate checkup_dbt.py -v
 Validating checkup_dbt.py...
 
 ✓ Python syntax valid
-✓ Checkfile 'dbt-metrics' found
+✓ Checkup 'dbt-metrics' found
 ✓ 3 metrics registered
 ✓ 2 provider sets configured
 ✓ Dependency graph valid (no cycles)
 ✓ Provider requirements satisfied
 ✓ All metrics pickleable
 
-Checkfile is valid.
+Checkup is valid.
 ```
 
 ---
 
 #### `checkup init`
 
-Generate a starter checkfile, optionally tailored to a specific plugin.
+Generate a starter checkup, optionally tailored to a specific plugin.
 
 ```bash
 # Interactive - prompts for plugin selection and configuration
@@ -350,7 +350,7 @@ checkup init
 checkup init --plugin dbt
 
 # Output to specific file
-checkup init --plugin dbt -o my_checkfile.py
+checkup init --plugin dbt -o my_checkup.py
 
 # Non-interactive with defaults
 checkup init --plugin dbt --defaults
@@ -361,7 +361,7 @@ checkup init --list
 
 **How `checkup init` works:**
 
-The init command generates a starter checkfile. It's intentionally simple - the user customizes it for their specific setup.
+The init command generates a starter checkup. It's intentionally simple - the user customizes it for their specific setup.
 
 ```bash
 # Basic: generate minimal template
@@ -371,7 +371,7 @@ checkup init
 checkup init --plugin dbt
 
 # Output to specific file
-checkup init -o my_checkfile.py
+checkup init -o my_checkup.py
 ```
 
 **Basic template (no plugin):**
@@ -380,20 +380,20 @@ checkup init -o my_checkfile.py
 # checkup.py - Generated by checkup init
 """Project health metrics."""
 
-from checkup import Checkfile
+from checkup import Checkup
 from checkup.providers.tags import TagProvider
 
-checkfile = Checkfile(
+checkup = Checkup(
     name="my-metrics",
     description="Project health metrics",
 )
 
 # Add your metrics here
-# checkfile.add_metrics([...])
+# checkup.add_metrics([...])
 
 # Add your provider sets here
 # Each provider set represents one context (project, environment, etc.)
-# checkfile.add_provider_set([
+# checkup.add_provider_set([
 #     SomeProvider(...),
 #     TagProvider(project="my-project"),
 # ])
@@ -406,7 +406,7 @@ checkfile = Checkfile(
 """dbt project health metrics."""
 
 from pathlib import Path
-from checkup import Checkfile
+from checkup import Checkup
 from checkup_dbt import (
     DbtManifestProvider,
     DbtModelsMetric,
@@ -415,12 +415,12 @@ from checkup_dbt import (
 )
 from checkup.providers.tags import TagProvider
 
-checkfile = Checkfile(
+checkup = Checkup(
     name="dbt-metrics",
     description="dbt project health metrics",
 )
 
-checkfile.add_metrics([
+checkup.add_metrics([
     DbtModelsMetric,
     DbtTestsMetric,
     DbtColumnTestCoverageMetric,
@@ -428,13 +428,13 @@ checkfile.add_metrics([
 
 # Configure your dbt project(s) here
 # Option 1: Single project with pre-built manifest
-checkfile.add_provider_set([
+checkup.add_provider_set([
     DbtManifestProvider(manifest_path="./target/manifest.json"),
     TagProvider(project="my-project"),
 ])
 
 # Option 2: Single project, parse on-the-fly
-# checkfile.add_provider_set([
+# checkup.add_provider_set([
 #     DbtManifestProvider(dbt_project_dir="./"),
 #     TagProvider(project="my-project"),
 # ])
@@ -442,7 +442,7 @@ checkfile.add_provider_set([
 # Option 3: Multiple projects (uncomment and customize)
 # PROJECTS = ["sales", "marketing", "finance"]
 # for project in PROJECTS:
-#     checkfile.add_provider_set([
+#     checkup.add_provider_set([
 #         DbtManifestProvider(manifest_path=f"./{project}/target/manifest.json"),
 #         TagProvider(project=project),
 #     ])
@@ -466,7 +466,7 @@ def get_init_template() -> str:
 """dbt project health metrics."""
 
 from pathlib import Path
-from checkup import Checkfile
+from checkup import Checkup
 from checkup_dbt import (
     DbtManifestProvider,
     DbtModelsMetric,
@@ -508,28 +508,28 @@ checkup version
 
 ---
 
-## Checkfile API
+## Checkup API
 
-A checkfile is a Python module containing a `checkfile` or `hub` variable that defines the measurement configuration.
+A checkup is a Python module containing a `checkup` or `hub` variable that defines the measurement configuration.
 
-### Checkfile Class
+### Checkup Class
 
 ```python
-from checkup import Checkfile
+from checkup import Checkup
 
-checkfile = Checkfile(
+checkup = Checkup(
     name="my-metrics",                    # Required: unique identifier
     description="My project metrics",     # Optional: human-readable description
 )
 
 # Add metrics (list of metric classes)
-checkfile.add_metrics([MetricA, MetricB])
+checkup.add_metrics([MetricA, MetricB])
 
 # Add provider set (list of provider instances)
-checkfile.add_provider_set([ProviderA(), ProviderB()])
+checkup.add_provider_set([ProviderA(), ProviderB()])
 
 # Add multiple provider sets at once
-checkfile.add_provider_sets([
+checkup.add_provider_sets([
     [ProviderA(config="a"), TagProvider(env="a")],
     [ProviderA(config="b"), TagProvider(env="b")],
 ])
@@ -551,7 +551,7 @@ hub = (
 )
 ```
 
-The CLI detects either `checkfile` or `hub` at module level.
+The CLI detects either `checkup` or `hub` at module level.
 
 ### Complete Example
 
@@ -560,7 +560,7 @@ The CLI detects either `checkfile` or `hub` at module level.
 """dbt project health metrics for all projects."""
 
 from pathlib import Path
-from checkup import Checkfile
+from checkup import Checkup
 from checkup_dbt import (
     DbtManifestProvider,
     DbtModelsMetric,
@@ -578,14 +578,14 @@ DOMAIN_MAP = {
     "finance-reporting": "finance",
 }
 
-# Create checkfile
-checkfile = Checkfile(
+# Create checkup
+checkup = Checkup(
     name="dbt-health",
     description="dbt project health metrics across all projects",
 )
 
 # Define metrics to calculate
-checkfile.add_metrics([
+checkup.add_metrics([
     DbtModelsMetric,
     DbtTestsMetric,
     DbtModelsWithDescriptionMetric,
@@ -602,7 +602,7 @@ for project_dir in sorted(PROJECTS_DIR.iterdir()):
         print(f"Warning: No manifest found for {project_dir.name}")
         continue
 
-    checkfile.add_provider_set([
+    checkup.add_provider_set([
         DbtManifestProvider(manifest_path=manifest),
         TagProvider(
             project=project_dir.name,
@@ -611,20 +611,20 @@ for project_dir in sorted(PROJECTS_DIR.iterdir()):
     ])
 
 # Validate at import time (optional, helps catch errors early)
-checkfile.validate()
+checkup.validate()
 ```
 
 ### Metric Configuration
 
-Pass configuration to metrics via the checkfile:
+Pass configuration to metrics via the checkup:
 
 ```python
 from checkup_dbt import DbtModelsNotAdheringToNamingConventionMetric
 
-checkfile = Checkfile(name="configured-metrics")
+checkup = Checkup(name="configured-metrics")
 
 # Configure specific metrics
-checkfile.add_metrics([
+checkup.add_metrics([
     DbtModelsNotAdheringToNamingConventionMetric,
 ], config={
     "dbt_naming_convention": {
@@ -639,11 +639,11 @@ checkfile.add_metrics([
 
 ```python
 import os
-from checkup import Checkfile
+from checkup import Checkup
 
 ENV = os.getenv("CHECKUP_ENV", "dev")
 
-checkfile = Checkfile(name=f"metrics-{ENV}")
+checkup = Checkup(name=f"metrics-{ENV}")
 
 if ENV == "prod":
     # Production: all projects
@@ -653,7 +653,7 @@ else:
     projects = ["sales"]
 
 for project in projects:
-    checkfile.add_provider_set([
+    checkup.add_provider_set([
         DbtManifestProvider(manifest_path=f"./{project}/target/manifest.json"),
         TagProvider(project=project, environment=ENV),
     ])
@@ -930,7 +930,7 @@ dependencies = [
 ### Scenario 1: Quick dbt Project Check
 
 ```bash
-# Generate starter checkfile
+# Generate starter checkup
 checkup init --plugin dbt -o checkup_dbt.py
 
 # Edit the generated file to point to your manifest
@@ -943,15 +943,15 @@ checkup run checkup_dbt.py
 ```python
 # checkup_projects.py
 from pathlib import Path
-from checkup import Checkfile
+from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric, DbtColumnTestCoverageMetric
 from checkup.providers.tags import TagProvider
 
-checkfile = Checkfile(name="multi-project")
-checkfile.add_metrics([DbtModelsMetric, DbtColumnTestCoverageMetric])
+checkup = Checkup(name="multi-project")
+checkup.add_metrics([DbtModelsMetric, DbtColumnTestCoverageMetric])
 
 for project in ["sales", "marketing", "finance"]:
-    checkfile.add_provider_set([
+    checkup.add_provider_set([
         DbtManifestProvider(manifest_path=f"./projects/{project}/target/manifest.json"),
         TagProvider(project=project),
     ])
@@ -1008,16 +1008,16 @@ checkup diff baseline.csv current.csv  # Future feature
 ```python
 # checkup_dev.py - Fast iteration during development
 import os
-from checkup import Checkfile
+from checkup import Checkup
 from checkup_dbt import DbtManifestProvider, DbtModelsMetric
 
-checkfile = Checkfile(name="dev-check")
+checkup = Checkup(name="dev-check")
 
 # Only run lightweight metrics during development
-checkfile.add_metrics([DbtModelsMetric])
+checkup.add_metrics([DbtModelsMetric])
 
 # Use dbt_project_dir to parse on-the-fly (no pre-built manifest needed)
-checkfile.add_provider_set([
+checkup.add_provider_set([
     DbtManifestProvider(dbt_project_dir="./"),
 ])
 ```
