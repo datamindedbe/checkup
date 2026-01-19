@@ -5,8 +5,8 @@
     "static_analysis_parsed_path_count": 0,
     "is_partial_parse_enabled": true,
     "is_static_analysis_enabled": true,
-    "read_files_elapsed": 0.13329768200000558,
-    "load_all_elapsed": 0.30157919699999525,
+    "read_files_elapsed": 0.11944025299999339,
+    "load_all_elapsed": 0.28634648399997786,
     "projects": [
         {
             "project_name": "sample_dbt_project",

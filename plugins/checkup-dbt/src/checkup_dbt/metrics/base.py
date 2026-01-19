@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from enum import Enum, auto
 from typing import Any, ClassVar
 
 from dbt.artifacts.resources.types import NodeType
@@ -16,6 +17,13 @@ from checkup_dbt.provider import DbtManifestProvider
 NamingConventionChecker = Callable[[Context, Any], bool]
 
 logger = logging.getLogger(__name__)
+
+
+class CountTarget(Enum):
+    """What to count in a diagnostic metric."""
+
+    NODES = auto()
+    COLUMNS = auto()
 
 
 class DbtMetric(Metric):
@@ -100,16 +108,15 @@ class DbtDiagnosticMetric(DbtMetric):
     """Base class for metrics that count and list items with diagnostics.
 
     Produces both a count and a diagnostic listing the items.
-    Can count either nodes or columns based on the count_columns flag.
 
     Subclasses should define:
     - name, description, unit (ClassVars)
     - resource_type: The NodeType to filter by
     - node_predicate (optional): Filter for nodes
-    - column_predicate (optional): Filter for columns (when count_columns=True)
+    - column_predicate (optional): Filter for columns (when count_target=COLUMNS)
     - diagnostic_prefix: Prefix for diagnostic message
     - log_message: Template for log message (uses {value})
-    - count_columns: Set to True to count columns instead of nodes
+    - count_target: What to count (NODES or COLUMNS)
     """
 
     resource_type: ClassVar[NodeType] = NodeType.Model
@@ -117,7 +124,7 @@ class DbtDiagnosticMetric(DbtMetric):
     column_predicate: ClassVar[Callable[[Any, str, Any], bool] | None] = None
     diagnostic_prefix: ClassVar[str] = "Items"
     log_message: ClassVar[str] = "Found {value} items"
-    count_columns: ClassVar[bool] = False
+    count_target: ClassVar[CountTarget] = CountTarget.NODES
 
     def calculate(self, context: Context, metrics: dict) -> None:
         cls = type(self)
@@ -125,7 +132,7 @@ class DbtDiagnosticMetric(DbtMetric):
         if cls.node_predicate:
             query = query.filter(cls.node_predicate)
 
-        if cls.count_columns:
+        if cls.count_target == CountTarget.COLUMNS:
             names = query.column_names(cls.column_predicate)
         else:
             names = query.names()
@@ -134,7 +141,3 @@ class DbtDiagnosticMetric(DbtMetric):
         if names:
             self.diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
         logger.info(cls.log_message.format(value=self.value))
-
-
-# Alias for backward compatibility
-DbtColumnDiagnosticMetric = DbtDiagnosticMetric
