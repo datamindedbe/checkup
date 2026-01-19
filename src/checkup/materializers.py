@@ -13,6 +13,63 @@ from rich.table import Table
 from checkup.metric import Metric
 
 
+def group_metrics_by_tags(
+    metrics: list[Metric],
+    tag1: str,
+    tag2: str,
+    default_value: str = "Unknown",
+) -> dict[tuple[str, str], list[Metric]]:
+    """Group metrics by two tag values.
+
+    Args:
+        metrics: List of metrics to group
+        tag1: First tag name for grouping
+        tag2: Second tag name for grouping
+        default_value: Value to use when tag is missing
+
+    Returns:
+        Dict mapping (tag1_value, tag2_value) tuples to metric lists
+    """
+    groups: dict[tuple[str, str], list[Metric]] = {}
+    for metric in metrics:
+        tag1_value = metric.tags.get(tag1, default_value)
+        tag2_value = metric.tags.get(tag2, default_value)
+        key = (tag1_value, tag2_value)
+
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(metric)
+
+    return groups
+
+
+def group_metrics_hierarchical(
+    metrics: list[Metric],
+    tag1: str,
+    tag2: str,
+    default_value: str = "Ungrouped",
+) -> dict[str, dict[str, list[Metric]]]:
+    """Group metrics hierarchically by two tag values.
+
+    Args:
+        metrics: List of metrics to group
+        tag1: First tag name for top-level grouping
+        tag2: Second tag name for nested grouping
+        default_value: Value to use when tag is missing
+
+    Returns:
+        Nested dict: {tag1_value: {tag2_value: [metrics]}}
+    """
+    grouped: dict[str, dict[str, list[Metric]]] = defaultdict(lambda: defaultdict(list))
+
+    for metric in metrics:
+        group1_value = metric.tags.get(tag1, default_value)
+        group2_value = metric.tags.get(tag2, default_value)
+        grouped[group1_value][group2_value].append(metric)
+
+    return dict(grouped)
+
+
 class Materializer(ABC, BaseModel):
     """Base class for metric materializers.
 
@@ -67,16 +124,7 @@ class ConsoleMaterializer(Materializer):
 
         console = Console()
 
-        # Group metrics by group_tag_1 and group_tag_2 values
-        groups = {}
-        for metric in filtered:
-            tag1_value = metric.tags.get(self.group_tag_1, "Unknown")
-            tag2_value = metric.tags.get(self.group_tag_2, "Unknown")
-            group_key = (tag1_value, tag2_value)
-
-            if group_key not in groups:
-                groups[group_key] = []
-            groups[group_key].append(metric)
+        groups = group_metrics_by_tags(filtered, self.group_tag_1, self.group_tag_2)
 
         # Create a table for each group
         for (tag1_value, tag2_value), group_metrics in sorted(groups.items()):
@@ -152,7 +200,9 @@ class HTMLMaterializer(Materializer):
         filtered = self._filter_metrics(metrics, direct_metric_names)
 
         # Group metrics hierarchically
-        grouped = self._group_metrics(filtered)
+        grouped = group_metrics_hierarchical(
+            filtered, self.group_tag_1, self.group_tag_2
+        )
 
         # Generate HTML
         html = self._generate_html(grouped)
@@ -161,21 +211,6 @@ class HTMLMaterializer(Materializer):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.output_path, "w") as f:
             f.write(html)
-
-    def _group_metrics(self, metrics: list[Metric]) -> dict:
-        """Group metrics by group_tag_1 and group_tag_2.
-
-        Returns:
-            Nested dict: {group1_value: {group2_value: [metrics]}}
-        """
-        grouped = defaultdict(lambda: defaultdict(list))
-
-        for metric in metrics:
-            group1_value = metric.tags.get(self.group_tag_1, "Ungrouped")
-            group2_value = metric.tags.get(self.group_tag_2, "Ungrouped")
-            grouped[group1_value][group2_value].append(metric)
-
-        return dict(grouped)
 
     def _generate_html(self, grouped: dict) -> str:
         """Generate complete HTML document using Jinja2 template."""

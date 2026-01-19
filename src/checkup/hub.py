@@ -1,6 +1,8 @@
 """CheckHub main orchestration."""
 
 import logging
+import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
@@ -38,6 +40,174 @@ class MeasurementResult(BaseModel):
             materializer: Materializer instance for output
         """
         materializer.materialize(self.metrics, self.direct_metric_names)
+
+
+class ProviderExecutor:
+    """Executes providers and builds context.
+
+    Handles provider execution and separates tag data from regular context data.
+    """
+
+    def execute(
+        self, provider_set: list[Provider]
+    ) -> tuple[Context, dict[str, Any]]:
+        """Execute all providers and build namespaced context.
+
+        Each provider's data is added under its namespace (provider.name).
+        Providers implementing is_tag_provider() have their data returned
+        separately for merging into metric tags.
+
+        Args:
+            provider_set: List of provider instances
+
+        Returns:
+            Tuple of (context dict, tags dict)
+        """
+        context: Context = {}
+        tags: dict[str, Any] = {}
+
+        for provider in provider_set:
+            data = provider.provide()
+            if provider.is_tag_provider():
+                tags.update(data)
+            else:
+                context[provider.name] = data
+
+        return context, tags
+
+
+class MetricCalculator:
+    """Calculates metrics for a given context."""
+
+    def __init__(self, metric_configs: dict | None = None):
+        """Initialize calculator with optional metric configs.
+
+        Args:
+            metric_configs: Optional dict mapping metric names to config dicts
+        """
+        self._configs = metric_configs or {}
+
+    def calculate(
+        self,
+        execution_order: list[type[Metric]],
+        context: Context,
+        tags: dict[str, Any],
+        provided_classes: set[type[Provider]],
+    ) -> list[Metric]:
+        """Calculate all metrics in execution order.
+
+        Args:
+            execution_order: Topologically sorted metric classes
+            context: Context dict from providers
+            tags: Tags dict to merge into metrics
+            provided_classes: Set of provider classes available
+
+        Returns:
+            List of calculated metrics
+        """
+        calculated: dict[type[Metric], Metric] = {}
+        result_metrics: list[Metric] = []
+
+        for metric_cls in execution_order:
+            missing = self._get_missing_providers(metric_cls, provided_classes)
+            if missing:
+                logger.warning(
+                    "Skipping metric %s: missing providers %s",
+                    metric_cls.name,
+                    sorted(cls.name for cls in missing),
+                )
+                continue
+
+            metric = metric_cls(**self._configs.get(metric_cls.name, {}))
+            metric.tags.update(tags)
+            metric.calculate(context, calculated)
+            calculated[metric_cls] = metric
+            result_metrics.append(metric)
+
+        return result_metrics
+
+    def _get_missing_providers(
+        self,
+        metric_cls: type[Metric],
+        provided_classes: set[type[Provider]],
+    ) -> set[type[Provider]]:
+        """Get providers required by metric but not available.
+
+        Args:
+            metric_cls: Metric class to check
+            provided_classes: Available provider classes
+
+        Returns:
+            Set of missing provider classes
+        """
+        return set(metric_cls.providers()) - provided_classes
+
+
+def _collect_required_providers(metrics: list[type[Metric]]) -> set[type[Provider]]:
+    """Collect all required provider classes from metrics.
+
+    Args:
+        metrics: List of metric classes
+
+    Returns:
+        Set of required provider classes
+    """
+    required: set[type[Provider]] = set()
+    for metric_cls in metrics:
+        required.update(metric_cls.providers())
+    return required
+
+
+def _validate_providers(
+    metrics: list[type[Metric]],
+    provider_sets: list[list[Provider]],
+) -> None:
+    """Validate all required providers are present in each provider set.
+
+    Logs a warning for any missing providers instead of failing.
+
+    Args:
+        metrics: List of metric classes to check
+        provider_sets: List of provider instance lists to validate
+    """
+    required = _collect_required_providers(metrics)
+
+    if not required:
+        return  # No providers required
+
+    for i, provider_set in enumerate(provider_sets):
+        provided_classes = {type(p) for p in provider_set}
+        missing = required - provided_classes
+
+        if missing:
+            logger.warning(
+                "Provider set %d is missing required providers: %s",
+                i,
+                sorted(cls.name for cls in missing),
+            )
+
+
+def _measure_single_provider_set(
+    provider_set: list[Provider],
+    execution_order: list[type[Metric]],
+    metric_configs: dict,
+) -> list[Metric]:
+    """Calculate all metrics for a single provider set.
+
+    This is a module-level function for ProcessPoolExecutor compatibility.
+
+    Args:
+        provider_set: List of provider instances
+        execution_order: Topologically sorted metric classes
+        metric_configs: Config dict for metrics
+
+    Returns:
+        List of calculated metrics with tags merged
+    """
+    context, tags = ProviderExecutor().execute(provider_set)
+    return MetricCalculator(metric_configs).calculate(
+        execution_order, context, tags, {type(p) for p in provider_set}
+    )
 
 
 class CheckHub:
@@ -88,116 +258,6 @@ class CheckHub:
             self._provider_sets.append(list(provider_set))
         return self
 
-    def _validate_providers(
-        self,
-        metrics: list[type[Metric]],
-        provider_sets: list[list[Provider]],
-    ) -> None:
-        """Validate all required providers are present in each provider set.
-
-        Logs a warning for any missing providers instead of failing.
-
-        Args:
-            metrics: List of metric classes to check
-            provider_sets: List of provider instance lists to validate
-        """
-        # Collect all required provider classes from metrics
-        required: set[type[Provider]] = set()
-        for metric_cls in metrics:
-            required.update(metric_cls.providers())
-
-        if not required:
-            return  # No providers required
-
-        # Check each provider set
-        for i, provider_set in enumerate(provider_sets):
-            provided_classes = {type(p) for p in provider_set}
-            missing = required - provided_classes
-
-            if missing:
-                missing_names = sorted(cls.name for cls in missing)
-                logger.warning(
-                    "Provider set %d is missing required providers: %s",
-                    i,
-                    missing_names,
-                )
-
-    def _execute_providers(
-        self,
-        provider_set: list[Provider],
-    ) -> tuple[Context, dict[str, Any]]:
-        """Execute all providers and build namespaced context.
-
-        Each provider's data is added under its namespace (provider.name).
-        TagProvider data is returned separately for merging into tags.
-
-        Args:
-            provider_set: List of provider instances
-
-        Returns:
-            Tuple of (context dict, tags dict)
-        """
-        from checkup.providers.tags import TagProvider
-
-        context: Context = {}
-        tags: dict[str, Any] = {}
-
-        for provider in provider_set:
-            data = provider.provide()
-            if isinstance(provider, TagProvider):
-                tags.update(data)
-            else:
-                context[provider.name] = data
-
-        return context, tags
-
-    def _measure_single_provider_set(
-        self,
-        provider_set: list[Provider],
-        execution_order: list[type[Metric]],
-        metric_configs: dict,
-    ) -> list[Metric]:
-        """Calculate all metrics for a single provider set.
-
-        Args:
-            provider_set: List of provider instances
-            execution_order: Topologically sorted metric classes
-            metric_configs: Config dict for metrics
-
-        Returns:
-            List of calculated metrics with tags merged
-        """
-        context, tags = self._execute_providers(provider_set)
-
-        # Determine which provider types are available
-        provided_classes = {type(p) for p in provider_set}
-
-        calculated: dict[type[Metric], Metric] = {}
-        result_metrics: list[Metric] = []
-
-        for metric_cls in execution_order:
-            # Check if all required providers for this metric are present
-            required_providers = set(metric_cls.providers())
-            missing_providers = required_providers - provided_classes
-
-            if missing_providers:
-                missing_names = sorted(cls.name for cls in missing_providers)
-                logger.warning(
-                    "Skipping metric %s: missing providers %s",
-                    metric_cls.name,
-                    missing_names,
-                )
-                continue
-
-            config = metric_configs.get(metric_cls.name, {})
-            metric = metric_cls(**config)
-            metric.tags.update(tags)
-            metric.calculate(context, calculated)
-            calculated[metric_cls] = metric
-            result_metrics.append(metric)
-
-        return result_metrics
-
     def measure(
         self,
         max_workers: int | None = None,
@@ -210,27 +270,18 @@ class CheckHub:
         Returns:
             MeasurementResult containing all calculated metrics and errors
         """
-        import os
-        from concurrent.futures import ProcessPoolExecutor, as_completed
-
         metric_configs: dict = {}
         if self._config_path:
             metric_configs = load_config(self._config_path)
 
-        graph = build_dependency_graph(self._metrics)
-        execution_order = topological_sort(graph)
+        execution_order = topological_sort(build_dependency_graph(self._metrics))
         direct_metric_names = {m.name for m in self._metrics}
-
-        # Collect required providers from metrics
-        required_providers: set[type[Provider]] = set()
-        for metric_cls in execution_order:
-            required_providers.update(metric_cls.providers())
 
         # Use empty provider set if none specified and none required
         provider_sets = self._provider_sets if self._provider_sets else [[]]
 
         # Validate providers before running
-        self._validate_providers(list(execution_order), provider_sets)
+        _validate_providers(list(execution_order), provider_sets)
 
         all_metrics: list[Metric] = []
         all_errors: list[tuple[list[Provider], Exception]] = []
@@ -239,7 +290,7 @@ class CheckHub:
         with ProcessPoolExecutor(max_workers=workers) as executor:
             future_to_provider_set = {
                 executor.submit(
-                    self._measure_single_provider_set,
+                    _measure_single_provider_set,
                     provider_set=ps,
                     execution_order=execution_order,
                     metric_configs=metric_configs,

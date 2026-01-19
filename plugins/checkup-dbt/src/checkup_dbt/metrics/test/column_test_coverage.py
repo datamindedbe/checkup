@@ -11,6 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class DbtColumnTestCoverageMetric(DbtMetric):
+    """Percentage of columns with at least one test.
+
+    This is a derived metric that depends on other metrics,
+    so it implements calculate() directly.
+    """
+
     name: ClassVar[str] = "dbt_column_test_coverage"
     description: ClassVar[str] = "Percentage of columns with at least one test"
     unit: ClassVar[str] = "percent"

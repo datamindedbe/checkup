@@ -1,29 +1,14 @@
-import logging
 from typing import ClassVar
 
-from checkup.types import Context
-from checkup_dbt.metrics.base import DbtMetric
-from checkup_dbt.metrics.output.output_models import is_output_model
-from checkup_dbt.provider import DbtManifestProvider
-
-logger = logging.getLogger(__name__)
+from checkup_dbt.manifest_query import is_output_model
+from checkup_dbt.metrics.base import CountTarget, DbtDiagnosticMetric
 
 
-class DbtOutputColumnsWithoutDataTypeMetric(DbtMetric):
+class DbtOutputColumnsWithoutDataTypeMetric(DbtDiagnosticMetric):
     name: ClassVar[str] = "dbt_output_columns_without_data_type"
     description: ClassVar[str] = "Number of columns in output models without data type"
     unit: ClassVar[str] = "columns"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context[DbtManifestProvider.name]["manifest"]
-        columns_without_data_type = [
-            f"{node.name}.{column_name}"
-            for node in manifest.nodes.values()
-            if is_output_model(node)
-            for column_name, column in node.columns.items()
-            if column.data_type is None
-        ]
-        self.value = len(columns_without_data_type)
-        if columns_without_data_type:
-            self.diagnostic = f"Output columns without data type: {', '.join(sorted(columns_without_data_type))}"
-        logger.info(f"Found {self.value} output columns without data type")
+    predicate = staticmethod(lambda n, _name, col: is_output_model(n) and col.data_type is None)
+    diagnostic_prefix: ClassVar[str] = "Output columns without data type"
+    log_message: ClassVar[str] = "Found {value} output columns without data type"
+    count_target: ClassVar[CountTarget] = CountTarget.COLUMNS

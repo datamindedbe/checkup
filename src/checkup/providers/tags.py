@@ -34,3 +34,7 @@ class TagProvider(Provider):
             Dict of tags to merge into metric.tags
         """
         return self.tags
+
+    def is_tag_provider(self) -> bool:
+        """Return True since this is a tag provider."""
+        return True

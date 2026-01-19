@@ -3,8 +3,9 @@
 import json
 import logging
 import os
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Iterator
 
 from dbt.cli.main import dbtRunner
 from dbt.contracts.graph.manifest import Manifest
@@ -12,6 +13,26 @@ from dbt.contracts.graph.manifest import Manifest
 from checkup.provider import Provider
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def preserve_cwd() -> Iterator[None]:
+    """Context manager that preserves the current working directory.
+
+    Restores the original working directory after the context exits,
+    even if an exception is raised.
+
+    Example:
+        with preserve_cwd():
+            # Operations that might change cwd
+            os.chdir("/some/path")
+        # cwd is restored here
+    """
+    original_cwd = Path.cwd()
+    try:
+        yield
+    finally:
+        os.chdir(original_cwd)
 
 
 class DbtManifestProvider(Provider):
@@ -78,9 +99,7 @@ class DbtManifestProvider(Provider):
         """Parse dbt project to generate manifest."""
         logger.info(f"Parsing dbt project at {self.dbt_project_dir}")
 
-        cwd = Path.cwd()
-
-        try:
+        with preserve_cwd():
             common_args = ["--project-dir", str(self.dbt_project_dir)]
 
             profiles_dir = self.profiles_dir or self.dbt_project_dir
@@ -98,6 +117,3 @@ class DbtManifestProvider(Provider):
 
             manifest = parse_result.result
             return {"manifest": manifest}
-
-        finally:
-            os.chdir(cwd)

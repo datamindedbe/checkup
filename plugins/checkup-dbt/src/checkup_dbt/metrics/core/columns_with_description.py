@@ -1,29 +1,13 @@
-import logging
 from typing import ClassVar
 
-from dbt.artifacts.resources.types import NodeType
-
-from checkup.types import Context
-from checkup_dbt.metrics.base import DbtMetric
-from checkup_dbt.provider import DbtManifestProvider
-
-logger = logging.getLogger(__name__)
+from checkup_dbt.manifest_query import column_has_description
+from checkup_dbt.metrics.base import CountTarget, DbtCountMetric
 
 
-class DbtColumnsWithDescriptionMetric(DbtMetric):
+class DbtColumnsWithDescriptionMetric(DbtCountMetric):
     name: ClassVar[str] = "dbt_columns_with_description"
     description: ClassVar[str] = "Number of columns with descriptions"
     unit: ClassVar[str] = "columns"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context[DbtManifestProvider.name]["manifest"]
-        self.value = len(
-            [
-                (node.name, column_name)
-                for node in manifest.nodes.values()
-                if node.resource_type == NodeType.Model
-                for column_name, column in node.columns.items()
-                if column.description != ""
-            ]
-        )
-        logger.info(f"Found {self.value} columns with descriptions")
+    count_target: ClassVar[CountTarget] = CountTarget.COLUMNS
+    predicate = column_has_description
+    log_message: ClassVar[str] = "Found {value} columns with descriptions"

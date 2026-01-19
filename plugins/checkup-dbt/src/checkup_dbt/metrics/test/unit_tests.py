@@ -1,28 +1,15 @@
-import logging
 from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
-from checkup.types import Context
-from checkup_dbt.metrics.base import DbtMetric
-from checkup_dbt.provider import DbtManifestProvider
-
-logger = logging.getLogger(__name__)
+from checkup_dbt.manifest_query import is_singular_test
+from checkup_dbt.metrics.base import DbtCountMetric
 
 
-class DbtUnitTestsMetric(DbtMetric):
+class DbtUnitTestsMetric(DbtCountMetric):
     name: ClassVar[str] = "dbt_unit_tests"
     description: ClassVar[str] = "Number of singular (unit) tests"
     unit: ClassVar[str] = "tests"
-
-    def calculate(self, context: Context, metrics: dict) -> None:
-        manifest = context[DbtManifestProvider.name]["manifest"]
-        self.value = len(
-            [
-                node
-                for node in manifest.nodes.values()
-                if node.resource_type == NodeType.Test
-                and getattr(node, "test_node_type", None) == "singular"
-            ]
-        )
-        logger.info(f"Found {self.value} unit tests")
+    resource_type: ClassVar[NodeType] = NodeType.Test
+    predicate = is_singular_test
+    log_message: ClassVar[str] = "Found {value} unit tests"

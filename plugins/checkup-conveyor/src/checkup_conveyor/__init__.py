@@ -1,53 +1,57 @@
-"""Python metrics for checkup."""
+"""Conveyor metrics for checkup."""
 
 import logging
-import os
-from typing import Callable
-
-import requests
+from typing import TYPE_CHECKING
 
 from checkup import Context
 from checkup.metric import Metric
+from checkup_conveyor.api_client import ConveyorApiClient
 from checkup_conveyor.provider import ConveyorProvider
+
+if TYPE_CHECKING:
+    from checkup.provider import Provider
 
 logger = logging.getLogger(__name__)
 
 
 class ConveyorMetric(Metric):
-    """Base class for Conveyor-related metrics."""
+    """Base class for Conveyor-related metrics.
 
-    base_url: str = "https://app.conveyordata.com/api/v2"
+    Provides access to a ConveyorApiClient instance for making API calls.
+    """
 
-    def get_conveyor_api_headers(self, context: Context):
-        api_key = context["ConveyorProvider"]["api_key"]
-        headers = {"Authorization": f"Bearer {api_key}"}
-        return headers
+    def get_api_client(self, context: Context) -> ConveyorApiClient:
+        """Get an API client configured from context.
 
-    def get_conveyor_project_id(self, context) -> str | None:
-        project_name = context["ConveyorProvider"]["project_name"]
-        r = requests.get(
-            f"{self.base_url}/projects",
-            headers=self.get_conveyor_api_headers(context),
-            params={"name": project_name},
-        ).json()
-        projects = r.get("projects", [])
-        if not projects:
-            logger.warning("No Conveyor project found with name: %s", project_name)
-            return None
-        return projects[0]["id"]
+        Args:
+            context: Context dict containing ConveyorProvider data
 
-    def get_environment_id(self, context) -> str | None:
-        env_name = context["ConveyorProvider"]["environment_name"]
-        r = requests.get(
-            f"{self.base_url}/environments",
-            headers=self.get_conveyor_api_headers(context),
-            params={"name": env_name},
-        ).json()
-        environments = r.get("environments", [])
-        if not environments:
-            logger.warning("No Conveyor environment found with name: %s", env_name)
-            return None
-        return environments[0]["id"]
+        Returns:
+            Configured ConveyorApiClient instance
+        """
+        return ConveyorApiClient(api_key=context[ConveyorProvider.name]["api_key"])
+
+    def get_project_name(self, context: Context) -> str:
+        """Get project name from context.
+
+        Args:
+            context: Context dict containing ConveyorProvider data
+
+        Returns:
+            Project name string
+        """
+        return context[ConveyorProvider.name]["project_name"]
+
+    def get_environment_name(self, context: Context) -> str:
+        """Get environment name from context.
+
+        Args:
+            context: Context dict containing ConveyorProvider data
+
+        Returns:
+            Environment name string
+        """
+        return context[ConveyorProvider.name]["environment_name"]
 
     @classmethod
     def providers(cls) -> list[type["Provider"]]:
