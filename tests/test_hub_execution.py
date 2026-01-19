@@ -1,8 +1,8 @@
-"""Tests for CheckHub execution with instance-based providers."""
+"""Tests for CheckUp execution with instance-based providers."""
 
 from typing import Any, ClassVar
 
-from checkup.hub import CheckHub
+from checkup.hub import CheckUp
 from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
@@ -66,7 +66,7 @@ class TestHubExecution:
     def test_measure_with_single_provider_set(self):
         """Test measuring with single provider set."""
         result = (
-            CheckHub()
+            CheckUp()
             .with_metrics([DataMetric])
             .with_providers([[DataProvider(value=42)]])
             .measure()
@@ -78,7 +78,7 @@ class TestHubExecution:
     def test_measure_with_multiple_provider_sets(self):
         """Test measuring across multiple provider sets."""
         result = (
-            CheckHub()
+            CheckUp()
             .with_metrics([DataMetric])
             .with_providers(
                 [
@@ -97,7 +97,7 @@ class TestHubExecution:
     def test_measure_with_tag_provider(self):
         """Test that TagProvider merges into metric tags."""
         result = (
-            CheckHub()
+            CheckUp()
             .with_metrics([DataMetric])
             .with_providers(
                 [
@@ -116,7 +116,7 @@ class TestHubExecution:
         import logging
 
         with caplog.at_level(logging.WARNING):
-            CheckHub().with_metrics([DataMetric]).with_providers([[]]).measure()
+            CheckUp().with_metrics([DataMetric]).with_providers([[]]).measure()
 
         assert "data" in caplog.text.lower()
 
@@ -124,7 +124,7 @@ class TestHubExecution:
         """Test measuring without providers when none required."""
         from conftest import DummyMetric
 
-        result = CheckHub().with_metrics([DummyMetric]).measure()
+        result = CheckUp().with_metrics([DummyMetric]).measure()
 
         assert len(result.metrics) == 1
         assert result.metrics[0].value == 42
@@ -136,7 +136,7 @@ class TestHubExecution:
         # Request both metrics but only provide DataProvider (not OtherProvider)
         with caplog.at_level(logging.WARNING):
             result = (
-                CheckHub()
+                CheckUp()
                 .with_metrics([DataMetric, OtherMetric])
                 .with_providers([[DataProvider(value=42)]])
                 .measure()
@@ -159,7 +159,7 @@ class TestHubExecution:
         # IntegrationDerivedMetric depends on IntegrationBaseMetric
         # If we don't provide IntegrationProvider, both should be skipped
         result = (
-            CheckHub()
+            CheckUp()
             .with_metrics([IntegrationBaseMetric, IntegrationDerivedMetric])
             .with_providers([[]])  # No providers
             .measure()

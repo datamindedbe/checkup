@@ -1,10 +1,10 @@
-"""Tests for CheckHub main orchestration."""
+"""Tests for CheckUp main orchestration."""
 
 import sys
 from io import StringIO
 from pathlib import Path
 
-from checkup.hub import CheckHub, MeasurementResult
+from checkup.hub import CheckUp, MeasurementResult
 from checkup.materializers import ConsoleMaterializer
 from conftest import (
     DependentDummyMetric,
@@ -15,17 +15,17 @@ from conftest import (
 
 
 def test_checkhub_creation():
-    """Test creating a CheckHub instance."""
-    hub = CheckHub()
+    """Test creating a CheckUp instance."""
+    hub = CheckUp()
 
     assert hub is not None
 
 
 def test_checkhub_with_metrics():
-    """Test registering metrics with CheckHub."""
-    hub = CheckHub().with_metrics([DummyMetric])
+    """Test registering metrics with CheckUp."""
+    hub = CheckUp().with_metrics([DummyMetric])
 
-    assert isinstance(hub, CheckHub)
+    assert isinstance(hub, CheckUp)
 
 
 def test_measurement_result_creation():
@@ -64,7 +64,7 @@ def test_measurement_result_errors_default_empty():
 
 def test_checkhub_measure_simple():
     """Test measuring a single metric with no dependencies."""
-    result = CheckHub().with_metrics([DummyMetric]).measure()
+    result = CheckUp().with_metrics([DummyMetric]).measure()
 
     assert len(result.metrics) == 1
     assert result.metrics[0].name == "dummy"
@@ -76,7 +76,7 @@ def test_checkhub_measure_with_dependencies():
 
     DependentDummyMetric depends on DummyMetric and doubles its value.
     """
-    result = CheckHub().with_metrics([DependentDummyMetric]).measure()
+    result = CheckUp().with_metrics([DependentDummyMetric]).measure()
 
     # All metrics returned (both direct and indirect)
     assert len(result.metrics) == 2
@@ -94,7 +94,7 @@ def test_checkhub_measure_deep_dependency_chain():
 
     DummyMetric(42) → DependentDummyMetric(84) → Level2Metric(94) → Level3Metric(8836)
     """
-    result = CheckHub().with_metrics([Level3Metric]).measure()
+    result = CheckUp().with_metrics([Level3Metric]).measure()
 
     # All 4 metrics returned
     assert len(result.metrics) == 4
@@ -114,7 +114,7 @@ def test_checkhub_measure_with_provider():
     from conftest import DummyProvider
 
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([ProviderDummyMetric])
         .with_providers([[DummyProvider()]])
         .measure()
@@ -130,7 +130,7 @@ def test_checkhub_measure_with_providers():
     from conftest import DummyProvider, ProviderDummyMetric
 
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([ProviderDummyMetric])
         .with_providers([[DummyProvider()]])
         .measure()
@@ -143,7 +143,7 @@ def test_checkhub_measure_with_config():
     """Test measuring metrics with YAML config."""
     config_path = Path(__file__).parent / "fixtures" / "test_config.yaml"
 
-    result = CheckHub(config_path=config_path).with_metrics([DummyMetric]).measure()
+    result = CheckUp(config_path=config_path).with_metrics([DummyMetric]).measure()
 
     assert len(result.metrics) == 1
     assert result.metrics[0].value == 200  # From YAML, not default 42
@@ -154,7 +154,7 @@ def test_measurement_result_materialize():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    CheckHub().with_metrics([DummyMetric]).measure().materialize(
+    CheckUp().with_metrics([DummyMetric]).measure().materialize(
         ConsoleMaterializer(group_tag_1="env", group_tag_2="team")
     )
 
@@ -169,7 +169,7 @@ def test_checkhub_measure_multiple_provider_sets():
     from checkup.providers.tags import TagProvider
 
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([DummyMetric])
         .with_providers(
             [
@@ -191,7 +191,7 @@ def test_checkhub_measure_parallel():
     from checkup.providers.tags import TagProvider
 
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([DummyMetric])
         .with_providers([[TagProvider(path=f"/repo{i}")] for i in range(10)])
         .measure(max_workers=4)

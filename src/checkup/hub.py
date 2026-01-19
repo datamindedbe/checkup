@@ -1,4 +1,4 @@
-"""CheckHub main orchestration."""
+"""CheckUp main orchestration."""
 
 import logging
 import os
@@ -21,9 +21,8 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from checkup.materializers import Materializer
 
-# Re-export for backwards compatibility
 __all__ = [
-    "CheckHub",
+    "CheckUp",
     "MeasurementResult",
     "ProviderError",
     "MetricPicklingError",
@@ -79,18 +78,18 @@ def _measure_single_provider_set(
     )
 
 
-class CheckHub:
+class CheckUp:
     """Main entry point for metrics calculation.
 
     Usage:
-        CheckHub()
+        CheckUp()
             .with_metrics([MetricA, MetricB])
             .measure()
             .materialize(ConsoleMaterializer())
     """
 
     def __init__(self, config_path: Path | None = None) -> None:
-        """Initialize CheckHub.
+        """Initialize CheckUp.
 
         Args:
             config_path: Optional path to YAML config file
@@ -99,7 +98,7 @@ class CheckHub:
         self._provider_sets: list[list[Provider]] = []
         self._config_path = config_path
 
-    def with_metrics(self, metrics: Iterable[type[Metric]]) -> "CheckHub":
+    def with_metrics(self, metrics: Iterable[type[Metric]]) -> "CheckUp":
         """Register metrics to calculate.
 
         Args:
@@ -111,7 +110,7 @@ class CheckHub:
         self._metrics.extend(metrics)
         return self
 
-    def with_providers(self, provider_sets: Iterable[Iterable[Provider]]) -> "CheckHub":
+    def with_providers(self, provider_sets: Iterable[Iterable[Provider]]) -> "CheckUp":
         """Register provider sets to run metrics against.
 
         Each inner iterable is a set of providers for one measurement run.

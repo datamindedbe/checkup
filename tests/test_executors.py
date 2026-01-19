@@ -2,7 +2,7 @@
 
 from typing import ClassVar
 
-from checkup.hub import CheckHub
+from checkup.hub import CheckUp
 from checkup.metric import ExecutorType, Metric
 from checkup.types import Context
 
@@ -133,7 +133,7 @@ def test_asyncio_executor_specified():
 
 def test_thread_metric_calculation():
     """Test calculating a metric with ThreadPoolExecutor."""
-    result = CheckHub().with_metrics([ThreadMetric]).measure()
+    result = CheckUp().with_metrics([ThreadMetric]).measure()
 
     assert len(result.metrics) == 1
     assert result.metrics[0].name == "thread_metric"
@@ -142,7 +142,7 @@ def test_thread_metric_calculation():
 
 def test_process_metric_calculation():
     """Test calculating a metric with ProcessPoolExecutor."""
-    result = CheckHub().with_metrics([ProcessMetric]).measure()
+    result = CheckUp().with_metrics([ProcessMetric]).measure()
 
     assert len(result.metrics) == 1
     assert result.metrics[0].name == "process_metric"
@@ -151,7 +151,7 @@ def test_process_metric_calculation():
 
 def test_asyncio_metric_calculation():
     """Test calculating a metric with asyncio executor."""
-    result = CheckHub().with_metrics([AsyncMetric]).measure()
+    result = CheckUp().with_metrics([AsyncMetric]).measure()
 
     assert len(result.metrics) == 1
     assert result.metrics[0].name == "async_metric"
@@ -160,7 +160,7 @@ def test_asyncio_metric_calculation():
 
 def test_asyncio_metric_with_async_calculate():
     """Test calculating a metric with native async calculate method."""
-    result = CheckHub().with_metrics([AsyncMetricWithAsyncCalculate]).measure()
+    result = CheckUp().with_metrics([AsyncMetricWithAsyncCalculate]).measure()
 
     assert len(result.metrics) == 1
     assert result.metrics[0].name == "async_metric_native"
@@ -169,7 +169,7 @@ def test_asyncio_metric_with_async_calculate():
 
 def test_mixed_executor_types():
     """Test calculating metrics with different executor types."""
-    result = CheckHub().with_metrics(
+    result = CheckUp().with_metrics(
         [ThreadMetric, ProcessMetric, AsyncMetric]
     ).measure()
 
@@ -182,7 +182,7 @@ def test_mixed_executor_types():
 
 def test_thread_dependency_chain():
     """Test dependency chain within thread executor."""
-    result = CheckHub().with_metrics([DependentThreadMetric]).measure()
+    result = CheckUp().with_metrics([DependentThreadMetric]).measure()
 
     assert len(result.metrics) == 2
     metrics_by_name = {m.name: m for m in result.metrics}
@@ -192,7 +192,7 @@ def test_thread_dependency_chain():
 
 def test_cross_executor_dependencies():
     """Test dependencies across different executor types."""
-    result = CheckHub().with_metrics([DependentProcessMetric]).measure()
+    result = CheckUp().with_metrics([DependentProcessMetric]).measure()
 
     assert len(result.metrics) == 2
     metrics_by_name = {m.name: m for m in result.metrics}
@@ -202,7 +202,7 @@ def test_cross_executor_dependencies():
 
 def test_async_depends_on_process():
     """Test async metric depending on process metric."""
-    result = CheckHub().with_metrics([DependentAsyncMetric]).measure()
+    result = CheckUp().with_metrics([DependentAsyncMetric]).measure()
 
     assert len(result.metrics) == 2
     metrics_by_name = {m.name: m for m in result.metrics}
@@ -212,7 +212,7 @@ def test_async_depends_on_process():
 
 def test_complex_mixed_dependencies():
     """Test complex dependency graph with mixed executor types."""
-    result = CheckHub().with_metrics(
+    result = CheckUp().with_metrics(
         [DependentThreadMetric, DependentProcessMetric, DependentAsyncMetric]
     ).measure()
 

@@ -1,8 +1,8 @@
-"""Tests for provider validation in CheckHub."""
+"""Tests for provider validation in CheckUp."""
 
 from typing import Any, ClassVar
 
-from checkup.hub import CheckHub
+from checkup.hub import CheckUp
 from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context

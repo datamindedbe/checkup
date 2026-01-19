@@ -239,10 +239,10 @@ def test_complex_graph_calculation(empty_context):
 
 
 def test_complex_graph_via_checkhub():
-    """Test complex graph calculation through CheckHub."""
-    from checkup import CheckHub
+    """Test complex graph calculation through CheckUp."""
+    from checkup import CheckUp
 
-    result = CheckHub().with_metrics([LeafAB, LeafC]).measure()
+    result = CheckUp().with_metrics([LeafAB, LeafC]).measure()
 
     metrics_by_name = {m.name: m for m in result.metrics}
 
@@ -286,10 +286,10 @@ def test_shared_ancestor_calculated_once(empty_context):
 
 def test_independent_subgraphs():
     """Test that independent subgraphs can coexist without interference."""
-    from checkup import CheckHub
+    from checkup import CheckUp
 
     # Only request LeafC (independent subgraph) - returns LeafC and RootC
-    result = CheckHub().with_metrics([LeafC]).measure()
+    result = CheckUp().with_metrics([LeafC]).measure()
 
     assert len(result.metrics) == 2
     assert result.direct_metric_names == {"leaf_c"}
@@ -297,7 +297,7 @@ def test_independent_subgraphs():
     assert metrics_by_name["leaf_c"].value == 10000
 
     # Request both subgraphs - returns all 9 metrics
-    result = CheckHub().with_metrics([LeafAB, LeafC]).measure()
+    result = CheckUp().with_metrics([LeafAB, LeafC]).measure()
 
     assert len(result.metrics) == 9
     assert result.direct_metric_names == {"leaf_ab", "leaf_c"}

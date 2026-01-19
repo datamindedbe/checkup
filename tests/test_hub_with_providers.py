@@ -1,8 +1,8 @@
-"""Tests for CheckHub.with_providers() method."""
+"""Tests for CheckUp.with_providers() method."""
 
 from typing import Any, ClassVar
 
-from checkup.hub import CheckHub
+from checkup.hub import CheckUp
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 
@@ -24,7 +24,7 @@ class TestWithProviders:
 
     def test_with_providers_stores_provider_sets(self):
         """Test that with_providers stores provider sets."""
-        hub = CheckHub().with_providers(
+        hub = CheckUp().with_providers(
             [
                 [SimpleProvider(value=1)],
                 [SimpleProvider(value=2)],
@@ -37,7 +37,7 @@ class TestWithProviders:
 
     def test_with_providers_accepts_iterables(self):
         """Test that with_providers accepts any iterables."""
-        hub = CheckHub().with_providers(
+        hub = CheckUp().with_providers(
             [
                 (SimpleProvider(), TagProvider(env="prod")),
             ]
@@ -48,14 +48,14 @@ class TestWithProviders:
 
     def test_with_providers_returns_self(self):
         """Test that with_providers returns self for chaining."""
-        hub = CheckHub()
+        hub = CheckUp()
         result = hub.with_providers([[SimpleProvider()]])
         assert result is hub
 
     def test_with_providers_accumulates(self):
         """Test that multiple with_providers calls accumulate."""
         hub = (
-            CheckHub()
+            CheckUp()
             .with_providers([[SimpleProvider(value=1)]])
             .with_providers([[SimpleProvider(value=2)]])
         )

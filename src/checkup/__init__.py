@@ -6,7 +6,7 @@ from checkup.errors import (
     ProviderError,
 )
 from checkup.executor import MetricCalculator, ProviderExecutor
-from checkup.hub import CheckHub, MeasurementResult
+from checkup.hub import CheckUp, MeasurementResult
 from checkup.materializers import (
     ConsoleMaterializer,
     CSVMaterializer,
@@ -20,7 +20,7 @@ from checkup.types import Context
 
 __all__ = [
     # Core
-    "CheckHub",
+    "CheckUp",
     "MeasurementResult",
     "Metric",
     "ExecutorType",
@@ -40,9 +40,3 @@ __all__ = [
     "MetricPicklingError",
     "DuplicateMetricNameError",
 ]
-
-
-def main() -> None:
-    """CLI entry point."""
-    print("Checkup metrics framework")
-    print("Import CheckHub to get started")

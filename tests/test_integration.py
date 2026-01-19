@@ -1,6 +1,6 @@
 """Integration tests for full checkup pipeline."""
 
-from checkup.hub import CheckHub
+from checkup.hub import CheckUp
 
 from conftest import (
     IntegrationBaseMetric,
@@ -15,7 +15,7 @@ from checkup.providers.tags import TagProvider
 def test_full_pipeline():
     """Test complete pipeline from provider through metric calculation."""
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([IntegrationBaseMetric])
         .with_providers([[IntegrationProvider()]])
         .measure()
@@ -28,7 +28,7 @@ def test_full_pipeline():
 def test_full_pipeline_with_both_metrics():
     """Test pipeline with dependent metrics."""
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([IntegrationDerivedMetric])
         .with_providers([[IntegrationProvider()]])
         .measure()
@@ -44,7 +44,7 @@ def test_full_pipeline_with_both_metrics():
 def test_multi_provider_set_pipeline():
     """Test pipeline across multiple provider sets."""
     result = (
-        CheckHub()
+        CheckUp()
         .with_metrics([PathMetric])
         .with_providers(
             [
