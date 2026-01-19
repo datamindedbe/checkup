@@ -14,6 +14,189 @@ This document outlines the design for a comprehensive CLI for the checkup metric
 
 ---
 
+## Provider Configuration Challenge
+
+### The Problem
+
+Providers in checkup are **instance-based** with constructor arguments:
+
+```python
+# Current programmatic API
+CheckHub()
+    .with_providers([
+        [DbtManifestProvider(manifest_path="./project_a/manifest.json"), TagProvider(project="a")],
+        [DbtManifestProvider(manifest_path="./project_b/manifest.json"), TagProvider(project="b")],
+    ])
+    .measure()
+```
+
+Key complexity factors:
+1. **Provider sets run in parallel** - each produces a separate measurement context
+2. **Constructor arguments vary** - `DbtManifestProvider` takes paths, `TagProvider` takes arbitrary kwargs
+3. **Some providers need complex initialization** - database connections, API clients, etc.
+4. **Type safety** - Python's type system catches errors that YAML cannot
+
+### Alternative Approaches
+
+#### Option A: Python Configuration File (Recommended)
+
+Keep providers in Python, use YAML only for metrics/output settings.
+
+```python
+# checkup_config.py
+from checkup_dbt import DbtManifestProvider
+from checkup.providers.tags import TagProvider
+
+def get_provider_sets():
+    """Return provider sets for measurement."""
+    return [
+        [DbtManifestProvider(manifest_path="./project_a/manifest.json"), TagProvider(project="a")],
+        [DbtManifestProvider(manifest_path="./project_b/manifest.json"), TagProvider(project="b")],
+    ]
+```
+
+```yaml
+# checkup.yaml
+metrics:
+  - DbtModelsMetric
+  - DbtColumnTestCoverageMetric
+
+output:
+  format: html
+  file: ./report.html
+```
+
+```bash
+checkup run -c checkup.yaml --providers checkup_config.py
+```
+
+**Pros:**
+- Full type safety and IDE support
+- Can handle any provider complexity
+- Python developers already comfortable with this
+- Clear separation: YAML for "what", Python for "how"
+
+**Cons:**
+- Requires Python knowledge
+- Two config files to manage
+
+#### Option B: Context Generators (Auto-Discovery)
+
+Define scanners that automatically discover measurement targets.
+
+```yaml
+# checkup.yaml
+metrics:
+  - DbtModelsMetric
+  - DbtColumnTestCoverageMetric
+
+contexts:
+  # Auto-discover dbt projects
+  - generator: dbt_projects
+    path: ./projects/*
+    tags_from_path:
+      project: "{dirname}"  # Extract project name from directory
+
+  # Or explicit list with template
+  - generator: list
+    items:
+      - manifest_path: ./sales/target/manifest.json
+        tags: {domain: sales}
+      - manifest_path: ./marketing/target/manifest.json
+        tags: {domain: marketing}
+```
+
+**Pros:**
+- Fully declarative
+- Scales well for many similar targets
+- Good for CI/CD pipelines
+
+**Cons:**
+- Limited to supported generator types
+- Complex providers still need Python
+
+#### Option C: Hybrid with Provider Registry
+
+Providers register default configurations; YAML provides simple overrides.
+
+```yaml
+# checkup.yaml
+metrics:
+  - DbtModelsMetric
+
+contexts:
+  - providers:
+      dbt:  # References DbtManifestProvider by its `name`
+        manifest_path: ./target/manifest.json
+      tags:
+        project: myproject
+```
+
+**Pros:**
+- Simpler YAML for common cases
+- Leverages plugin discovery
+
+**Cons:**
+- Magic/implicit behavior
+- Can't handle all provider types
+- Type validation happens at runtime
+
+#### Option D: Pure Python Entry Point
+
+No YAML at all - use Python scripts as the entry point.
+
+```python
+#!/usr/bin/env python
+# measure.py
+from checkup import CheckHub, ConsoleMaterializer
+from checkup_dbt import DbtManifestProvider, DbtModelsMetric
+
+if __name__ == "__main__":
+    CheckHub()
+        .with_metrics([DbtModelsMetric])
+        .with_providers([[DbtManifestProvider(manifest_path="./manifest.json")]])
+        .measure()
+        .materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
+```
+
+```bash
+python measure.py
+# or: checkup exec measure.py
+```
+
+**Pros:**
+- Maximum flexibility
+- No new concepts to learn
+- Full IDE support
+
+**Cons:**
+- Not declarative
+- Harder to template/generate
+- More boilerplate
+
+### Recommendation
+
+**Primary: Option A (Python config file)** with **Option B (generators)** for common patterns.
+
+This gives us:
+1. **Simple cases**: Use built-in generators for dbt project discovery
+2. **Complex cases**: Fall back to Python for custom provider logic
+3. **Type safety**: Python handles the type-sensitive parts
+4. **Flexibility**: Can always escape to full Python when needed
+
+```bash
+# Simple: auto-discover dbt projects in ./projects/
+checkup run --discover-dbt ./projects/*
+
+# Standard: YAML metrics + Python providers
+checkup run -c checkup.yaml --providers checkup_config.py
+
+# Advanced: full Python control
+checkup exec measure.py
+```
+
+---
+
 ## CLI Framework
 
 **Recommendation: `typer`**
@@ -255,7 +438,11 @@ checkup version
 
 ## Configuration File Format
 
-### Extended Schema
+### Recommended: YAML + Python Hybrid
+
+The recommended approach uses YAML for metrics/output and Python for providers.
+
+#### YAML Configuration (checkup.yaml)
 
 ```yaml
 # checkup.yaml
@@ -272,25 +459,22 @@ metrics:
   - DbtColumnsMetric
   - python_version  # Resolved by metric.name attribute
 
-# === PROVIDERS ===
-# Provider instances with their configuration
-providers:
-  # Provider sets - each set runs independently (parallel)
-  - set:
-      - type: checkup_dbt.DbtManifestProvider
-        manifest_path: ./project_a/target/manifest.json
-      - type: checkup.TagProvider
-        tags:
-          project: project_a
-          domain: sales
+# === CONTEXT GENERATORS (Optional) ===
+# For simple cases, use built-in generators instead of Python config
+contexts:
+  # Option 1: Auto-discover dbt projects
+  - generator: dbt_projects
+    path: ./projects/*
+    tags_from_path:
+      project: "{dirname}"
 
-  - set:
-      - type: checkup_dbt.DbtManifestProvider
-        manifest_path: ./project_b/target/manifest.json
-      - type: checkup.TagProvider
-        tags:
-          project: project_b
-          domain: marketing
+  # Option 2: Explicit list (simple providers only)
+  - generator: dbt_manifest_list
+    items:
+      - manifest_path: ./sales/target/manifest.json
+        tags: {domain: sales, project: sales-analytics}
+      - manifest_path: ./marketing/target/manifest.json
+        tags: {domain: marketing, project: campaign-metrics}
 
 # === OUTPUT ===
 output:
@@ -330,19 +514,127 @@ execution:
   timeout: 300
 ```
 
+#### Python Provider Configuration (checkup_config.py)
+
+For complex provider configurations, use a Python file:
+
+```python
+# checkup_config.py
+"""Provider configuration for checkup."""
+
+from pathlib import Path
+from checkup_dbt import DbtManifestProvider
+from checkup.providers.tags import TagProvider
+
+def get_provider_sets():
+    """Return provider sets for measurement.
+
+    Each inner list is a provider set that runs together.
+    Provider sets run in parallel, each producing metrics with their tags.
+    """
+    projects_dir = Path("./projects")
+
+    provider_sets = []
+    for project_dir in projects_dir.iterdir():
+        if not project_dir.is_dir():
+            continue
+
+        manifest_path = project_dir / "target" / "manifest.json"
+        if not manifest_path.exists():
+            continue
+
+        provider_sets.append([
+            DbtManifestProvider(manifest_path=manifest_path),
+            TagProvider(
+                project=project_dir.name,
+                domain=_get_domain(project_dir.name),
+            ),
+        ])
+
+    return provider_sets
+
+def _get_domain(project_name: str) -> str:
+    """Map project name to domain."""
+    domain_map = {
+        "sales-analytics": "sales",
+        "campaign-metrics": "marketing",
+        "customer-360": "customer",
+    }
+    return domain_map.get(project_name, "unknown")
+```
+
+Usage:
+```bash
+# Use Python providers file
+checkup run -c checkup.yaml --providers checkup_config.py
+
+# Or set in YAML
+# providers_file: ./checkup_config.py
+```
+
 ### Minimal Configuration
 
 ```yaml
-# Minimal checkup.yaml for dbt project
+# Minimal checkup.yaml for single dbt project
 metrics:
   - DbtModelsMetric
   - DbtTestsMetric
   - DbtColumnTestCoverageMetric
 
-providers:
-  - set:
-      - type: DbtManifestProvider
+contexts:
+  - generator: dbt_manifest_list
+    items:
+      - manifest_path: ./target/manifest.json
 ```
+
+### Context Generators
+
+Built-in generators for common patterns:
+
+#### `dbt_projects` - Auto-discover dbt projects
+
+```yaml
+contexts:
+  - generator: dbt_projects
+    path: ./projects/*              # Glob pattern for project directories
+    manifest_subpath: target/manifest.json  # Default
+    tags_from_path:
+      project: "{dirname}"          # Directory name becomes 'project' tag
+      domain: "{parent.dirname}"    # Parent directory becomes 'domain' tag
+```
+
+#### `dbt_manifest_list` - Explicit manifest list
+
+```yaml
+contexts:
+  - generator: dbt_manifest_list
+    items:
+      - manifest_path: ./project_a/target/manifest.json
+        tags:
+          project: project_a
+          environment: prod
+      - manifest_path: ./project_b/target/manifest.json
+        tags:
+          project: project_b
+          environment: prod
+```
+
+#### `matrix` - Cartesian product of variables
+
+```yaml
+contexts:
+  - generator: matrix
+    template:
+      manifest_path: "./projects/{project}/target/manifest.json"
+      tags:
+        project: "{project}"
+        env: "{env}"
+    variables:
+      project: [sales, marketing, finance]
+      env: [prod]
+```
+
+This generates 3 provider sets (sales×prod, marketing×prod, finance×prod).
 
 ---
 
