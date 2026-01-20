@@ -1,0 +1,87 @@
+site_name: CheckUp
+site_description: Computational governance framework for measuring data product health
+site_url: https://datamindedbe.github.io/incubator-checkup/
+repo_url: https://github.com/datamindedbe/incubator-checkup
+repo_name: datamindedbe/incubator-checkup
+
+theme:
+  name: material
+  logo: images/horseshoe.svg
+  favicon: images/horseshoe.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+validation:
+  links:
+    absolute_links: ignore
+    unrecognized_links: ignore
+  nav:
+    omitted_files: ignore
+
+exclude_docs: |
+  plans/
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+  - Concepts:
+      - Overview: concepts/overview.md
+      - Metrics: concepts/metrics.md
+      - Providers: concepts/providers.md
+      - Materializers: concepts/materializers.md
+  - Plugins:
+      - Overview: plugins/overview.md
+      - Git Plugin: plugins/git.md
+      - dbt Plugin: plugins/dbt.md
+      - Python Plugin: plugins/python.md
+      - Conveyor Plugin: plugins/conveyor.md
+  - API Reference:
+      - Core API: api/core.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/datamindedbe/incubator-checkup
