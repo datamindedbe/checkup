@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from checkup.hub import CheckHub
 from checkup_dbt import (
     DbtColumnsMetric,
     DbtColumnsWithDescriptionMetric,
@@ -9,6 +8,8 @@ from checkup_dbt import (
     DbtTestsMetric,
 )
 from checkup_dbt.provider import DbtManifestProvider
+
+from checkup.hub import CheckHub
 
 
 def test_models_metric(sample_manifest_path: Path):

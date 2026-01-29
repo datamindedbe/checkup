@@ -57,7 +57,9 @@ class ConveyorApiClient:
         Returns:
             Project ID if found, None otherwise
         """
-        projects = self._get("/projects", params={"name": project_name}).get("projects", [])
+        projects = self._get("/projects", params={"name": project_name}).get(
+            "projects", []
+        )
 
         if not projects:
             logger.warning("No Conveyor project found with name: %s", project_name)
@@ -79,7 +81,9 @@ class ConveyorApiClient:
         ).get("environments", [])
 
         if not environments:
-            logger.warning("No Conveyor environment found with name: %s", environment_name)
+            logger.warning(
+                "No Conveyor environment found with name: %s", environment_name
+            )
             return None
 
         return environments[0]["id"]

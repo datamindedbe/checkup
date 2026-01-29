@@ -4,14 +4,15 @@ import sys
 from io import StringIO
 from pathlib import Path
 
-from checkup.hub import CheckHub, MeasurementResult
-from checkup.materializers import ConsoleMaterializer
 from conftest import (
     DependentDummyMetric,
     DummyMetric,
     Level3Metric,
     ProviderDummyMetric,
 )
+
+from checkup.hub import CheckHub, MeasurementResult
+from checkup.materializers import ConsoleMaterializer
 
 
 def test_checkhub_creation():

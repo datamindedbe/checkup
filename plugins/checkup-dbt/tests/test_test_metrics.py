@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from checkup.hub import CheckHub
 from checkup_dbt import (
     DbtColumnTestCoverageMetric,
     DbtColumnTestsMetric,
@@ -9,6 +8,8 @@ from checkup_dbt import (
     DbtUnitTestsMetric,
 )
 from checkup_dbt.provider import DbtManifestProvider
+
+from checkup.hub import CheckHub
 
 
 def test_unit_tests_metric(sample_manifest_path: Path):

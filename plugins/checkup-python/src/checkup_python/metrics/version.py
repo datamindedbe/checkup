@@ -1,7 +1,7 @@
 import re
 import sys
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from checkup.metric import Metric
 from checkup.types import Context
@@ -38,7 +38,7 @@ class PythonVersionMetric(Metric):
 
         self.value = version
 
-    def _read_python_version_file(self, path: Path) -> Optional[str]:
+    def _read_python_version_file(self, path: Path) -> str | None:
         """
         Read version from `.python-version`.
         """
@@ -51,7 +51,7 @@ class PythonVersionMetric(Metric):
             version_file.read_text().strip().removeprefix("python-").removeprefix("py")
         )
 
-    def _read_pyproject_toml(self, path: Path) -> Optional[str]:
+    def _read_pyproject_toml(self, path: Path) -> str | None:
         """
         Extract Python version from `pyproject.toml`.
         """

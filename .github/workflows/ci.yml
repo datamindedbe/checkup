@@ -34,9 +34,6 @@ jobs:
       - name: Run ruff formatter check
         run: uv run ruff format --check .
 
-      - name: Run isort check
-        run: uv run isort --check-only .
-
   test:
     name: Test
     runs-on: ubuntu-latest

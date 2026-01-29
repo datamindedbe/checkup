@@ -1,26 +1,26 @@
 """dbt metrics for checkup."""
 
-from checkup_dbt.provider import DbtManifestProvider
 from checkup_dbt.metrics import (
-    DbtMetric,
-    NamingConventionChecker,
-    DbtModelsMetric,
     DbtColumnsMetric,
-    DbtTestsMetric,
-    DbtModelsWithDescriptionMetric,
     DbtColumnsWithDescriptionMetric,
-    DbtUnitTestsMetric,
-    DbtDataTestsMetric,
-    DbtColumnTestsMetric,
-    DbtTestedColumnsMetric,
     DbtColumnTestCoverageMetric,
+    DbtColumnTestsMetric,
+    DbtDataTestsMetric,
+    DbtMetric,
+    DbtModelsMetric,
+    DbtModelsNotAdheringToNamingConventionMetric,
+    DbtModelsWithDescriptionMetric,
+    DbtOutputColumnsWithoutDataTypeMetric,
     DbtOutputModelsMetric,
     DbtOutputModelsWithDescriptionMetric,
     DbtOutputModelsWithoutContractsMetric,
-    DbtOutputColumnsWithoutDataTypeMetric,
-    DbtModelsNotAdheringToNamingConventionMetric,
     DbtSupportedVersionMetric,
+    DbtTestedColumnsMetric,
+    DbtTestsMetric,
+    DbtUnitTestsMetric,
+    NamingConventionChecker,
 )
+from checkup_dbt.provider import DbtManifestProvider
 
 __all__ = [
     "DbtManifestProvider",
