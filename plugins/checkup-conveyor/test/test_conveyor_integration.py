@@ -1,14 +1,14 @@
 import os
 
 import pytest
-
-from checkup import CheckHub
 from checkup_conveyor import ConveyorProvider
 from checkup_conveyor.conveyor_metric import (
     ConveyorIsDirtyDeployment,
     ConveyorLastDeploymentTime,
     ConveyorLastRunStatus,
 )
+
+from checkup import CheckHub
 
 
 @pytest.mark.skipif(
