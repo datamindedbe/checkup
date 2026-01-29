@@ -49,10 +49,10 @@ jobs:
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --all-packages --group dev
 
       - name: Run tests with coverage
-        run: uv run pytest tests/ --cov=src/checkup --cov-report=xml --cov-report=term-missing
+        run: uv run pytest tests/ plugins/*/tests plugins/*/test --cov=src/checkup --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
