@@ -1,5 +1,7 @@
 """Tests for dependency graph construction and topological sorting."""
 
+from graphlib import CycleError
+
 import pytest
 from conftest import (
     BranchB,
@@ -129,7 +131,7 @@ def test_cycle_detection_direct():
         CyclicMetricB: [CyclicMetricA],
     }
 
-    with pytest.raises(Exception):
+    with pytest.raises(CycleError):
         topological_sort(graph)
 
 
@@ -137,7 +139,7 @@ def test_cycle_detection_via_build_graph():
     """Test cycle detection when building graph from cyclic metrics."""
     graph = build_dependency_graph([CyclicMetricA])
 
-    with pytest.raises(Exception):
+    with pytest.raises(CycleError):
         topological_sort(graph)
 
 

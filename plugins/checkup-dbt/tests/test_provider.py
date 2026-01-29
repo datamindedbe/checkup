@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import pytest
+from checkup_dbt import DbtModelsMetric
+from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
 from checkup.providers.tags import TagProvider
-from checkup_dbt import DbtModelsMetric
-from checkup_dbt.provider import DbtManifestProvider
 
 
 def test_manifest_path_mode(sample_manifest_path: Path):

@@ -1,7 +1,5 @@
 """Integration tests for full checkup pipeline."""
 
-from checkup.hub import CheckHub
-
 from conftest import (
     IntegrationBaseMetric,
     IntegrationDerivedMetric,
@@ -9,6 +7,8 @@ from conftest import (
     PathLengthProvider,
     PathMetric,
 )
+
+from checkup.hub import CheckHub
 from checkup.providers.tags import TagProvider
 
 

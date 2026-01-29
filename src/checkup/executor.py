@@ -128,9 +128,7 @@ class MetricCalculator:
         Returns:
             List of calculated metrics
         """
-        logger.debug(
-            "Starting metric calculation for %d metrics", len(execution_order)
-        )
+        logger.debug("Starting metric calculation for %d metrics", len(execution_order))
         calculated: dict[type[Metric], Metric] = {}
         skipped: set[type[Metric]] = set()
         result_metrics: list[Metric] = []

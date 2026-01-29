@@ -40,7 +40,7 @@ class ManifestQuery:
             return self._nodes
         return self._manifest.nodes.values()
 
-    def filter_by_type(self, resource_type: NodeType) -> "ManifestQuery":
+    def filter_by_type(self, resource_type: NodeType) -> ManifestQuery:
         """Filter nodes by resource type.
 
         Args:
@@ -52,7 +52,7 @@ class ManifestQuery:
         self._filters.append(lambda n: n.resource_type == resource_type)
         return self
 
-    def filter(self, predicate: Callable[[Any], bool]) -> "ManifestQuery":
+    def filter(self, predicate: Callable[[Any], bool]) -> ManifestQuery:
         """Filter nodes by a custom predicate.
 
         Args:

@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from checkup_dbt import DbtModelsNotAdheringToNamingConventionMetric
 
 from checkup.types import Context
-from checkup_dbt import DbtModelsNotAdheringToNamingConventionMetric
 
 
 @pytest.fixture

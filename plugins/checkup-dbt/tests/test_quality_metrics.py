@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from checkup.hub import CheckHub
 from checkup_dbt import DbtSupportedVersionMetric
 from checkup_dbt.provider import DbtManifestProvider
+
+from checkup.hub import CheckHub
 
 from .conftest import FactDimNamingMetric, InternalModelNamingMetric
 

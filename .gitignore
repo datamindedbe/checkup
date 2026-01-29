@@ -4,3 +4,12 @@ site/
 
 .DS_Store
 __pycache__
+
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# Virtual environments
+.venv/

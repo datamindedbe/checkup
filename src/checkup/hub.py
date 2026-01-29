@@ -2,9 +2,10 @@
 
 import logging
 import os
+from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 

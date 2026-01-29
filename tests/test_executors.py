@@ -169,9 +169,9 @@ def test_asyncio_metric_with_async_calculate():
 
 def test_mixed_executor_types():
     """Test calculating metrics with different executor types."""
-    result = CheckHub().with_metrics(
-        [ThreadMetric, ProcessMetric, AsyncMetric]
-    ).measure()
+    result = (
+        CheckHub().with_metrics([ThreadMetric, ProcessMetric, AsyncMetric]).measure()
+    )
 
     assert len(result.metrics) == 3
     metrics_by_name = {m.name: m for m in result.metrics}
@@ -212,9 +212,13 @@ def test_async_depends_on_process():
 
 def test_complex_mixed_dependencies():
     """Test complex dependency graph with mixed executor types."""
-    result = CheckHub().with_metrics(
-        [DependentThreadMetric, DependentProcessMetric, DependentAsyncMetric]
-    ).measure()
+    result = (
+        CheckHub()
+        .with_metrics(
+            [DependentThreadMetric, DependentProcessMetric, DependentAsyncMetric]
+        )
+        .measure()
+    )
 
     # ThreadMetric -> DependentThreadMetric (thread -> thread)
     # ThreadMetric -> DependentProcessMetric (thread -> process)

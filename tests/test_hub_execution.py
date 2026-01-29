@@ -167,4 +167,6 @@ class TestHubExecution:
 
         # Both metrics should be skipped - no errors should occur
         assert len(result.metrics) == 0
-        assert len(result.errors) == 0  # No exceptions from trying to access missing dependency
+        assert (
+            len(result.errors) == 0
+        )  # No exceptions from trying to access missing dependency

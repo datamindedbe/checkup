@@ -3,9 +3,10 @@
 import json
 import logging
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, ClassVar, Iterator
+from typing import Any, ClassVar
 
 from dbt.cli.main import dbtRunner
 from dbt.contracts.graph.manifest import Manifest

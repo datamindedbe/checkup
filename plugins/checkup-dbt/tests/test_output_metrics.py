@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from checkup.hub import CheckHub
 from checkup_dbt import (
     DbtOutputColumnsWithoutDataTypeMetric,
     DbtOutputModelsMetric,
@@ -8,6 +7,8 @@ from checkup_dbt import (
     DbtOutputModelsWithoutContractsMetric,
 )
 from checkup_dbt.provider import DbtManifestProvider
+
+from checkup.hub import CheckHub
 
 
 def test_output_models_metric(sample_manifest_path: Path):
