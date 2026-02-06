@@ -1,14 +1,28 @@
 """Materializers for outputting metrics."""
 
 import csv
+import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from datetime import UTC, datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
+from sqlalchemy import (
+    Column,
+    DateTime,
+    MetaData,
+    String,
+    Text,
+    create_engine,
+    insert,
+)
+from sqlalchemy import (
+    Table as SATable,
+)
 
 from checkup.metric import Metric
 
@@ -221,3 +235,63 @@ class HTMLMaterializer(Materializer):
 
         # Render template with data
         return template.render(grouped=grouped)
+
+
+class SQLAlchemyMaterializer(Materializer):
+    """Output metrics to a database via SQLAlchemy.
+
+    Writes metrics as rows to a database table. The table is created
+    automatically if it doesn't exist. Rows are appended on each
+    materialization, with a ``measured_at`` timestamp to distinguish runs.
+
+    Works with any database supported by SQLAlchemy (SQLite, PostgreSQL,
+    MySQL, etc.) via the connection URL.
+
+    Attributes:
+        connection_url: SQLAlchemy connection URL (e.g. "sqlite:///metrics.db",
+            "postgresql://user:pass@host/db")
+        table_name: Name of the target table (default: "metrics")
+    """
+
+    connection_url: str
+    table_name: str = "metrics"
+
+    def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
+        """Write metrics to the database."""
+        filtered = self._filter_metrics(metrics, direct_metric_names)
+        if not filtered:
+            return
+
+        engine = create_engine(self.connection_url)
+        metadata = MetaData()
+
+        table = SATable(
+            self.table_name,
+            metadata,
+            Column("name", String(255), nullable=False),
+            Column("value", String(255)),
+            Column("unit", String(255)),
+            Column("diagnostic", Text),
+            Column("description", Text),
+            Column("tags", Text),
+            Column("measured_at", DateTime, nullable=False),
+        )
+
+        metadata.create_all(engine)
+
+        now = datetime.now(UTC)
+        rows = [
+            {
+                "name": metric.name,
+                "value": str(metric.value) if metric.value is not None else None,
+                "unit": metric.unit,
+                "diagnostic": metric.diagnostic,
+                "description": metric.description,
+                "tags": json.dumps(metric.tags) if metric.tags else None,
+                "measured_at": now,
+            }
+            for metric in filtered
+        ]
+
+        with engine.begin() as conn:
+            conn.execute(insert(table), rows)
