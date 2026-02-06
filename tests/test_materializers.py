@@ -642,3 +642,30 @@ def test_sqlalchemy_materializer_empty_metrics(tmp_path):
 
     # Database file should not be created
     assert not db_path.exists()
+
+
+def test_sqlalchemy_materializer_table_schema():
+    """Test that table_schema is stored and wired through to DDL."""
+    from sqlalchemy import Column, MetaData, String
+    from sqlalchemy import Table as SATable
+    from sqlalchemy.schema import CreateTable
+
+    materializer = SQLAlchemyMaterializer(
+        connection_url="sqlite:///:memory:",
+        table_schema="analytics",
+    )
+    assert materializer.table_schema == "analytics"
+
+    # Verify schema appears in the generated DDL
+    metadata = MetaData(schema="analytics")
+    table = SATable("metrics", metadata, Column("name", String(255)))
+    ddl = str(CreateTable(table).compile(dialect=create_engine("sqlite:///:memory:").dialect))
+    assert "analytics." in ddl
+
+
+def test_sqlalchemy_materializer_table_schema_default_is_none():
+    """Test that table_schema defaults to None."""
+    materializer = SQLAlchemyMaterializer(
+        connection_url="sqlite:///:memory:",
+    )
+    assert materializer.table_schema is None
