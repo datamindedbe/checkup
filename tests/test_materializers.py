@@ -659,7 +659,9 @@ def test_sqlalchemy_materializer_table_schema():
     # Verify schema appears in the generated DDL
     metadata = MetaData(schema="analytics")
     table = SATable("metrics", metadata, Column("name", String(255)))
-    ddl = str(CreateTable(table).compile(dialect=create_engine("sqlite:///:memory:").dialect))
+    ddl = str(
+        CreateTable(table).compile(dialect=create_engine("sqlite:///:memory:").dialect)
+    )
     assert "analytics." in ddl
 
 
