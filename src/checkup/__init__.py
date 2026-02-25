@@ -17,6 +17,7 @@ from checkup.metric import ExecutorType, Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
+from checkup.utils import suppress_subprocess_output
 
 __all__ = [
     # Core
@@ -39,6 +40,8 @@ __all__ = [
     "ProviderError",
     "MetricPicklingError",
     "DuplicateMetricNameError",
+    # Utilities
+    "suppress_subprocess_output",
 ]
 
 

@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -12,6 +12,7 @@ from dbt.cli.main import dbtRunner
 from dbt.contracts.graph.manifest import Manifest
 
 from checkup.provider import Provider
+from checkup.utils import suppress_subprocess_output
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ class DbtManifestProvider(Provider):
         manifest_path: str | Path | None = None,
         dbt_project_dir: str | Path | None = None,
         profiles_dir: str | Path | None = None,
+        verbose: bool = False,
     ):
         """Initialize DbtManifestProvider.
 
@@ -65,6 +67,7 @@ class DbtManifestProvider(Provider):
             manifest_path: Path to pre-generated manifest.json
             dbt_project_dir: Path to dbt project (runs dbt parse)
             profiles_dir: Optional profiles directory (defaults to project dir)
+            verbose: If True, show dbt subprocess output. Defaults to False.
 
         Raises:
             ValueError: If neither manifest_path nor dbt_project_dir provided
@@ -75,6 +78,7 @@ class DbtManifestProvider(Provider):
         self.manifest_path = Path(manifest_path) if manifest_path else None
         self.dbt_project_dir = Path(dbt_project_dir) if dbt_project_dir else None
         self.profiles_dir = Path(profiles_dir) if profiles_dir else None
+        self.verbose = verbose
 
     def provide(self) -> dict[str, Any]:
         """Load dbt manifest from file or by parsing project.
@@ -100,7 +104,10 @@ class DbtManifestProvider(Provider):
         """Parse dbt project to generate manifest."""
         logger.info(f"Parsing dbt project at {self.dbt_project_dir}")
 
-        with preserve_cwd():
+        with (
+            preserve_cwd(),
+            nullcontext() if self.verbose else suppress_subprocess_output(),
+        ):
             common_args = ["--project-dir", str(self.dbt_project_dir)]
 
             profiles_dir = self.profiles_dir or self.dbt_project_dir
