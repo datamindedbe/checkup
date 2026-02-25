@@ -73,7 +73,7 @@ class SQLAlchemyMaterializer(Materializer):
                 "unit": metric.unit,
                 "diagnostic": metric.diagnostic,
                 "description": metric.description,
-                "tags": json.dumps(metric.tags) if metric.tags else None,
+                "tags": json.dumps(metric.tags) if metric.tags is not None else None,
                 "measured_at": now,
             }
             for metric in filtered
