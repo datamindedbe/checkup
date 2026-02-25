@@ -6,6 +6,7 @@ import pickle
 from checkup.errors import DuplicateMetricNameError, MetricPicklingError
 from checkup.metric import Metric
 from checkup.provider import Provider
+from checkup.providers.tags import TagProvider
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,8 @@ def validate_providers(
     metrics: list[type[Metric]],
     provider_sets: list[list[Provider]],
 ) -> None:
-    """Validate all required providers are present in each provider set.
+    """
+    Validate all required providers are present in each provider set.
 
     Logs a warning for any missing providers instead of failing.
 
@@ -81,15 +83,24 @@ def validate_providers(
     required = collect_required_providers(metrics)
 
     if not required:
-        return  # No providers required
+        return
 
     for i, provider_set in enumerate(provider_sets):
         provided_classes = {type(p) for p in provider_set}
         missing = required - provided_classes
 
         if missing:
+            # Try to identify the provider set using TagProvider tags if available
+            # for more informative logging
+            tag_provider = next(
+                (p for p in provider_set if isinstance(p, TagProvider)), None
+            )
+            if tag_provider and tag_provider.tags:
+                tags_str = ", ".join(f"{k}={v}" for k, v in tag_provider.tags.items())
+                provider_set_desc = f"Provider set ({tags_str})"
+            else:
+                provider_set_desc = f"Provider set {i}"
+
             logger.warning(
-                "Provider set %d is missing required providers: %s",
-                i,
-                sorted(cls.name for cls in missing),
+                f"{provider_set_desc} is missing required providers: {', '.join(sorted(cls.name for cls in missing))}"
             )

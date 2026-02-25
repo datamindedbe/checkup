@@ -15,6 +15,10 @@ class ProviderError(Exception):
         self.original_error = original_error
         super().__init__(f"Provider '{provider.name}' failed: {original_error}")
 
+    def __reduce__(self):
+        """Enable pickling across process boundaries."""
+        return (self.__class__, (self.provider, self.original_error))
+
 
 class MetricPicklingError(Exception):
     """Exception raised when a metric cannot be pickled for process execution."""
@@ -26,6 +30,10 @@ class MetricPicklingError(Exception):
             f"Metric '{metric_cls.name}' cannot be pickled for process execution. "
             f"Consider using ExecutorType.THREAD instead. Original error: {original_error}"
         )
+
+    def __reduce__(self):
+        """Enable pickling across process boundaries."""
+        return (self.__class__, (self.metric_cls, self.original_error))
 
 
 class DuplicateMetricNameError(Exception):
@@ -39,3 +47,7 @@ class DuplicateMetricNameError(Exception):
             f"Duplicate metric name '{name}' found in classes: {class_names}. "
             f"Each metric must have a unique name."
         )
+
+    def __reduce__(self):
+        """Enable pickling across process boundaries."""
+        return (self.__class__, (self.name, self.metric_classes))
