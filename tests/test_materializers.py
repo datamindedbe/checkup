@@ -1,16 +1,19 @@
 """Tests for materializers."""
 
+import json
 import sys
 from io import StringIO
 
 import pytest
 from conftest import DummyMetric
+from sqlalchemy import create_engine, text
 
 from checkup.materializers import (
     ConsoleMaterializer,
     CSVMaterializer,
     HTMLMaterializer,
     Materializer,
+    SQLAlchemyMaterializer,
 )
 
 
@@ -466,3 +469,205 @@ def test_html_materializer_end_to_end(tmp_path):
 
     # Return the path for manual inspection
     return output_file
+
+
+def test_sqlalchemy_materializer(tmp_path):
+    """Test SQLAlchemy materializer writes metrics to database."""
+    metric = DummyMetric(expected_value=42)
+    metric.value = 42
+    metric.tags = {"domain": "Analytics"}
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+    )
+    materializer.materialize([metric], {"dummy"})
+
+    # Verify data was written
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert row[0] == "dummy"  # name
+    assert row[1] == "42"  # value
+    assert row[2] == "count"  # unit
+    assert row[5] == json.dumps({"domain": "Analytics"})  # tags
+    assert row[6] is not None  # measured_at
+
+
+def test_sqlalchemy_materializer_multiple_metrics(tmp_path):
+    """Test SQLAlchemy materializer with multiple metrics."""
+    from conftest import OtherDummyMetric
+
+    metric1 = DummyMetric(expected_value=42)
+    metric1.value = 42
+
+    metric2 = OtherDummyMetric(expected_value=100)
+    metric2.value = 100
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+    )
+    materializer.materialize([metric1, metric2], {"dummy", "other_metric"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 2
+    names = {row[0] for row in rows}
+    assert names == {"dummy", "other_metric"}
+
+
+def test_sqlalchemy_materializer_appends_rows(tmp_path):
+    """Test that successive materializations append rows."""
+    metric = DummyMetric(expected_value=42)
+    metric.value = 42
+
+    db_path = tmp_path / "metrics.db"
+    url = f"sqlite:///{db_path}"
+    materializer = SQLAlchemyMaterializer(connection_url=url)
+
+    # Materialize twice
+    materializer.materialize([metric], {"dummy"})
+    materializer.materialize([metric], {"dummy"})
+
+    engine = create_engine(url)
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 2
+
+
+def test_sqlalchemy_materializer_custom_table_name(tmp_path):
+    """Test SQLAlchemy materializer with custom table name."""
+    metric = DummyMetric(expected_value=42)
+    metric.value = 42
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+        table_name="checkup_results",
+    )
+    materializer.materialize([metric], {"dummy"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM checkup_results")).fetchall()
+
+    assert len(rows) == 1
+    assert rows[0][0] == "dummy"
+
+
+def test_sqlalchemy_materializer_filters_indirect(tmp_path):
+    """Test SQLAlchemy materializer filtering of indirect metrics."""
+    from conftest import IndirectDummyMetric
+
+    direct_metric = DummyMetric(expected_value=42)
+    direct_metric.value = 42
+
+    indirect_metric = IndirectDummyMetric(expected_value=100)
+    indirect_metric.value = 100
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+    )
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 1
+    assert rows[0][0] == "dummy"
+
+
+def test_sqlalchemy_materializer_includes_indirect(tmp_path):
+    """Test SQLAlchemy materializer including indirect metrics."""
+    from conftest import IndirectDummyMetric
+
+    direct_metric = DummyMetric(expected_value=42)
+    direct_metric.value = 42
+
+    indirect_metric = IndirectDummyMetric(expected_value=100)
+    indirect_metric.value = 100
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+        include_indirect=True,
+    )
+    materializer.materialize([direct_metric, indirect_metric], {"dummy"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 2
+    names = {row[0] for row in rows}
+    assert names == {"dummy", "indirect"}
+
+
+def test_sqlalchemy_materializer_none_value(tmp_path):
+    """Test SQLAlchemy materializer handles None values."""
+    metric = DummyMetric(expected_value=42)
+    # value is None (not calculated)
+    metric.tags = {}
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+    )
+    materializer.materialize([metric], {"dummy"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 1
+    assert rows[0][1] is None  # value should be None
+
+
+def test_sqlalchemy_materializer_empty_metrics(tmp_path):
+    """Test SQLAlchemy materializer with no metrics does nothing."""
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+    )
+    materializer.materialize([], {"dummy"})
+
+    # Database file should not be created
+    assert not db_path.exists()
+
+
+def test_sqlalchemy_materializer_table_schema():
+    """Test that table_schema is stored and wired through to DDL."""
+    from sqlalchemy import Column, MetaData, String
+    from sqlalchemy import Table as SATable
+    from sqlalchemy.schema import CreateTable
+
+    materializer = SQLAlchemyMaterializer(
+        connection_url="sqlite:///:memory:",
+        table_schema="analytics",
+    )
+    assert materializer.table_schema == "analytics"
+
+    # Verify schema appears in the generated DDL
+    metadata = MetaData(schema="analytics")
+    table = SATable("metrics", metadata, Column("name", String(255)))
+    ddl = str(
+        CreateTable(table).compile(dialect=create_engine("sqlite:///:memory:").dialect)
+    )
+    assert "analytics." in ddl
+
+
+def test_sqlalchemy_materializer_table_schema_default_is_none():
+    """Test that table_schema defaults to None."""
+    materializer = SQLAlchemyMaterializer(
+        connection_url="sqlite:///:memory:",
+    )
+    assert materializer.table_schema is None

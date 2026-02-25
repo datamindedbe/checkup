@@ -12,6 +12,7 @@ from checkup.materializers import (
     CSVMaterializer,
     HTMLMaterializer,
     Materializer,
+    SQLAlchemyMaterializer,
 )
 from checkup.metric import ExecutorType, Metric
 from checkup.provider import Provider
@@ -36,6 +37,7 @@ __all__ = [
     "ConsoleMaterializer",
     "CSVMaterializer",
     "HTMLMaterializer",
+    "SQLAlchemyMaterializer",
     # Exceptions
     "ProviderError",
     "MetricPicklingError",
