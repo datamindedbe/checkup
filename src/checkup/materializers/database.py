@@ -3,6 +3,7 @@
 import json
 from datetime import UTC, datetime
 
+from pydantic import SecretStr
 from sqlalchemy import (
     Column,
     DateTime,
@@ -38,7 +39,7 @@ class SQLAlchemyMaterializer(Materializer):
             If None, uses the database's default schema.
     """
 
-    connection_url: str
+    connection_url: SecretStr
     table_name: str = "metrics"
     table_schema: str | None = None
 
@@ -48,7 +49,7 @@ class SQLAlchemyMaterializer(Materializer):
         if not filtered:
             return
 
-        engine = create_engine(self.connection_url)
+        engine = create_engine(self.connection_url.get_secret_value())
         metadata = MetaData(schema=self.table_schema)
 
         table = SATable(
