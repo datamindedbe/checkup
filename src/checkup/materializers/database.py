@@ -2,6 +2,7 @@
 
 import json
 from datetime import UTC, datetime
+from typing import Any
 
 from pydantic import SecretStr
 from sqlalchemy import (
@@ -37,11 +38,14 @@ class SQLAlchemyMaterializer(Materializer):
         table_name: Name of the target table (default: "metrics")
         table_schema: Optional database schema to use (e.g. "analytics", "public").
             If None, uses the database's default schema.
+        connect_args: Optional dict of arguments passed to the underlying DB-API
+            driver via SQLAlchemy's connect_args.
     """
 
     connection_url: SecretStr
     table_name: str = "metrics"
     table_schema: str | None = None
+    connect_args: dict[str, Any] | None = None
 
     def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
         """Write metrics to the database."""
@@ -49,7 +53,10 @@ class SQLAlchemyMaterializer(Materializer):
         if not filtered:
             return
 
-        engine = create_engine(self.connection_url.get_secret_value())
+        engine = create_engine(
+            self.connection_url.get_secret_value(),
+            connect_args=self.connect_args or {},
+        )
         metadata = MetaData(schema=self.table_schema)
 
         table = SATable(
