@@ -154,6 +154,11 @@ def has_description(node: Any) -> bool:
     return node.description != ""
 
 
+def without_description(node: Any) -> bool:
+    """Check if node is missing a description."""
+    return node.description == ""
+
+
 def is_output_model(node: Any) -> bool:
     """Check if node is an output model (non-internal schema)."""
     return node.resource_type == NodeType.Model and not node.schema.endswith("__int")
@@ -182,6 +187,11 @@ def is_column_test(node: Any) -> bool:
 def column_has_description(_node: Any, _col_name: str, col: Any) -> bool:
     """Check if column has a non-empty description."""
     return col.description != ""
+
+
+def column_without_description(_node: Any, _col_name: str, col: Any) -> bool:
+    """Check if column is missing a description."""
+    return col.description == ""
 
 
 def column_missing_data_type(_node: Any, _col_name: str, col: Any) -> bool:

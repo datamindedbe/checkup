@@ -3,8 +3,10 @@ from pathlib import Path
 from checkup_dbt import (
     DbtColumnsMetric,
     DbtColumnsWithDescriptionMetric,
+    DbtColumnsWithoutDescriptionMetric,
     DbtModelsMetric,
     DbtModelsWithDescriptionMetric,
+    DbtModelsWithoutDescriptionMetric,
     DbtTestsMetric,
 )
 from checkup_dbt.provider import DbtManifestProvider
@@ -75,3 +77,29 @@ def test_columns_with_description_metric(sample_manifest_path: Path):
     metric = result.metrics[0]
     assert metric.name == "dbt_columns_with_description"
     assert metric.value == 10
+
+
+def test_models_without_description_metric(sample_manifest_path: Path):
+    result = (
+        CheckHub()
+        .with_metrics([DbtModelsWithoutDescriptionMetric])
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "dbt_models_without_description"
+    assert metric.value == 0  # All 3 models have descriptions
+
+
+def test_columns_without_description_metric(sample_manifest_path: Path):
+    result = (
+        CheckHub()
+        .with_metrics([DbtColumnsWithoutDescriptionMetric])
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "dbt_columns_without_description"
+    assert metric.value == 2  # 12 total - 10 with descriptions = 2 without
