@@ -671,3 +671,94 @@ def test_sqlalchemy_materializer_table_schema_default_is_none():
         connection_url="sqlite:///:memory:",
     )
     assert materializer.table_schema is None
+
+
+def test_sqlalchemy_materializer_expand_tags(tmp_path):
+    """Test SQLAlchemy materializer expands tags into separate columns."""
+    from conftest import IndirectDummyMetric, OtherDummyMetric
+
+    metric1 = DummyMetric(expected_value=42)
+    metric1.value = 42
+    metric1.tags = {"domain": "Analytics", "env": "prod"}
+
+    metric2 = OtherDummyMetric(expected_value=100)
+    metric2.value = 100
+    metric2.tags = {"domain": "Engineering", "team": "platform"}
+
+    metric3 = IndirectDummyMetric(expected_value=50)
+    metric3.value = 50
+    metric3.tags = None  # No tags
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+        expand_tags=True,
+        include_indirect=True,
+    )
+    materializer.materialize([metric1, metric2, metric3], {"dummy", "other_metric"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        result = conn.execute(text("PRAGMA table_info(metrics)"))
+        columns = {row[1] for row in result.fetchall()}
+
+    # All unique tag keys should have columns, tags column should be omitted
+    assert "tag_domain" in columns
+    assert "tag_env" in columns
+    assert "tag_team" in columns
+    assert "tags" not in columns
+
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                "SELECT name, tag_domain, tag_env, tag_team FROM metrics ORDER BY name"
+            )
+        ).fetchall()
+
+    assert len(rows) == 3
+
+    # dummy metric
+    assert rows[0][0] == "dummy"
+    assert rows[0][1] == "Analytics"
+    assert rows[0][2] == "prod"
+    assert rows[0][3] is None  # team not in metric1
+
+    # indirect metric (no tags)
+    assert rows[1][0] == "indirect"
+    assert rows[1][1] is None
+    assert rows[1][2] is None
+    assert rows[1][3] is None
+
+    # other_metric
+    assert rows[2][0] == "other_metric"
+    assert rows[2][1] == "Engineering"
+    assert rows[2][2] is None  # env not in metric2
+    assert rows[2][3] == "platform"
+
+
+def test_sqlalchemy_materializer_expand_tags_no_tags(tmp_path):
+    """Test expand_tags handles metrics with no tags."""
+    metric = DummyMetric(expected_value=42)
+    metric.value = 42
+    metric.tags = None
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+        expand_tags=True,
+    )
+    materializer.materialize([metric], {"dummy"})
+
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        result = conn.execute(text("PRAGMA table_info(metrics)"))
+        columns = {row[1] for row in result.fetchall()}
+
+    # No tag columns should be created
+    assert not any(col.startswith("tag_") for col in columns)
+    assert "tags" not in columns
+
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 1
