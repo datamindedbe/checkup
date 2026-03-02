@@ -216,7 +216,7 @@ class MetricCalculator:
         """
         missing_providers = set(metric_cls.providers()) - provided_classes
         if missing_providers:
-            logger.warning(
+            logger.debug(
                 "Skipping metric %s: missing providers %s",
                 metric_cls.name,
                 sorted(cls.name for cls in missing_providers),
@@ -225,7 +225,7 @@ class MetricCalculator:
 
         skipped_deps = set(metric_cls.depends_on()) & skipped
         if skipped_deps:
-            logger.warning(
+            logger.debug(
                 "Skipping metric %s: dependencies were skipped %s",
                 metric_cls.name,
                 sorted(cls.name for cls in skipped_deps),

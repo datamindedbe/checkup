@@ -190,11 +190,8 @@ class CheckHub:
                 try:
                     all_metrics.extend(future.result())
                 except Exception as e:
-                    logger.error(
-                        "Provider set failed: %s",
-                        e,
-                        exc_info=True,
-                    )
+                    logger.error("Provider set failed: %s", e)
+                    logger.debug("Provider set failure details:", exc_info=True)
                     all_errors.append((ps, e))
 
         logger.info(
