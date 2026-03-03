@@ -41,6 +41,7 @@ class GitDaysSinceLastUpdateMetric(GitMetric):
         now = datetime.now(UTC)
         delta = now - last_commit_date
         self.value = delta.days
+        self.diagnostic = f"Last commit: {last_commit_date.strftime('%Y-%m-%d')}"
 
 
 class GitTrackedFileCountMetric(GitMetric):
@@ -70,9 +71,15 @@ class GitTrackedFileCountMetric(GitMetric):
 
         if not isinstance(tracked_files, list):
             self.value = 0
+            self.diagnostic = "No git repository found"
             return
 
         if self.pattern != "*":
-            tracked_files = [f for f in tracked_files if fnmatch(f, self.pattern)]
-
-        self.value = len(tracked_files)
+            matched_files = [f for f in tracked_files if fnmatch(f, self.pattern)]
+            self.value = len(matched_files)
+            if matched_files:
+                self.diagnostic = f"Matched files: {', '.join(matched_files)}"
+            else:
+                self.diagnostic = f"No files matching pattern: {self.pattern}"
+        else:
+            self.value = len(tracked_files)
