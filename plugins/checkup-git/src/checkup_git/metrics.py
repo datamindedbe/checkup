@@ -1,6 +1,7 @@
 """Git metrics for checkup."""
 
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import ClassVar
 
 from checkup.metric import Metric
@@ -52,3 +53,34 @@ class GitTrackedFileCountMetric(GitMetric):
     def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
         git_context = self.get_context(context)
         self.value = git_context.get("git_tracked_file_count", 0)
+
+
+class GitFileExistsMetric(GitMetric):
+    """Metric that checks if a specific file exists.
+
+    Configure via subclassing.
+
+    Example:
+        class ReadmeExistsMetric(GitFileExistsMetric):
+            name = "readme_exists"
+            description = "Whether README.md exists"
+            file_path: str = "README.md"
+    """
+
+    name: ClassVar[str] = "git_file_exists"
+    description: ClassVar[str] = "Whether a specific file exists"
+    unit: ClassVar[str] = "boolean"
+
+    file_path: str
+
+    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+        git_context = self.get_context(context)
+        repo_path = git_context.get("git_repo_path")
+
+        if not isinstance(repo_path, Path):
+            self.value = False
+            self.diagnostic = "No repository path found"
+            return
+
+        full_path = repo_path / self.file_path
+        self.value = full_path.exists()

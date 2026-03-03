@@ -2,6 +2,7 @@ from pathlib import Path
 
 from checkup_git import (
     GitDaysSinceLastUpdateMetric,
+    GitFileExistsMetric,
     GitProvider,
     GitTrackedFileCountMetric,
 )
@@ -35,6 +36,46 @@ def test_tracked_file_count_metric(git_repo: Path):
     metric = result.metrics[0]
     assert metric.name == "git_tracked_file_count"
     assert metric.value == 1  # One file (README.md) in the fixture
+
+
+class ReadmeExistsMetric(GitFileExistsMetric):
+    name = "readme_exists"
+    description = "Whether README.md exists"
+    file_path: str = "README.md"
+
+
+class CruftFileExistsMetric(GitFileExistsMetric):
+    name = "cruft_file_exists"
+    description = "Whether .cruft.json exists"
+    file_path: str = ".cruft.json"
+
+
+def test_file_exists_metric_when_file_exists(git_repo: Path):
+    """Test file exists metric returns True when file exists."""
+    result = (
+        CheckHub()
+        .with_metrics([ReadmeExistsMetric])
+        .with_providers([[GitProvider(repo_path=git_repo)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "readme_exists"
+    assert metric.value is True
+
+
+def test_file_exists_metric_when_file_missing(git_repo: Path):
+    """Test file exists metric returns False when file is missing."""
+    result = (
+        CheckHub()
+        .with_metrics([CruftFileExistsMetric])
+        .with_providers([[GitProvider(repo_path=git_repo)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "cruft_file_exists"
+    assert metric.value is False
 
 
 def test_provider_returns_last_commit_date(git_repo: Path):
