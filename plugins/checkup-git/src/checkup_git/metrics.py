@@ -1,7 +1,7 @@
 """Git metrics for checkup."""
 
 from datetime import UTC, datetime
-from pathlib import Path
+from fnmatch import fnmatch
 from typing import ClassVar
 
 from checkup.metric import Metric
@@ -44,43 +44,35 @@ class GitDaysSinceLastUpdateMetric(GitMetric):
 
 
 class GitTrackedFileCountMetric(GitMetric):
-    """Number of git tracked files in the repository path."""
+    """Number of git tracked files, optionally filtered by a glob pattern.
+
+    Without configuration, counts all tracked files. Can be filtered by
+    specifying a glob pattern that matches the full file path.
+
+    Configure via subclassing.
+
+    Example:
+        class PythonTestFileCountMetric(GitTrackedFileCountMetric):
+            name = "python_test_file_count"
+            description = "Number of Python test files"
+            pattern: str = "tests/test_*.py"
+    """
 
     name: ClassVar[str] = "git_tracked_file_count"
     description: ClassVar[str] = "Number of git tracked files"
     unit: ClassVar[str] = "files"
 
-    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
-        git_context = self.get_context(context)
-        self.value = git_context.get("git_tracked_file_count", 0)
-
-
-class GitFileExistsMetric(GitMetric):
-    """Metric that checks if a specific file exists.
-
-    Configure via subclassing.
-
-    Example:
-        class ReadmeExistsMetric(GitFileExistsMetric):
-            name = "readme_exists"
-            description = "Whether README.md exists"
-            file_path: str = "README.md"
-    """
-
-    name: ClassVar[str] = "git_file_exists"
-    description: ClassVar[str] = "Whether a specific file exists"
-    unit: ClassVar[str] = "boolean"
-
-    file_path: str
+    pattern: str = "*"
 
     def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
         git_context = self.get_context(context)
-        repo_path = git_context.get("git_repo_path")
+        tracked_files = git_context.get("git_tracked_files", [])
 
-        if not isinstance(repo_path, Path):
+        if not isinstance(tracked_files, list):
             self.value = 0
-            self.diagnostic = "No repository path found"
             return
 
-        full_path = repo_path / self.file_path
-        self.value = 1 if full_path.exists() else 0
+        if self.pattern != "*":
+            tracked_files = [f for f in tracked_files if fnmatch(f, self.pattern)]
+
+        self.value = len(tracked_files)

@@ -44,7 +44,7 @@ class GitProvider(Provider):
         return {
             "git_repo_path": self.repo_path,
             "git_last_commit_date": last_commit_date,
-            "git_tracked_file_count": len(tracked_files),
+            "git_tracked_files": tracked_files,
         }
 
     def _get_last_commit_date(self, git_files: list[str]) -> datetime | None:

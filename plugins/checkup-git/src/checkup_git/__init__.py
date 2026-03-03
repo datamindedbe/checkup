@@ -2,7 +2,6 @@
 
 from checkup_git.metrics import (
     GitDaysSinceLastUpdateMetric,
-    GitFileExistsMetric,
     GitMetric,
     GitTrackedFileCountMetric,
 )
@@ -13,5 +12,4 @@ __all__ = [
     "GitMetric",
     "GitDaysSinceLastUpdateMetric",
     "GitTrackedFileCountMetric",
-    "GitFileExistsMetric",
 ]

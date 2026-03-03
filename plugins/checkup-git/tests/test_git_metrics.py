@@ -2,7 +2,6 @@ from pathlib import Path
 
 from checkup_git import (
     GitDaysSinceLastUpdateMetric,
-    GitFileExistsMetric,
     GitProvider,
     GitTrackedFileCountMetric,
 )
@@ -38,16 +37,68 @@ def test_tracked_file_count_metric(git_repo: Path):
     assert metric.value == 1  # One file (README.md) in the fixture
 
 
-class ReadmeExistsMetric(GitFileExistsMetric):
+class DagCountMetric(GitTrackedFileCountMetric):
+    name = "dag_count"
+    description = "Number of DAG files"
+    pattern: str = "dags/*.py"
+
+
+def test_tracked_file_count_with_pattern(tmp_path: Path):
+    """Test tracked file count metric with directory and pattern filter."""
+    import subprocess
+
+    # Create repo with multiple files in subdirectories
+    repo_path = tmp_path / "repo"
+    repo_path.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@test.com"],
+        cwd=repo_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=repo_path,
+        check=True,
+        capture_output=True,
+    )
+
+    # Create dags directory with python files
+    dags_dir = repo_path / "dags"
+    dags_dir.mkdir()
+    (dags_dir / "dag1.py").write_text("# dag 1")
+    (dags_dir / "dag2.py").write_text("# dag 2")
+    (dags_dir / "config.yaml").write_text("config: true")
+
+    # Create other files
+    (repo_path / "README.md").write_text("# Test")
+
+    subprocess.run(["git", "add", "."], cwd=repo_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Initial"],
+        cwd=repo_path,
+        check=True,
+        capture_output=True,
+    )
+
+    # Test filtering by directory and pattern
+    result = (
+        CheckHub()
+        .with_metrics([DagCountMetric])
+        .with_providers([[GitProvider(repo_path=repo_path)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "dag_count"
+    assert metric.value == 2  # Only dag1.py and dag2.py
+
+
+class ReadmeExistsMetric(GitTrackedFileCountMetric):
     name = "readme_exists"
     description = "Whether README.md exists"
-    file_path: str = "README.md"
-
-
-class CruftFileExistsMetric(GitFileExistsMetric):
-    name = "cruft_file_exists"
-    description = "Whether .cruft.json exists"
-    file_path: str = ".cruft.json"
+    pattern: str = "README.md"
 
 
 def test_file_exists_metric_when_file_exists(git_repo: Path):
@@ -64,8 +115,14 @@ def test_file_exists_metric_when_file_exists(git_repo: Path):
     assert metric.value == 1
 
 
-def test_file_exists_metric_when_file_missing(git_repo: Path):
-    """Test file exists metric returns False when file is missing."""
+class CruftFileExistsMetric(GitTrackedFileCountMetric):
+    name = "cruft_file_exists"
+    description = "Whether .cruft.json exists"
+    pattern: str = ".cruft.json"
+
+
+def test_tracked_file_count_when_no_match(git_repo: Path):
+    """Test tracked file count returns 0 when pattern doesn't match."""
     result = (
         CheckHub()
         .with_metrics([CruftFileExistsMetric])
