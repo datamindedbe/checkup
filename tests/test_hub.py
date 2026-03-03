@@ -4,7 +4,7 @@ import sys
 from io import StringIO
 from pathlib import Path
 
-from conftest import (
+from fixtures import (
     DependentDummyMetric,
     DummyMetric,
     Level3Metric,
@@ -112,7 +112,7 @@ def test_checkhub_measure_with_provider():
 
     ProviderDummyMetric requires DummyProvider.
     """
-    from conftest import DummyProvider
+    from fixtures import DummyProvider
 
     result = (
         CheckHub()
@@ -128,7 +128,7 @@ def test_checkhub_measure_with_provider():
 
 def test_checkhub_measure_with_providers():
     """Test that providers are executed correctly."""
-    from conftest import DummyProvider, ProviderDummyMetric
+    from fixtures import DummyProvider, ProviderDummyMetric
 
     result = (
         CheckHub()

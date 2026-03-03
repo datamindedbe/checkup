@@ -122,7 +122,7 @@ class TestHubExecution:
 
     def test_measure_with_empty_provider_sets_and_no_requirements(self):
         """Test measuring without providers when none required."""
-        from conftest import DummyMetric
+        from fixtures import DummyMetric
 
         result = CheckHub().with_metrics([DummyMetric]).measure()
 
@@ -153,7 +153,7 @@ class TestHubExecution:
 
     def test_measure_skips_dependent_metrics_when_dependency_skipped(self):
         """When a metric's dependency is skipped due to missing provider, the dependent is also skipped."""
-        from conftest import IntegrationBaseMetric, IntegrationDerivedMetric
+        from fixtures import IntegrationBaseMetric, IntegrationDerivedMetric
 
         # IntegrationBaseMetric requires IntegrationProvider
         # IntegrationDerivedMetric depends on IntegrationBaseMetric

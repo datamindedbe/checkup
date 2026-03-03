@@ -3,7 +3,7 @@
 from graphlib import CycleError
 
 import pytest
-from conftest import (
+from fixtures import (
     BranchB,
     CyclicMetricA,
     CyclicMetricB,

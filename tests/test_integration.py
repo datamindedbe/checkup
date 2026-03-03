@@ -1,6 +1,6 @@
 """Integration tests for full checkup pipeline."""
 
-from conftest import (
+from fixtures import (
     IntegrationBaseMetric,
     IntegrationDerivedMetric,
     IntegrationProvider,

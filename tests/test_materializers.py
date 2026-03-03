@@ -5,7 +5,7 @@ import sys
 from io import StringIO
 
 import pytest
-from conftest import DummyMetric
+from fixtures import DummyMetric
 from sqlalchemy import create_engine, text
 
 from checkup.materializers import (
@@ -67,7 +67,7 @@ def test_csv_materializer(tmp_path):
 
 def test_csv_materializer_multiple_metrics(tmp_path):
     """Test CSV materializer with multiple metrics."""
-    from conftest import OtherDummyMetric
+    from fixtures import OtherDummyMetric
 
     metric1 = DummyMetric(expected_value=42)
     metric1.value = 42
@@ -89,7 +89,7 @@ def test_csv_materializer_multiple_metrics(tmp_path):
 
 def test_materializer_filters_indirect_by_default():
     """Test that materializers filter out indirect metrics by default."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -114,7 +114,7 @@ def test_materializer_filters_indirect_by_default():
 
 def test_materializer_includes_indirect_when_configured():
     """Test that materializers can include indirect metrics."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -140,7 +140,7 @@ def test_materializer_includes_indirect_when_configured():
 
 def test_csv_materializer_filters_indirect(tmp_path):
     """Test CSV materializer filtering of indirect metrics."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -165,7 +165,7 @@ def test_csv_materializer_filters_indirect(tmp_path):
 
 def test_csv_materializer_includes_indirect(tmp_path):
     """Test CSV materializer including indirect metrics."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -300,7 +300,7 @@ def test_html_materializer_ungrouped_metrics(tmp_path):
 
 def test_html_materializer_filters_indirect(tmp_path):
     """Test HTML materializer filtering of indirect metrics."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -352,7 +352,7 @@ def test_html_materializer_end_to_end(tmp_path):
     This test creates a realistic scenario with multiple domains and projects,
     generates the HTML, and opens it for visual inspection.
     """
-    from conftest import OtherDummyMetric
+    from fixtures import OtherDummyMetric
 
     # Create metrics for Analytics domain
     metric1 = DummyMetric(expected_value=42)
@@ -499,7 +499,7 @@ def test_sqlalchemy_materializer(tmp_path):
 
 def test_sqlalchemy_materializer_multiple_metrics(tmp_path):
     """Test SQLAlchemy materializer with multiple metrics."""
-    from conftest import OtherDummyMetric
+    from fixtures import OtherDummyMetric
 
     metric1 = DummyMetric(expected_value=42)
     metric1.value = 42
@@ -564,7 +564,7 @@ def test_sqlalchemy_materializer_custom_table_name(tmp_path):
 
 def test_sqlalchemy_materializer_filters_indirect(tmp_path):
     """Test SQLAlchemy materializer filtering of indirect metrics."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -588,7 +588,7 @@ def test_sqlalchemy_materializer_filters_indirect(tmp_path):
 
 def test_sqlalchemy_materializer_includes_indirect(tmp_path):
     """Test SQLAlchemy materializer including indirect metrics."""
-    from conftest import IndirectDummyMetric
+    from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
     direct_metric.value = 42
@@ -675,7 +675,7 @@ def test_sqlalchemy_materializer_table_schema_default_is_none():
 
 def test_sqlalchemy_materializer_expand_tags(tmp_path):
     """Test SQLAlchemy materializer expands tags into separate columns."""
-    from conftest import IndirectDummyMetric, OtherDummyMetric
+    from fixtures import IndirectDummyMetric, OtherDummyMetric
 
     metric1 = DummyMetric(expected_value=42)
     metric1.value = 42

@@ -1,6 +1,6 @@
 """Tests for Metric ABC and test fixtures."""
 
-from conftest import (
+from fixtures import (
     DependentDummyMetric,
     DummyMetric,
     DummyProvider,

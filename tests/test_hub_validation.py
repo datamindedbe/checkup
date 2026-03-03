@@ -87,7 +87,7 @@ class TestProviderValidation:
 
     def test_validation_passes_with_no_required_providers(self):
         """Test validation passes when metrics need no providers."""
-        from conftest import DummyMetric
+        from fixtures import DummyMetric
 
         validate_providers(
             metrics=[DummyMetric],
