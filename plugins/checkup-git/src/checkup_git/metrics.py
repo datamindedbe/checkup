@@ -78,9 +78,9 @@ class GitFileExistsMetric(GitMetric):
         repo_path = git_context.get("git_repo_path")
 
         if not isinstance(repo_path, Path):
-            self.value = False
+            self.value = 0
             self.diagnostic = "No repository path found"
             return
 
         full_path = repo_path / self.file_path
-        self.value = full_path.exists()
+        self.value = 1 if full_path.exists() else 0

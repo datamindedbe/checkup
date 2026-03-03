@@ -61,7 +61,7 @@ def test_file_exists_metric_when_file_exists(git_repo: Path):
 
     metric = result.metrics[0]
     assert metric.name == "readme_exists"
-    assert metric.value is True
+    assert metric.value == 1
 
 
 def test_file_exists_metric_when_file_missing(git_repo: Path):
@@ -75,7 +75,7 @@ def test_file_exists_metric_when_file_missing(git_repo: Path):
 
     metric = result.metrics[0]
     assert metric.name == "cruft_file_exists"
-    assert metric.value is False
+    assert metric.value == 0
 
 
 def test_provider_returns_last_commit_date(git_repo: Path):
