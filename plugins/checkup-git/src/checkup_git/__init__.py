@@ -1,9 +1,10 @@
 """Git metrics for checkup."""
 
-from checkup.metric import Metric
+from checkup_git.metrics import GitDaysSinceLastUpdateMetric, GitMetric
+from checkup_git.provider import GitProvider
 
-
-class GitMetric(Metric):
-    """Base class for git-related metrics."""
-
-    pass
+__all__ = [
+    "GitProvider",
+    "GitMetric",
+    "GitDaysSinceLastUpdateMetric",
+]
