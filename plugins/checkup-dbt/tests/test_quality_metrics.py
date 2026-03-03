@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from checkup_dbt import DbtSupportedVersionMetric
+from checkup_dbt import DbtSupportedVersionMetric, DbtVersionMetric
 from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
@@ -36,15 +36,42 @@ def test_naming_convention_metric_custom_checker(sample_manifest_path: Path):
     assert metric.value == 3
 
 
+class Dbt19SupportedVersionMetric(DbtSupportedVersionMetric):
+    min_version: str = "1.9"
+
+
 def test_supported_version_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
-        .with_metrics([DbtSupportedVersionMetric])
+        .with_metrics([Dbt19SupportedVersionMetric])
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
+    )
+
+    metric = next(m for m in result.metrics if m.name == "dbt_supported_version")
+    assert metric.unit == "boolean"
+    assert metric.value == 1
+
+
+def test_supported_version_metric_requires_min_version():
+    """Test that DbtSupportedVersionMetric requires min_version to be configured."""
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        DbtSupportedVersionMetric()
+
+
+def test_version_metric(sample_manifest_path: Path):
+    result = (
+        CheckHub()
+        .with_metrics([DbtVersionMetric])
         .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
         .measure()
     )
 
     metric = result.metrics[0]
-    assert metric.name == "dbt_supported_version"
-    assert metric.unit == "boolean"
-    assert metric.value == 1
+    assert metric.name == "dbt_version"
+    assert metric.unit == "version"
+    assert metric.value is not None
+    assert isinstance(metric.value, str)

@@ -16,12 +16,17 @@ from checkup_dbt import (
     DbtTestedColumnsMetric,
     DbtTestsMetric,
     DbtUnitTestsMetric,
+    DbtVersionMetric,
 )
 from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
 
 from .conftest import InternalModelNamingMetric
+
+
+class Dbt19SupportedVersionMetric(DbtSupportedVersionMetric):
+    min_version: str = "1.9"
 
 
 def test_all_metrics(sample_manifest_path: Path):
@@ -41,7 +46,8 @@ def test_all_metrics(sample_manifest_path: Path):
         DbtOutputModelsWithoutContractsMetric,
         DbtOutputColumnsWithoutDataTypeMetric,
         InternalModelNamingMetric,
-        DbtSupportedVersionMetric,
+        Dbt19SupportedVersionMetric,
+        DbtVersionMetric,
     ]
 
     result = (
@@ -51,7 +57,7 @@ def test_all_metrics(sample_manifest_path: Path):
         .measure()
     )
 
-    assert len(result.metrics) == 16
+    assert len(result.metrics) == 17
     assert len(result.errors) == 0
 
     for metric in result.metrics:

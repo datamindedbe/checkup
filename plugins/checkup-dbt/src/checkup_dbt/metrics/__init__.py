@@ -18,6 +18,7 @@ from checkup_dbt.metrics.output import (
 from checkup_dbt.metrics.quality import (
     DbtModelsNotAdheringToNamingConventionMetric,
     DbtSupportedVersionMetric,
+    DbtVersionMetric,
 )
 from checkup_dbt.metrics.test import (
     DbtColumnTestCoverageMetric,
@@ -49,4 +50,5 @@ __all__ = [
     "DbtOutputColumnsWithoutDataTypeMetric",
     "DbtModelsNotAdheringToNamingConventionMetric",
     "DbtSupportedVersionMetric",
+    "DbtVersionMetric",
 ]

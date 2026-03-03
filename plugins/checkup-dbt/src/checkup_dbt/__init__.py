@@ -21,6 +21,7 @@ from checkup_dbt.metrics import (
     DbtTestedColumnsMetric,
     DbtTestsMetric,
     DbtUnitTestsMetric,
+    DbtVersionMetric,
     NamingConventionChecker,
 )
 from checkup_dbt.provider import DbtManifestProvider
@@ -48,4 +49,5 @@ __all__ = [
     "DbtOutputColumnsWithoutDataTypeMetric",
     "DbtModelsNotAdheringToNamingConventionMetric",
     "DbtSupportedVersionMetric",
+    "DbtVersionMetric",
 ]
