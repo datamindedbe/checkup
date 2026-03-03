@@ -34,20 +34,21 @@ class GitProvider(Provider):
         """Get git repository information.
 
         Returns:
-            Dict with git metadata including 'last_commit_date'.
+            Dict with git metadata.
         """
         logger.info(f"Getting git info from {self.repo_path}")
 
-        last_commit_date = self._get_last_commit_date()
+        tracked_files = self._get_tracked_files()
+        last_commit_date = self._get_last_commit_date(tracked_files)
 
         return {
             "git_repo_path": self.repo_path,
             "git_last_commit_date": last_commit_date,
+            "git_tracked_file_count": len(tracked_files),
         }
 
-    def _get_last_commit_date(self) -> datetime | None:
+    def _get_last_commit_date(self, git_files: list[str]) -> datetime | None:
         """Get the date of the most recent commit to any tracked file."""
-        git_files = self._get_tracked_files()
         if not git_files:
             return None
 

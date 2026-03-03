@@ -40,3 +40,15 @@ class GitDaysSinceLastUpdateMetric(GitMetric):
         now = datetime.now(UTC)
         delta = now - last_commit_date
         self.value = delta.days
+
+
+class GitTrackedFileCountMetric(GitMetric):
+    """Number of git tracked files in the repository path."""
+
+    name: ClassVar[str] = "git_tracked_file_count"
+    description: ClassVar[str] = "Number of git tracked files"
+    unit: ClassVar[str] = "files"
+
+    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+        git_context = self.get_context(context)
+        self.value = git_context.get("git_tracked_file_count", 0)

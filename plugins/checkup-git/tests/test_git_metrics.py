@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from checkup_git import GitDaysSinceLastUpdateMetric, GitProvider
+from checkup_git import (
+    GitDaysSinceLastUpdateMetric,
+    GitProvider,
+    GitTrackedFileCountMetric,
+)
 
 from checkup.hub import CheckHub
 
@@ -17,6 +21,20 @@ def test_days_since_last_update_metric(git_repo: Path):
     metric = result.metrics[0]
     assert metric.name == "git_days_since_last_update"
     assert metric.value == 0  # Just committed, should be 0 days
+
+
+def test_tracked_file_count_metric(git_repo: Path):
+    """Test tracked file count metric."""
+    result = (
+        CheckHub()
+        .with_metrics([GitTrackedFileCountMetric])
+        .with_providers([[GitProvider(repo_path=git_repo)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "git_tracked_file_count"
+    assert metric.value == 1  # One file (README.md) in the fixture
 
 
 def test_provider_returns_last_commit_date(git_repo: Path):
