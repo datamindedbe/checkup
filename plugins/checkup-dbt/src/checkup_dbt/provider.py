@@ -98,7 +98,8 @@ class DbtManifestProvider(Provider):
             manifest_dict = json.load(f)
 
         manifest = Manifest.from_dict(manifest_dict)
-        return {"manifest": manifest}
+        project_dir = self.manifest_path.parent.parent
+        return {"manifest": manifest, "project_dir": project_dir}
 
     def _parse_project(self) -> dict[str, Any]:
         """Parse dbt project to generate manifest."""
@@ -124,4 +125,4 @@ class DbtManifestProvider(Provider):
                 raise RuntimeError(f"dbt parse failed: {parse_result.exception}")
 
             manifest = parse_result.result
-            return {"manifest": manifest}
+            return {"manifest": manifest, "project_dir": self.dbt_project_dir}

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from enum import Enum, auto
+from pathlib import Path
 from typing import Any, ClassVar
 
 from dbt.artifacts.resources.types import NodeType
@@ -43,6 +44,17 @@ class DbtMetric(Metric):
             The dbt Manifest object
         """
         return context[DbtManifestProvider.name]["manifest"]
+
+    def get_project_dir(self, context: Context) -> Path:
+        """Get the dbt project directory from context.
+
+        Args:
+            context: The context dict
+
+        Returns:
+            Path to the dbt project directory
+        """
+        return context[DbtManifestProvider.name]["project_dir"]
 
     def query(self, context: Context) -> ManifestQuery:
         """Create a ManifestQuery for the context's manifest.

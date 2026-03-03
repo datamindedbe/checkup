@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from checkup_dbt import DbtSupportedVersionMetric, DbtVersionMetric
+from checkup_dbt import (
+    DbtFlaggedPackagesMetric,
+    DbtSupportedVersionMetric,
+    DbtVersionMetric,
+)
 from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
@@ -75,3 +79,66 @@ def test_version_metric(sample_manifest_path: Path):
     assert metric.unit == "version"
     assert metric.value is not None
     assert isinstance(metric.value, str)
+
+
+class FlaggedPackageMetric(DbtFlaggedPackagesMetric):
+    flagged_packages: list[str] = ["https://github.com/example/flagged-package"]
+
+
+def test_flagged_packages_metric(sample_manifest_path_with_git_packages: Path):
+    result = (
+        CheckHub()
+        .with_metrics([FlaggedPackageMetric])
+        .with_providers(
+            [
+                [
+                    DbtManifestProvider(
+                        manifest_path=sample_manifest_path_with_git_packages
+                    )
+                ]
+            ]
+        )
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "dbt_flagged_packages"
+    assert metric.unit == "packages"
+    assert metric.value == 1
+    assert "flagged-package" in metric.diagnostic
+
+
+class NoFlaggedPackageMetric(DbtFlaggedPackagesMetric):
+    flagged_packages: list[str] = ["https://github.com/example/nonexistent"]
+
+
+def test_flagged_packages_metric_no_matches(
+    sample_manifest_path_with_git_packages: Path,
+):
+    result = (
+        CheckHub()
+        .with_metrics([NoFlaggedPackageMetric])
+        .with_providers(
+            [
+                [
+                    DbtManifestProvider(
+                        manifest_path=sample_manifest_path_with_git_packages
+                    )
+                ]
+            ]
+        )
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.value == 0
+    assert not metric.diagnostic
+
+
+def test_flagged_packages_metric_requires_flagged_packages():
+    """Test that DbtFlaggedPackagesMetric requires flagged_packages to be configured."""
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        DbtFlaggedPackagesMetric()

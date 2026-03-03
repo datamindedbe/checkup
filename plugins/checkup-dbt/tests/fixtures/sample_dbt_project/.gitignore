@@ -1,0 +1,6 @@
+logs
+dbt_packages
+package-lock.yml
+target/**
+!target/manifest.json
+!target/semantic_manifest.json

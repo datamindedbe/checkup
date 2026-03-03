@@ -16,6 +16,7 @@ from checkup_dbt.metrics.output import (
     DbtOutputModelsWithoutDescriptionMetric,
 )
 from checkup_dbt.metrics.quality import (
+    DbtFlaggedPackagesMetric,
     DbtModelsNotAdheringToNamingConventionMetric,
     DbtSupportedVersionMetric,
     DbtVersionMetric,
@@ -48,6 +49,7 @@ __all__ = [
     "DbtOutputModelsWithoutDescriptionMetric",
     "DbtOutputModelsWithoutContractsMetric",
     "DbtOutputColumnsWithoutDataTypeMetric",
+    "DbtFlaggedPackagesMetric",
     "DbtModelsNotAdheringToNamingConventionMetric",
     "DbtSupportedVersionMetric",
     "DbtVersionMetric",
