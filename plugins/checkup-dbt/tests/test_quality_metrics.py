@@ -2,6 +2,7 @@ from pathlib import Path
 
 from checkup_dbt import (
     DbtFlaggedPackagesMetric,
+    DbtProfileHostMetric,
     DbtSupportedVersionMetric,
     DbtVersionMetric,
 )
@@ -142,3 +143,64 @@ def test_flagged_packages_metric_requires_flagged_packages():
 
     with pytest.raises(ValidationError):
         DbtFlaggedPackagesMetric()
+
+
+class DevProfileHostMetric(DbtProfileHostMetric):
+    target: str = "dev"
+
+
+def test_profile_host_metric_dev(sample_manifest_path_with_host: Path):
+    result = (
+        CheckHub()
+        .with_metrics([DevProfileHostMetric])
+        .with_providers(
+            [[DbtManifestProvider(manifest_path=sample_manifest_path_with_host)]]
+        )
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.name == "dbt_profile_host"
+    assert metric.unit == "url"
+    assert metric.value == "myprefix.minerva.dp-ond.vlaanderen.be"
+
+
+class ProdProfileHostMetric(DbtProfileHostMetric):
+    target: str = "prod"
+
+
+def test_profile_host_metric_prod(sample_manifest_path_with_host: Path):
+    result = (
+        CheckHub()
+        .with_metrics([ProdProfileHostMetric])
+        .with_providers(
+            [[DbtManifestProvider(manifest_path=sample_manifest_path_with_host)]]
+        )
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.value == "prod.example.com"
+
+
+def test_profile_host_metric_no_host(sample_manifest_path: Path):
+    """Test when profiles.yml has no host configured."""
+    result = (
+        CheckHub()
+        .with_metrics([DevProfileHostMetric])
+        .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
+        .measure()
+    )
+
+    metric = result.metrics[0]
+    assert metric.value is None
+    assert "No host found" in metric.diagnostic
+
+
+def test_profile_host_metric_requires_target():
+    """Test that DbtProfileHostMetric requires target to be configured."""
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        DbtProfileHostMetric()

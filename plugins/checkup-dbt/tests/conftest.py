@@ -45,6 +45,35 @@ packages:
         packages_path.unlink()
 
 
+@pytest.fixture
+def sample_manifest_path_with_host(
+    sample_dbt_project_dir: Path,
+) -> Generator[Path, None, None]:
+    """Fixture that temporarily adds a host to profiles.yml for testing."""
+    profiles_path = sample_dbt_project_dir / "profiles.yml"
+    original_content = profiles_path.read_text() if profiles_path.exists() else None
+
+    profiles_with_host = """\
+sample_dbt_project:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      host: myprefix.minerva.dp-ond.vlaanderen.be
+      port: 443
+    prod:
+      type: trino
+      host: prod.example.com
+      port: 443
+"""
+    profiles_path.write_text(profiles_with_host)
+
+    yield sample_dbt_project_dir / "target" / "manifest.json"
+
+    if original_content is not None:
+        profiles_path.write_text(original_content)
+
+
 def internal_model_naming_checker(context: Context, model: Any) -> bool:
     if not model.schema.endswith("__int"):
         return True
