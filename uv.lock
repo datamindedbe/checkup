@@ -5,9 +5,13 @@ requires-python = ">=3.12"
 [manifest]
 members = [
     "checkup",
+    "checkup-airflow",
+    "checkup-bitbucket",
     "checkup-conveyor",
     "checkup-dbt",
     "checkup-git",
+    "checkup-github",
+    "checkup-gitlab",
     "checkup-python",
 ]
 
@@ -138,7 +142,7 @@ wheels = [
 
 [[package]]
 name = "checkup"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
@@ -182,6 +186,44 @@ docs = [
     { name = "mkdocs-material", specifier = ">=9.5.0" },
     { name = "pymdown-extensions", specifier = ">=10.0" },
 ]
+
+[[package]]
+name = "checkup-airflow"
+version = "0.1.0"
+source = { editable = "plugins/checkup-airflow" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0" }]
+
+[[package]]
+name = "checkup-bitbucket"
+version = "0.1.0"
+source = { editable = "plugins/checkup-bitbucket" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-conveyor"
@@ -229,6 +271,44 @@ dev = [
 name = "checkup-git"
 version = "0.2.0"
 source = { editable = "plugins/checkup-git" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0" }]
+
+[[package]]
+name = "checkup-github"
+version = "0.1.0"
+source = { editable = "plugins/checkup-github" }
+dependencies = [
+    { name = "checkup" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkup", editable = "." }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0" }]
+
+[[package]]
+name = "checkup-gitlab"
+version = "0.1.0"
+source = { editable = "plugins/checkup-gitlab" }
 dependencies = [
     { name = "checkup" },
 ]
