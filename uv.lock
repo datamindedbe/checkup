@@ -185,7 +185,7 @@ docs = [
 
 [[package]]
 name = "checkup-conveyor"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "plugins/checkup-conveyor" }
 dependencies = [
     { name = "checkup" },
