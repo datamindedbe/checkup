@@ -42,6 +42,8 @@ class SQLAlchemyMaterializer(Materializer):
             driver via SQLAlchemy's connect_args.
         expand_tags: If True, expand tags into separate columns named ``tag_<key>``
             instead of storing them as JSON in a single ``tags`` column.
+        batch_size: Number of rows to insert per batch (default: 1000). Useful for
+            databases with query size limits.
     """
 
     connection_url: SecretStr
@@ -49,6 +51,7 @@ class SQLAlchemyMaterializer(Materializer):
     table_schema: str | None = None
     connect_args: dict[str, Any] | None = None
     expand_tags: bool = False
+    batch_size: int = 1000
 
     def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
         """Write metrics to the database."""
@@ -59,6 +62,7 @@ class SQLAlchemyMaterializer(Materializer):
         engine = create_engine(
             self.connection_url.get_secret_value(),
             connect_args=self.connect_args or {},
+            insertmanyvalues_page_size=self.batch_size,
         )
         metadata = MetaData(schema=self.table_schema)
 

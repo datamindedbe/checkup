@@ -762,3 +762,29 @@ def test_sqlalchemy_materializer_expand_tags_no_tags(tmp_path):
         rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
 
     assert len(rows) == 1
+
+
+def test_sqlalchemy_materializer_batch_size(tmp_path):
+    """Test SQLAlchemy materializer respects batch_size for large inserts."""
+    # Create more metrics than the batch size
+    metrics = []
+    for i in range(25):
+        metric = DummyMetric(expected_value=i)
+        metric.value = i
+        metrics.append(metric)
+
+    db_path = tmp_path / "metrics.db"
+    materializer = SQLAlchemyMaterializer(
+        connection_url=f"sqlite:///{db_path}",
+        batch_size=10,  # Small batch size to test batching
+    )
+    materializer.materialize(metrics, {"dummy"})
+
+    # Verify all rows were inserted
+    engine = create_engine(f"sqlite:///{db_path}")
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT * FROM metrics")).fetchall()
+
+    assert len(rows) == 25
+    values = {int(row[1]) for row in rows}
+    assert values == set(range(25))
