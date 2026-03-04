@@ -56,6 +56,16 @@ verify-version package version:
     fi
     echo "Version verified: $TOML_VERSION"
 
+# Bump version, commit, tag and push to trigger CD release
+release-cd package level:
+    #!/usr/bin/env bash
+    set -e
+    git diff --quiet && git diff --cached --quiet || (echo "Error: Git tree is not clean" && exit 1)
+    just bump {{ package }} {{ level }}
+    VERSION=$(uv version --short --package {{ package }})
+    git add -A && git commit -m "Bump {{ package }} to $VERSION"
+    just tag {{ package }}
+
 # Tag and push to trigger CD release
 tag package:
     #!/usr/bin/env bash
