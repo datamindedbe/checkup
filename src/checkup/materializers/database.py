@@ -117,4 +117,4 @@ class SQLAlchemyMaterializer(Materializer):
         with engine.begin() as conn:
             for i in range(0, len(rows), self.batch_size):
                 batch = rows[i : i + self.batch_size]
-                conn.execute(insert(table), batch)
+                conn.execute(insert(table).values(batch))
