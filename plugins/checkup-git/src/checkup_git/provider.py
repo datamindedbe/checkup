@@ -38,6 +38,14 @@ class GitProvider(Provider):
         """
         logger.info(f"Getting git info from {self.repo_path}")
 
+        if not self.repo_path.exists():
+            logger.warning(f"Path does not exist: {self.repo_path}")
+            return {
+                "git_repo_path": self.repo_path,
+                "git_last_commit_date": None,
+                "git_tracked_files": [],
+            }
+
         tracked_files = self._get_tracked_files()
         last_commit_date = self._get_last_commit_date(tracked_files)
 

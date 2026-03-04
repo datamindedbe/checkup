@@ -220,3 +220,26 @@ def test_provider_with_monorepo_subdirectory(tmp_path: Path):
 
     # project_b was committed later, so its date should be more recent
     assert context_a["git_last_commit_date"] < context_b["git_last_commit_date"]
+
+
+def test_provider_with_nonexistent_path(tmp_path: Path):
+    """Test provider handles non-existent path gracefully."""
+    nonexistent = tmp_path / "does_not_exist"
+
+    provider = GitProvider(repo_path=nonexistent)
+    context = provider.provide()
+
+    assert context["git_repo_path"] == nonexistent
+    assert context["git_last_commit_date"] is None
+    assert context["git_tracked_files"] == []
+
+    # Metrics should still work
+    result = (
+        CheckHub()
+        .with_metrics([GitTrackedFileCountMetric])
+        .with_providers([[GitProvider(repo_path=nonexistent)]])
+        .measure()
+    )
+
+    assert len(result.metrics) == 1
+    assert result.metrics[0].value == 0
