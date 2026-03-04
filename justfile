@@ -76,6 +76,15 @@ tag package:
     echo "Creating tag: $TAG"
     git tag "$TAG" && git push origin "$TAG"
 
+# Remove tag locally and from remote (in case of failed releases)
+untag package:
+    #!/usr/bin/env bash
+    set -e
+    TAG="{{ package }}-v$(uv version --short --package {{ package }})"
+    echo "Removing tag: $TAG"
+    git tag -d "$TAG" 2>/dev/null || true
+    git push origin --delete "$TAG" 2>/dev/null || true
+
 # Build a specific package
 build package:
     uv build --package {{ package }}
