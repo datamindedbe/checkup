@@ -26,6 +26,10 @@ members = [
     "plugins/checkup-dbt",
     "plugins/checkup-python",
     "plugins/checkup-conveyor",
+    "plugins/checkup-gitlab",
+    "plugins/checkup-bitbucket",
+    "plugins/checkup-github",
+    "plugins/checkup-airflow",
 ]
 
 [dependency-groups]
