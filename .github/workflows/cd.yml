@@ -6,7 +6,7 @@ on:
       - 'checkup*-v*'
 
 env:
-  PACKAGES: checkup checkup-git checkup-dbt checkup-python checkup-conveyor
+  PACKAGES: checkup checkup-git checkup-dbt checkup-python checkup-conveyor checkup-airflow checkup-github checkup-gitlab checkup-bitbucket
 
 jobs:
   release:
