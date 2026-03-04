@@ -1,0 +1,51 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'checkup*-v*'
+
+env:
+  PACKAGES: checkup checkup-git checkup-dbt checkup-python checkup-conveyor
+
+jobs:
+  release:
+    name: Release Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install just
+        uses: extractions/setup-just@v3
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Determine package from tag
+        id: package
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+
+          for pkg in $PACKAGES; do
+            if [[ "$TAG" =~ ^${pkg}-v(.+)$ ]]; then
+              echo "name=$pkg" >> $GITHUB_OUTPUT
+              echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+
+          echo "Unknown tag format: $TAG"
+          exit 1
+
+      - name: Install dependencies
+        run: just install
+
+      - name: Release package
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: just release ${{ steps.package.outputs.name }} ${{ steps.package.outputs.version }}

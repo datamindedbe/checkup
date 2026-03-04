@@ -22,17 +22,20 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install just
+        uses: extractions/setup-just@v3
+
       - name: Set up Python
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: just install-dev
 
-      - name: Run ruff linter
-        run: uv run ruff check .
+      - name: Run linter
+        run: just lint
 
-      - name: Run ruff formatter check
-        run: uv run ruff format --check .
+      - name: Run formatter check
+        run: just format-check
 
   test:
     name: Test
@@ -45,14 +48,17 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install just
+        uses: extractions/setup-just@v3
+
       - name: Set up Python
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv sync --all-packages --group dev
+        run: just install
 
       - name: Run tests with coverage
-        run: uv run pytest tests/ plugins/*/tests plugins/*/test --cov=src/checkup --cov-report=xml --cov-report=term-missing
+        run: just test-cov
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
