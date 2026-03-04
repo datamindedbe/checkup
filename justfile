@@ -56,6 +56,16 @@ verify-version package version:
     fi
     echo "Version verified: $TOML_VERSION"
 
+# Tag and push to trigger CD release
+tag package:
+    #!/usr/bin/env bash
+    set -e
+    TAG="{{ package }}-v$(uv version --short --package {{ package }})"
+    git tag -l "$TAG" | grep -q . && echo "Error: Tag $TAG already exists locally" && exit 1
+    git ls-remote --tags origin "$TAG" | grep -q . && echo "Error: Tag $TAG already exists on remote" && exit 1
+    echo "Creating tag: $TAG"
+    git tag "$TAG" && git push origin "$TAG"
+
 # Build a specific package
 build package:
     uv build --package {{ package }}
