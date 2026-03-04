@@ -62,7 +62,6 @@ class SQLAlchemyMaterializer(Materializer):
         engine = create_engine(
             self.connection_url.get_secret_value(),
             connect_args=self.connect_args or {},
-            insertmanyvalues_page_size=self.batch_size,
         )
         metadata = MetaData(schema=self.table_schema)
 
@@ -116,4 +115,6 @@ class SQLAlchemyMaterializer(Materializer):
             rows.append(row)
 
         with engine.begin() as conn:
-            conn.execute(insert(table), rows)
+            for i in range(0, len(rows), self.batch_size):
+                batch = rows[i : i + self.batch_size]
+                conn.execute(insert(table), batch)
