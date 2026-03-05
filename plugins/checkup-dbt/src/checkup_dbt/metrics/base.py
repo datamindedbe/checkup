@@ -121,6 +121,7 @@ class DbtDiagnosticMetric(DbtMetric):
     predicate: ClassVar[Callable[..., bool] | None] = None
     diagnostic_prefix: ClassVar[str] = "Items"
     log_message: ClassVar[str] = "Found {value} items"
+    max_diagnostic_items: ClassVar[int] = 50
 
     def calculate(self, context: Context, metrics: dict) -> None:
         cls = type(self)
@@ -135,5 +136,11 @@ class DbtDiagnosticMetric(DbtMetric):
 
         self.value = len(names)
         if names:
-            self.diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
+            if (overflow := len(names) - cls.max_diagnostic_items) > 0:
+                shown = ", ".join(names[: cls.max_diagnostic_items])
+                self.diagnostic = (
+                    f"{cls.diagnostic_prefix}: {shown}, ... and {overflow} more"
+                )
+            else:
+                self.diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
         logger.info(cls.log_message.format(value=self.value))
