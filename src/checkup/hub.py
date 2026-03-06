@@ -194,11 +194,30 @@ class CheckHub:
                     logger.debug("Provider set failure details:", exc_info=True)
                     all_errors.append((ps, e))
 
-        logger.info(
-            "Measurement complete: %d metrics calculated, %d errors",
-            len(all_metrics),
-            len(all_errors),
-        )
+        if all_errors:
+            failed_contexts = []
+            for ps, _ in all_errors:
+                tags = {
+                    k: v
+                    for p in ps
+                    if p.is_tag_provider()
+                    for k, v in p.provide().items()
+                }
+                failed_contexts.append(
+                    tags if tags else {"providers": [p.name for p in ps]}
+                )
+            failed_contexts_str = "\n  ".join(str(ctx) for ctx in failed_contexts)
+            logger.info(
+                "Measurement complete: %d metrics calculated, %d failed contexts:\n  %s",
+                len(all_metrics),
+                len(all_errors),
+                failed_contexts_str,
+            )
+        else:
+            logger.info(
+                "Measurement complete: %d metrics calculated",
+                len(all_metrics),
+            )
         return MeasurementResult(
             metrics=all_metrics,
             direct_metric_names=direct_metric_names,
