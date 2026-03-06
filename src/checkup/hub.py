@@ -73,10 +73,14 @@ def _measure_single_provider_set(
     Raises:
         ProviderError: If a provider fails during execution
     """
-    context, tags, errors = ProviderExecutor().execute(provider_set, fail_fast=True)
-    # errors list will be empty if fail_fast=True since it raises on error
+    context, tags, errors = ProviderExecutor().execute(provider_set)
+    failed_providers = {type(e.provider): e for e in errors}
     return MetricCalculator(metric_configs).calculate(
-        execution_order, context, tags, {type(p) for p in provider_set}
+        execution_order,
+        context,
+        tags,
+        {type(p) for p in provider_set},
+        failed_providers,
     )
 
 

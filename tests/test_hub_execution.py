@@ -45,6 +45,49 @@ class OtherProvider(Provider):
         return {"other_value": 999}
 
 
+class FailingProvider(Provider):
+    """Provider that always fails."""
+
+    name: ClassVar[str] = "failing"
+
+    def provide(self) -> dict[str, Any]:
+        raise RuntimeError("Provider failed intentionally")
+
+
+class FailingProviderMetric(Metric):
+    """Metric that depends on FailingProvider."""
+
+    name: ClassVar[str] = "failing_provider_metric"
+    description: ClassVar[str] = "Uses failing provider"
+    unit: ClassVar[str] = "count"
+
+    @classmethod
+    def providers(cls) -> list[type[Provider]]:
+        return [FailingProvider]
+
+    def calculate(self, context: Context, metrics: dict) -> None:
+        self.value = 999
+
+
+class DependsOnFailingMetric(Metric):
+    """Metric that depends on FailingProviderMetric."""
+
+    name: ClassVar[str] = "depends_on_failing_metric"
+    description: ClassVar[str] = "Depends on failing metric"
+    unit: ClassVar[str] = "count"
+
+    @classmethod
+    def depends_on(cls) -> list[type[Metric]]:
+        return [FailingProviderMetric]
+
+    @classmethod
+    def providers(cls) -> list[type[Provider]]:
+        return [FailingProvider]
+
+    def calculate(self, context: Context, metrics: dict) -> None:
+        self.value = metrics[FailingProviderMetric].value * 2
+
+
 class OtherMetric(Metric):
     """Metric that uses OtherProvider."""
 
@@ -170,3 +213,61 @@ class TestHubExecution:
         assert (
             len(result.errors) == 0
         )  # No exceptions from trying to access missing dependency
+
+    def test_failed_provider_metric_has_null_value_with_diagnostic(self):
+        """When a provider fails, metrics depending on it have value=None with diagnostic."""
+        result = (
+            CheckHub()
+            .with_metrics([FailingProviderMetric])
+            .with_providers([[FailingProvider()]])
+            .measure()
+        )
+
+        assert len(result.metrics) == 1
+        metric = result.metrics[0]
+        assert metric.name == "failing_provider_metric"
+        assert metric.value is None
+        assert "provider 'failing' failed" in metric.diagnostic
+
+    def test_failed_provider_does_not_affect_unrelated_metrics(self):
+        """When a provider fails, unrelated metrics are still calculated."""
+        result = (
+            CheckHub()
+            .with_metrics([DataMetric, FailingProviderMetric])
+            .with_providers([[DataProvider(value=42), FailingProvider()]])
+            .measure()
+        )
+
+        assert len(result.metrics) == 2
+
+        data_metric = next(m for m in result.metrics if m.name == "data_metric")
+        assert data_metric.value == 42
+
+        failing_metric = next(
+            m for m in result.metrics if m.name == "failing_provider_metric"
+        )
+        assert failing_metric.value is None
+        assert "failed" in failing_metric.diagnostic
+
+    def test_metric_depending_on_failed_metric_also_fails(self):
+        """When a metric fails due to provider failure, dependents also fail."""
+        result = (
+            CheckHub()
+            .with_metrics([FailingProviderMetric, DependsOnFailingMetric])
+            .with_providers([[FailingProvider()]])
+            .measure()
+        )
+
+        assert len(result.metrics) == 2
+
+        base_metric = next(
+            m for m in result.metrics if m.name == "failing_provider_metric"
+        )
+        assert base_metric.value is None
+        assert "provider 'failing' failed" in base_metric.diagnostic
+
+        dependent_metric = next(
+            m for m in result.metrics if m.name == "depends_on_failing_metric"
+        )
+        assert dependent_metric.value is None
+        assert "metric 'failing_provider_metric' failed" in dependent_metric.diagnostic

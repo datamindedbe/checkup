@@ -54,7 +54,7 @@ class ProviderExecutor:
     """
 
     def execute(
-        self, provider_set: list[Provider], fail_fast: bool = True
+        self, provider_set: list[Provider]
     ) -> tuple[Context, dict[str, Any], list[ProviderError]]:
         """Execute all providers and build namespaced context.
 
@@ -64,14 +64,9 @@ class ProviderExecutor:
 
         Args:
             provider_set: List of provider instances
-            fail_fast: If True, raise on first provider error.
-                       If False, collect errors and continue.
 
         Returns:
             Tuple of (context dict, tags dict, list of errors)
-
-        Raises:
-            ProviderError: If fail_fast=True and a provider fails
         """
         context: Context = {}
         tags: dict[str, Any] = {}
@@ -89,8 +84,6 @@ class ProviderExecutor:
             except Exception as e:
                 error = ProviderError(provider, e)
                 logger.error("Provider %s failed: %s", provider.name, e)
-                if fail_fast:
-                    raise error from e
                 errors.append(error)
 
         return context, tags, errors
@@ -113,6 +106,7 @@ class MetricCalculator:
         context: Context,
         tags: dict[str, Any],
         provided_classes: set[type[Provider]],
+        failed_providers: dict[type[Provider], ProviderError] | None = None,
     ) -> list[Metric]:
         """Calculate all metrics in execution order.
 
@@ -124,13 +118,16 @@ class MetricCalculator:
             context: Context dict from providers
             tags: Tags dict to merge into metrics
             provided_classes: Set of provider classes available
+            failed_providers: Dict mapping failed provider classes to their errors
 
         Returns:
             List of calculated metrics
         """
+        failed_providers = failed_providers or {}
         logger.debug("Starting metric calculation for %d metrics", len(execution_order))
         calculated: dict[type[Metric], Metric] = {}
         skipped: set[type[Metric]] = set()
+        failed: set[type[Metric]] = set()
         result_metrics: list[Metric] = []
 
         i = 0
@@ -138,9 +135,21 @@ class MetricCalculator:
         while i < len(execution_order):
             metric_cls = execution_order[i]
 
-            # Check for skip conditions
+            # Check for skip conditions (missing providers)
             if self._should_skip(metric_cls, provided_classes, skipped):
                 skipped.add(metric_cls)
+                i += 1
+                continue
+
+            # Check for failed provider dependencies
+            failed_deps = self._get_failed_providers(
+                metric_cls, failed_providers, failed
+            )
+            if failed_deps:
+                metric = self._create_failed_metric(metric_cls, tags, failed_deps)
+                calculated[metric_cls] = metric
+                result_metrics.append(metric)
+                failed.add(metric_cls)
                 i += 1
                 continue
 
@@ -157,6 +166,17 @@ class MetricCalculator:
 
                 if self._should_skip(next_cls, provided_classes, skipped):
                     skipped.add(next_cls)
+                    i += 1
+                    continue
+
+                failed_deps = self._get_failed_providers(
+                    next_cls, failed_providers, failed
+                )
+                if failed_deps:
+                    metric = self._create_failed_metric(next_cls, tags, failed_deps)
+                    calculated[next_cls] = metric
+                    result_metrics.append(metric)
+                    failed.add(next_cls)
                     i += 1
                     continue
 
@@ -192,9 +212,10 @@ class MetricCalculator:
                 )
 
         logger.info(
-            "Metric calculation complete: %d calculated, %d skipped",
-            len(result_metrics),
+            "Metric calculation complete: %d calculated, %d skipped, %d failed",
+            len(result_metrics) - len(failed),
             len(skipped),
+            len(failed),
         )
         return result_metrics
 
@@ -233,6 +254,63 @@ class MetricCalculator:
             return True
 
         return False
+
+    def _get_failed_providers(
+        self,
+        metric_cls: type[Metric],
+        failed_providers: dict[type[Provider], ProviderError],
+        failed_metrics: set[type[Metric]],
+    ) -> list[str]:
+        """Get list of failed provider/metric names that this metric depends on.
+
+        Args:
+            metric_cls: Metric class to check
+            failed_providers: Dict of failed provider classes to errors
+            failed_metrics: Set of metrics that failed due to provider errors
+
+        Returns:
+            List of failed provider/metric names, empty if none
+        """
+        failed_names = []
+
+        # Check direct provider dependencies
+        for provider_cls in metric_cls.providers():
+            if provider_cls in failed_providers:
+                failed_names.append(f"provider '{provider_cls.name}'")
+
+        # Check metric dependencies that failed
+        for dep_cls in metric_cls.depends_on():
+            if dep_cls in failed_metrics:
+                failed_names.append(f"metric '{dep_cls.name}'")
+
+        return failed_names
+
+    def _create_failed_metric(
+        self,
+        metric_cls: type[Metric],
+        tags: dict[str, Any],
+        failed_deps: list[str],
+    ) -> Metric:
+        """Create a metric instance with null value due to failed dependencies.
+
+        Args:
+            metric_cls: Metric class to instantiate
+            tags: Tags to merge into the metric
+            failed_deps: List of failed dependency names
+
+        Returns:
+            Metric instance with value=None and diagnostic explaining failure
+        """
+        metric = metric_cls(**self._configs.get(metric_cls.name, {}))
+        metric.tags.update(tags)
+        metric.value = None
+        metric.diagnostic = f"Failed: {', '.join(failed_deps)} failed"
+        logger.debug(
+            "Metric %s marked as failed: %s",
+            metric_cls.name,
+            metric.diagnostic,
+        )
+        return metric
 
     def _execute_batch(
         self,
