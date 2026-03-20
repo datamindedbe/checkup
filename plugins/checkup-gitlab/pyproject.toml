@@ -2,6 +2,7 @@
 name = "checkup-gitlab"
 version = "0.1.0"
 description = "GitLab metrics for checkup"
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "checkup",
