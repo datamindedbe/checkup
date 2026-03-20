@@ -326,7 +326,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-python"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "plugins/checkup-python" }
 dependencies = [
     { name = "checkup" },
