@@ -1,6 +1,6 @@
 [project]
 name = "checkup-bitbucket"
-version = "0.1.0"
+version = "0.1.1"
 description = "Bitbucket metrics for checkup"
 readme = "README.md"
 requires-python = ">=3.12"
