@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
+from checkup.metric import Measurement, Metric
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 
@@ -20,7 +21,9 @@ class DbtTestedColumnsMetric(DbtMetric):
     description: ClassVar[str] = "Number of columns with at least one test"
     unit: ClassVar[str] = "columns"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         manifest = self.get_manifest(context)
 
         all_columns = {
@@ -40,5 +43,6 @@ class DbtTestedColumnsMetric(DbtMetric):
             and node.column_name is not None
         }
 
-        self.value = len(all_columns & tested_columns)
-        logger.info(f"Found {self.value} tested columns")
+        value = len(all_columns & tested_columns)
+        logger.info(f"Found {value} tested columns")
+        return self.measurement(value=value)

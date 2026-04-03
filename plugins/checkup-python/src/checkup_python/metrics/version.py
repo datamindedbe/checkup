@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from typing import ClassVar
 
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.types import Context
 from checkup_python.metrics.utils import parse_semantic_version
 
@@ -22,7 +22,9 @@ class PythonVersionMetric(Metric):
     description: ClassVar[str] = "The Python version configured for the project"
     unit: ClassVar[str] = "version"
 
-    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         path = None
 
         if "path" in context:
@@ -36,7 +38,7 @@ class PythonVersionMetric(Metric):
             or self._get_runtime_version()
         )
 
-        self.value = version
+        return self.measurement(value=version)
 
     def _read_python_version_file(self, path: Path) -> str | None:
         """

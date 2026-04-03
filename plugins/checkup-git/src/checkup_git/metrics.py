@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from fnmatch import fnmatch
 from typing import ClassVar
 
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup_git.provider import GitProvider
@@ -29,19 +29,21 @@ class GitDaysSinceLastUpdateMetric(GitMetric):
     description: ClassVar[str] = "Days since the last git commit"
     unit: ClassVar[str] = "days"
 
-    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         git_context = self.get_context(context)
         last_commit_date = git_context.get("git_last_commit_date")
 
         if not isinstance(last_commit_date, datetime):
-            self.value = None
-            self.diagnostic = "No commits found"
-            return
+            return self.measurement(value=None, diagnostic="No commits found")
 
         now = datetime.now(UTC)
         delta = now - last_commit_date
-        self.value = delta.days
-        self.diagnostic = f"Last commit: {last_commit_date.strftime('%Y-%m-%d')}"
+        return self.measurement(
+            value=delta.days,
+            diagnostic=f"Last commit: {last_commit_date.strftime('%Y-%m-%d')}",
+        )
 
 
 class GitTrackedFileCountMetric(GitMetric):
@@ -65,21 +67,26 @@ class GitTrackedFileCountMetric(GitMetric):
 
     pattern: str = "*"
 
-    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         git_context = self.get_context(context)
         tracked_files = git_context.get("git_tracked_files", [])
 
         if not isinstance(tracked_files, list):
-            self.value = 0
-            self.diagnostic = "No git repository found"
-            return
+            return self.measurement(value=0, diagnostic="No git repository found")
 
         if self.pattern != "*":
             matched_files = [f for f in tracked_files if fnmatch(f, self.pattern)]
-            self.value = len(matched_files)
             if matched_files:
-                self.diagnostic = f"Matched files: {', '.join(matched_files)}"
+                return self.measurement(
+                    value=len(matched_files),
+                    diagnostic=f"Matched files: {', '.join(matched_files)}",
+                )
             else:
-                self.diagnostic = f"No files matching pattern: {self.pattern}"
+                return self.measurement(
+                    value=len(matched_files),
+                    diagnostic=f"No files matching pattern: {self.pattern}",
+                )
         else:
-            self.value = len(tracked_files)
+            return self.measurement(value=len(tracked_files))
