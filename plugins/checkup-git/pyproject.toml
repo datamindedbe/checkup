@@ -16,13 +16,6 @@ dev = [
 [tool.uv.sources]
 checkup = { workspace = true }
 
-[project.entry-points."checkup.providers"]
-git = "checkup_git:GitProvider"
-
-[project.entry-points."checkup.metrics"]
-git_days_since_last_update = "checkup_git:GitDaysSinceLastUpdateMetric"
-git_tracked_file_count = "checkup_git:GitTrackedFileCountMetric"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
