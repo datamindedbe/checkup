@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=checkup.schema.json
+
+tags:
+  project: checkup
+
+providers:
+- name: git
+
+metrics:
+- name: git_days_since_last_update
+- name: git_tracked_file_count
+  pattern: src/checkup/*
+- name: python_version
+- name: python_version_check
+  min_version: '3.13'
+  max_version: '3.15'
