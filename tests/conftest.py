@@ -9,11 +9,10 @@ def dummy_metric():
 
 
 @pytest.fixture
-def dummy_metric_with_value():
-    """Create a DummyMetric instance with value already calculated."""
+def dummy_measurement_with_value():
+    """Create a Measurement from a DummyMetric with value already calculated."""
     metric = DummyMetric(expected_value=10)
-    metric.calculate(context={}, metrics={})
-    return metric
+    return metric.calculate(context={}, measurements={})
 
 
 @pytest.fixture

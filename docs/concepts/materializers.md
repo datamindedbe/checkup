@@ -180,10 +180,10 @@ class JSONMaterializer(Materializer):
 
         data = [
             {
-                "name": m.metric_name,
+                "name": m.metric.name,
                 "value": m.value,
-                "unit": m.metric_unit,
-                "description": m.metric_description,
+                "unit": m.metric.unit,
+                "description": m.metric.description,
                 "diagnostic": m.diagnostic,
                 "tags": m.tags,
             }

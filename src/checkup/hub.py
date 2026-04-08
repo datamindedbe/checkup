@@ -1,19 +1,17 @@
-"""CheckHub main orchestration."""
+"""CheckHub orchestration."""
 
 import logging
 import os
 from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
-from checkup.config import load_config
 from checkup.errors import DuplicateMetricNameError, MetricPicklingError, ProviderError
 from checkup.executor import MetricCalculator, ProviderExecutor
 from checkup.graph import build_dependency_graph, topological_sort
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.provider import Provider
 from checkup.validators import validate_providers, validate_unique_metric_names
 
@@ -33,12 +31,13 @@ __all__ = [
 
 
 class MeasurementResult(BaseModel):
-    """Result of measuring metrics.
+    """
+    Result of measuring metrics.
 
-    Contains all calculated metrics and any errors from failed contexts.
+    Contains all calculated measurements and any errors from failed contexts.
     """
 
-    metrics: list[Metric]
+    measurements: list[Measurement]
     direct_metric_names: set[str] = Field(default_factory=set)
     errors: list[tuple[list[Provider], Exception]] = Field(default_factory=list)
 
@@ -50,32 +49,35 @@ class MeasurementResult(BaseModel):
         Args:
             materializer: Materializer instance for output
         """
-        materializer.materialize(self.metrics, self.direct_metric_names)
+        materializer.materialize(self.measurements, self.direct_metric_names)
 
 
 def _measure_single_provider_set(
     provider_set: list[Provider],
+    metrics: list[Metric],
     execution_order: list[type[Metric]],
-    metric_configs: dict,
-) -> list[Metric]:
+) -> list[Measurement]:
     """Calculate all metrics for a single provider set.
 
     This is a module-level function for ProcessPoolExecutor compatibility.
 
     Args:
         provider_set: List of provider instances
+        metrics: List of metric instances to calculate
         execution_order: Topologically sorted metric classes
-        metric_configs: Config dict for metrics
 
     Returns:
-        List of calculated metrics with tags merged
+        List of Measurements with tags merged
 
     Raises:
         ProviderError: If a provider fails during execution
     """
+
     context, tags, errors = ProviderExecutor().execute(provider_set)
     failed_providers = {type(e.provider): e for e in errors}
-    return MetricCalculator(metric_configs).calculate(
+
+    return MetricCalculator().calculate(
+        metrics,
         execution_order,
         context,
         tags,
@@ -85,30 +87,26 @@ def _measure_single_provider_set(
 
 
 class CheckHub:
-    """Main entry point for metrics calculation.
+    """
+    Main entry point for metrics calculation.
 
     Usage:
         CheckHub()
-            .with_metrics([MetricA, MetricB])
+            .with_metrics([MetricA(), MetricB(threshold=10)])
             .measure()
             .materialize(ConsoleMaterializer())
     """
 
-    def __init__(self, config_path: Path | None = None) -> None:
-        """Initialize CheckHub.
-
-        Args:
-            config_path: Optional path to YAML config file
-        """
-        self._metrics: list[type[Metric]] = []
+    def __init__(self) -> None:
+        """Initialize CheckHub."""
+        self._metrics: list[Metric] = []
         self._provider_sets: list[list[Provider]] = []
-        self._config_path = config_path
 
-    def with_metrics(self, metrics: Iterable[type[Metric]]) -> "CheckHub":
-        """Register metrics to calculate.
+    def with_metrics(self, metrics: Iterable[Metric]) -> "CheckHub":
+        """Register metric instances to calculate.
 
         Args:
-            metrics: Iterable of metric classes
+            metrics: Iterable of metric instances (configured via constructor)
 
         Returns:
             Self for chaining
@@ -142,7 +140,7 @@ class CheckHub:
             max_workers: Max parallel workers. None = use all CPUs.
 
         Returns:
-            MeasurementResult containing all calculated metrics and errors
+            MeasurementResult containing all calculated measurements and errors
 
         Raises:
             DuplicateMetricNameError: If multiple metrics have the same name
@@ -153,27 +151,15 @@ class CheckHub:
             len(self._provider_sets),
         )
 
-        metric_configs: dict = {}
-        if self._config_path:
-            logger.debug("Loading config from %s", self._config_path)
-            metric_configs = load_config(self._config_path)
-
-        # Build dependency graph and get execution order
+        metric_classes = [type(m) for m in self._metrics]
         logger.debug("Building dependency graph")
-        execution_order = topological_sort(build_dependency_graph(self._metrics))
-
-        # Validate unique metric names across all metrics (including dependencies)
+        execution_order = topological_sort(build_dependency_graph(metric_classes))
         validate_unique_metric_names(list(execution_order))
-
         direct_metric_names = {m.name for m in self._metrics}
-
-        # Use empty provider set if none specified and none required
         provider_sets = self._provider_sets if self._provider_sets else [[]]
-
-        # Validate providers before running
         validate_providers(list(execution_order), provider_sets)
 
-        all_metrics: list[Metric] = []
+        all_measurements: list[Measurement] = []
         all_errors: list[tuple[list[Provider], Exception]] = []
         workers = max_workers if max_workers is not None else os.cpu_count()
 
@@ -183,8 +169,8 @@ class CheckHub:
                 executor.submit(
                     _measure_single_provider_set,
                     provider_set=ps,
+                    metrics=self._metrics,
                     execution_order=execution_order,
-                    metric_configs=metric_configs,
                 ): ps
                 for ps in provider_sets
             }
@@ -192,7 +178,7 @@ class CheckHub:
             for future in as_completed(future_to_provider_set):
                 ps = future_to_provider_set[future]
                 try:
-                    all_metrics.extend(future.result())
+                    all_measurements.extend(future.result())
                 except Exception as e:
                     logger.error("Provider set failed: %s", e)
                     logger.debug("Provider set failure details:", exc_info=True)
@@ -212,18 +198,18 @@ class CheckHub:
                 )
             failed_contexts_str = "\n  ".join(str(ctx) for ctx in failed_contexts)
             logger.info(
-                "Measurement complete: %d metrics calculated, %d failed contexts:\n  %s",
-                len(all_metrics),
+                "Measurement complete: %d measurements, %d failed contexts:\n  %s",
+                len(all_measurements),
                 len(all_errors),
                 failed_contexts_str,
             )
         else:
             logger.info(
-                "Measurement complete: %d metrics calculated",
-                len(all_metrics),
+                "Measurement complete: %d measurements",
+                len(all_measurements),
             )
         return MeasurementResult(
-            metrics=all_metrics,
+            measurements=all_measurements,
             direct_metric_names=direct_metric_names,
             errors=all_errors,
         )

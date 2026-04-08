@@ -4,14 +4,14 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from checkup.materializers.base import Materializer, group_metrics_hierarchical
-from checkup.metric import Metric
+from checkup.materializers.base import Materializer, group_measurements_hierarchical
+from checkup.metric import Measurement
 
 
 class HTMLMaterializer(Materializer):
-    """Output metrics to an HTML file with hierarchical grouping.
+    """Output measurements to an HTML file with hierarchical grouping.
 
-    Generates a styled HTML report with metrics grouped by two levels of tags.
+    Generates a styled HTML report with measurements grouped by two levels of tags.
     Uses Bootstrap accordions for collapsible groups.
 
     Attributes:
@@ -24,12 +24,14 @@ class HTMLMaterializer(Materializer):
     group_tag_1: str
     group_tag_2: str
 
-    def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
+    def materialize(
+        self, measurements: list[Measurement], direct_metric_names: set[str]
+    ) -> None:
         """Generate and write HTML report to file."""
-        filtered = self._filter_metrics(metrics, direct_metric_names)
+        filtered = self._filter_measurements(measurements, direct_metric_names)
 
-        # Group metrics hierarchically
-        grouped = group_metrics_hierarchical(
+        # Group measurements hierarchically
+        grouped = group_measurements_hierarchical(
             filtered, self.group_tag_1, self.group_tag_2
         )
 

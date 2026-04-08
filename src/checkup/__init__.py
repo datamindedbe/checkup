@@ -14,7 +14,7 @@ from checkup.materializers import (
     Materializer,
     SQLAlchemyMaterializer,
 )
-from checkup.metric import ExecutorType, Metric
+from checkup.metric import ExecutorType, Measurement, Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
@@ -25,6 +25,7 @@ __all__ = [
     "CheckHub",
     "MeasurementResult",
     "Metric",
+    "Measurement",
     "ExecutorType",
     "Provider",
     "TagProvider",
