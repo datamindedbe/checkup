@@ -11,19 +11,19 @@ from checkup.providers.tags import TagProvider
 def test_manifest_path_mode(sample_manifest_path: Path):
     result = (
         CheckHub()
-        .with_metrics([DbtModelsMetric])
+        .with_metrics([DbtModelsMetric()])
         .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
         .measure()
     )
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].value == 3
+    assert len(result.measurements) == 1
+    assert result.measurements[0].value == 3
 
 
 def test_dbt_project_dir_mode(sample_dbt_project_dir: Path):
     result = (
         CheckHub()
-        .with_metrics([DbtModelsMetric])
+        .with_metrics([DbtModelsMetric()])
         .with_providers(
             [
                 [
@@ -37,8 +37,8 @@ def test_dbt_project_dir_mode(sample_dbt_project_dir: Path):
         .measure()
     )
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].value == 3
+    assert len(result.measurements) == 1
+    assert result.measurements[0].value == 3
 
 
 def test_missing_args_raises_error():
@@ -53,7 +53,7 @@ def test_missing_args_raises_error():
 def test_multiple_projects(sample_manifest_path: Path):
     result = (
         CheckHub()
-        .with_metrics([DbtModelsMetric])
+        .with_metrics([DbtModelsMetric()])
         .with_providers(
             [
                 [
@@ -69,7 +69,7 @@ def test_multiple_projects(sample_manifest_path: Path):
         .measure()
     )
 
-    assert len(result.metrics) == 2
-    assert all(m.value == 3 for m in result.metrics)
-    projects = {m.tags["project"] for m in result.metrics}
+    assert len(result.measurements) == 2
+    assert all(m.value == 3 for m in result.measurements)
+    projects = {m.tags["project"] for m in result.measurements}
     assert projects == {"project_a", "project_b"}

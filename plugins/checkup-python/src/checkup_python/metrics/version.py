@@ -5,7 +5,6 @@ from typing import ClassVar
 
 from checkup.metric import Measurement, Metric
 from checkup.types import Context
-from checkup_python.metrics.utils import parse_semantic_version
 
 
 class PythonVersionMetric(Metric):
@@ -82,33 +81,3 @@ class PythonVersionMetric(Metric):
         """
 
         return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-
-    def __lt__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) < parse_semantic_version(other.value)
-
-    def __le__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) <= parse_semantic_version(other.value)
-
-    def __gt__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) > parse_semantic_version(other.value)
-
-    def __ge__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) >= parse_semantic_version(other.value)
-
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) == parse_semantic_version(other.value)
-
-    def __ne__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) != parse_semantic_version(other.value)
