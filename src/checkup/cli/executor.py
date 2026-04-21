@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from checkup.materializers import Materializer
     from checkup.metric import Metric
     from checkup.provider import Provider
+    from checkup.registry.discovery import PluginRegistry
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -145,7 +146,3 @@ def _resolve_materializer(
     except Exception as e:
         console.print(f"[red]Failed to instantiate materializer {mat_type}: {e}[/red]")
         return ConsoleMaterializer()
-
-
-# Import for type hints
-from checkup.registry.discovery import PluginRegistry  # noqa: E402
