@@ -2,9 +2,10 @@
 JSON Schema generation for checkup.yaml.
 """
 
+import inspect
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, get_origin, get_type_hints
 
 from checkup.registry import get_registry
 
@@ -14,7 +15,7 @@ SCHEMA_ID = "https://checkup.dev/schemas/checkup.yaml.json"
 
 def _get_pydantic_schema(cls: type) -> dict | None:
     """
-    Get JSON schema from a Pydantic model, filtering internal fields.
+    Get JSON schema from a Pydantic model.
     """
 
     if not hasattr(cls, "model_json_schema"):
@@ -23,20 +24,9 @@ def _get_pydantic_schema(cls: type) -> dict | None:
     try:
         schema = cls.model_json_schema()
 
-        # Remove internal fields for metrics
-        if "properties" in schema:
-            for field in ("value", "diagnostic", "tags"):
-                schema["properties"].pop(field, None)
-            if "required" in schema:
-                schema["required"] = [
-                    r
-                    for r in schema["required"]
-                    if r not in ("value", "diagnostic", "tags")
-                ]
-
-        # Remove $defs if present (inline everything)
-        schema.pop("$defs", None)
-        schema.pop("title", None)
+        # Remove Pydantic metadata we don't need in the config schema
+        schema.pop("$defs", None)  # Inline type definitions
+        schema.pop("title", None)  # We use entry point names, not class names
 
         if not schema.get("properties"):
             return None
@@ -46,13 +36,34 @@ def _get_pydantic_schema(cls: type) -> dict | None:
         return None
 
 
+def _python_type_to_json_schema_type(hint: type) -> str:
+    """
+    Map a Python type hint to a JSON Schema type.
+    """
+
+    origin = get_origin(hint)
+    if origin is not None:
+        # For Union types, just use string as fallback
+        return "string"
+
+    if hint is str:
+        return "string"
+    if hint is int:
+        return "integer"
+    if hint is float:
+        return "number"
+    if hint is bool:
+        return "boolean"
+    if hint is Path or (isinstance(hint, type) and issubclass(hint, Path)):
+        return "string"
+
+    return "string"
+
+
 def _get_provider_schema(cls: type) -> dict | None:
     """
     Get JSON schema for a provider from its __init__ signature.
     """
-
-    import inspect
-    from typing import get_type_hints
 
     try:
         sig = inspect.signature(cls.__init__)
@@ -69,26 +80,11 @@ def _get_provider_schema(cls: type) -> dict | None:
 
         prop: dict[str, Any] = {}
 
-        # Get type
         if name in hints:
-            hint = hints[name]
-            type_name = getattr(hint, "__name__", str(hint))
-            if "str" in type_name or "str" in str(hint):
-                prop["type"] = "string"
-            elif "int" in type_name:
-                prop["type"] = "integer"
-            elif "float" in type_name:
-                prop["type"] = "number"
-            elif "bool" in type_name:
-                prop["type"] = "boolean"
-            elif "Path" in str(hint):
-                prop["type"] = "string"
-            else:
-                prop["type"] = "string"
+            prop["type"] = _python_type_to_json_schema_type(hints[name])
         else:
             prop["type"] = "string"
 
-        # Get default
         if param.default is not inspect.Parameter.empty:
             default = param.default
             # Convert Path to string for JSON
