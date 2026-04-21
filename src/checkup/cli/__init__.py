@@ -17,11 +17,3 @@ app.command()(run)
 app.command()(init)
 app.command()(config)
 app.command()(schema)
-
-
-def main() -> None:
-    """
-    CLI entry point.
-    """
-
-    app()

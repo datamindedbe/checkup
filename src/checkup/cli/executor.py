@@ -89,15 +89,12 @@ def _resolve_providers(
 def _resolve_metrics(
     config: CheckupConfig,
     registry: "PluginRegistry",
-) -> list[type["Metric"]]:
+) -> list["Metric"]:
     """
-    Resolve metric configs to metric classes.
-
-    If a metric has config, a subclass is created with those defaults.
+    Resolve metric configs to metric instances.
     """
-    from checkup.metric import create_configured_metric
 
-    metrics: list[type[Metric]] = []
+    metrics: list[Metric] = []
 
     for metric_config in config.metrics:
         metric_cls = registry.get_metric(metric_config.name)
@@ -105,10 +102,13 @@ def _resolve_metrics(
             console.print(f"[yellow]Unknown metric: {metric_config.name}[/yellow]")
             continue
 
-        if metric_config.config:
-            metric_cls = create_configured_metric(metric_cls, metric_config.config)
-
-        metrics.append(metric_cls)
+        try:
+            metric = metric_cls(**metric_config.config)
+            metrics.append(metric)
+        except Exception as e:
+            console.print(
+                f"[red]Failed to instantiate metric {metric_config.name}: {e}[/red]"
+            )
 
     return metrics
 
@@ -122,7 +122,6 @@ def _resolve_materializer(
     Resolve materializer config to materializer instance.
     """
 
-    # Determine type and config
     if override:
         mat_type = override
         mat_config = {}
@@ -133,11 +132,9 @@ def _resolve_materializer(
         mat_type = "console"
         mat_config = {}
 
-    # Get materializer class
     materializer_cls = registry.get_materializer(mat_type)
 
     if materializer_cls is None:
-        # Fallback to built-in console
         console.print(
             f"[yellow]Unknown materializer: {mat_type}, using console[/yellow]"
         )

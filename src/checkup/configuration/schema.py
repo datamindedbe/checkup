@@ -113,6 +113,47 @@ def _get_provider_schema(cls: type) -> dict | None:
     return schema
 
 
+def _build_oneof_schema(
+    names: list[str],
+    schemas: dict[str, dict],
+    key_field: str = "name",
+) -> dict[str, Any]:
+    """
+    Build a oneOf schema for a list of named items.
+    """
+
+    variants = []
+    for name in names:
+        variant: dict[str, Any] = {
+            "type": "object",
+            "properties": {key_field: {"const": name}},
+            "required": [key_field],
+            "additionalProperties": False,
+        }
+        if name in schemas and "properties" in schemas[name]:
+            variant["properties"].update(schemas[name]["properties"])
+        variants.append(variant)
+
+    return {"oneOf": variants} if variants else {"type": "object"}
+
+
+def _collect_schemas(
+    items: dict[str, type],
+    schema_fn: callable,
+) -> tuple[list[str], dict[str, dict]]:
+    """
+    Collect schemas for a dict of named classes.
+    """
+
+    names = sorted(items.keys())
+    schemas = {}
+    for name, cls in items.items():
+        schema = schema_fn(cls)
+        if schema:
+            schemas[name] = schema
+    return names, schemas
+
+
 def generate_schema() -> dict:
     """
     Generate JSON schema for checkup.yaml configuration.
@@ -123,84 +164,15 @@ def generate_schema() -> dict:
 
     registry = get_registry()
 
-    # Collect provider info
-    provider_names = sorted(registry.providers.keys())
-    provider_schemas = {}
-    for name, cls in registry.providers.items():
-        schema = _get_provider_schema(cls)
-        if schema:
-            provider_schemas[name] = schema
-
-    # Collect metric info
-    metric_names = sorted(registry.metrics.keys())
-    metric_schemas = {}
-    for name, cls in registry.metrics.items():
-        schema = _get_pydantic_schema(cls)
-        if schema:
-            metric_schemas[name] = schema
-
-    # Collect materializer info
-    materializer_names = sorted(registry.materializers.keys())
-    materializer_schemas = {}
-    for name, cls in registry.materializers.items():
-        schema = _get_pydantic_schema(cls)
-        if schema:
-            materializer_schemas[name] = schema
-
-    # Build provider item schema with oneOf for each provider
-    provider_variants = []
-    for name in provider_names:
-        variant: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "name": {"const": name},
-            },
-            "required": ["name"],
-            "additionalProperties": False,
-        }
-        if name in provider_schemas and "properties" in provider_schemas[name]:
-            variant["properties"].update(provider_schemas[name]["properties"])
-        provider_variants.append(variant)
-
-    provider_item_schema: dict[str, Any] = (
-        {"oneOf": provider_variants} if provider_variants else {"type": "object"}
+    provider_names, provider_schemas = _collect_schemas(
+        registry.providers, _get_provider_schema
     )
-
-    # Build metric item schema with oneOf for each metric
-    metric_variants = []
-    for name in metric_names:
-        variant: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "name": {"const": name},
-            },
-            "required": ["name"],
-            "additionalProperties": False,
-        }
-        if name in metric_schemas and "properties" in metric_schemas[name]:
-            variant["properties"].update(metric_schemas[name]["properties"])
-        metric_variants.append(variant)
-
-    metric_item_schema: dict[str, Any] = (
-        {"oneOf": metric_variants} if metric_variants else {"type": "object"}
+    metric_names, metric_schemas = _collect_schemas(
+        registry.metrics, _get_pydantic_schema
     )
-
-    # Build materializer schema
-    materializer_props: dict[str, Any] = {
-        "type": {
-            "type": "string",
-            "enum": materializer_names,
-        }
-        if materializer_names
-        else {"type": "string"}
-    }
-
-    # Add properties from all materializers
-    for schema in materializer_schemas.values():
-        if "properties" in schema:
-            for prop_name, prop_schema in schema["properties"].items():
-                if prop_name not in materializer_props:
-                    materializer_props[prop_name] = prop_schema
+    materializer_names, materializer_schemas = _collect_schemas(
+        registry.materializers, _get_pydantic_schema
+    )
 
     return {
         "$schema": SCHEMA_VERSION,
@@ -217,19 +189,16 @@ def generate_schema() -> dict:
             "providers": {
                 "type": "array",
                 "description": "Data providers for context enrichment",
-                "items": provider_item_schema,
+                "items": _build_oneof_schema(provider_names, provider_schemas),
             },
             "metrics": {
                 "type": "array",
                 "description": "Metrics to calculate",
-                "items": metric_item_schema,
+                "items": _build_oneof_schema(metric_names, metric_schemas),
             },
-            "materializer": {
-                "type": "object",
-                "description": "Output materializer configuration",
-                "properties": materializer_props,
-                "required": ["type"],
-            },
+            "materializer": _build_oneof_schema(
+                materializer_names, materializer_schemas, key_field="type"
+            ),
         },
         "additionalProperties": False,
     }

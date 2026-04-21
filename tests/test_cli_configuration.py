@@ -2,8 +2,6 @@
 Tests for CLI configuration loading and parsing.
 """
 
-from typing import ClassVar
-
 import yaml
 
 from checkup.configuration.env import (
@@ -18,8 +16,6 @@ from checkup.configuration.io import (
     parse_providers,
 )
 from checkup.configuration.models import CheckupConfig
-from checkup.metric import Metric
-from checkup.types import Context
 
 
 class TestParseProviders:
@@ -254,35 +250,3 @@ class TestLoadConfig:
         result = load_config(start_dir=child_dir)
 
         assert result.tags == {"team": "platform", "product": "my-product"}
-
-
-class ConfigurableMetric(Metric):
-    """Test metric with required config fields."""
-
-    name: ClassVar[str] = "configurable"
-    description: ClassVar[str] = "Needs config"
-    unit: ClassVar[str] = "count"
-
-    multiplier: int
-    offset: int = 0
-
-    def calculate(self, _context: Context, _metrics: dict) -> None:
-        self.value = 10 * self.multiplier + self.offset
-
-
-class TestHubMetricConfigs:
-    def test_configured_subclass_passed_to_hub(self):
-        from checkup.hub import CheckHub
-        from checkup.metric import create_configured_metric
-
-        # Create a configured subclass (this is how CLI executor does it)
-        Configured = create_configured_metric(
-            ConfigurableMetric,
-            {"multiplier": 5, "offset": 3},
-        )
-
-        hub = CheckHub().with_metrics([Configured])
-        result = hub.measure()
-
-        assert len(result.metrics) == 1
-        assert result.metrics[0].value == 53  # 10 * 5 + 3
