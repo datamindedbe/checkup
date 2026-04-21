@@ -19,7 +19,7 @@ class FileCountMetric(Metric):
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access data from context and calculate your metric
         files = context.get("files", [])
-        return self.measurement(
+        return self.measure(
             value=len(files),
             diagnostic=f"Found {len(files)} files"
         )
@@ -29,7 +29,7 @@ Every metric must:
 
 1. Define `name`, `description`, and `unit` class attributes
 2. Implement the `calculate()` method
-3. Return a `Measurement` using `self.measurement(value=..., diagnostic=...)`
+3. Return a `Measurement` using `self.measure(value=..., diagnostic=...)`
 
 ## Running Metrics with CheckHub
 
@@ -88,7 +88,7 @@ class FileCountMetric(Metric):
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access provider data under its namespace
         files = context["files"]["file_list"]
-        return self.measurement(value=len(files))
+        return self.measure(value=len(files))
 ```
 
 Run with providers:
@@ -119,7 +119,7 @@ class TotalLinesMetric(Metric):
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Count lines in all files
-        return self.measurement(value=1000)  # simplified
+        return self.measure(value=1000)  # simplified
 
 
 class AverageLinesPerFileMetric(Metric):
@@ -136,9 +136,9 @@ class AverageLinesPerFileMetric(Metric):
         total_lines = measurements[TotalLinesMetric].value
 
         if file_count > 0:
-            return self.measurement(value=total_lines / file_count)
+            return self.measure(value=total_lines / file_count)
         else:
-            return self.measurement(value=0, diagnostic="No files found")
+            return self.measure(value=0, diagnostic="No files found")
 ```
 
 CheckUp automatically resolves dependencies and calculates metrics in the correct order.

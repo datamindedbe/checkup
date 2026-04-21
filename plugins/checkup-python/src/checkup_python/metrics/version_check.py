@@ -35,4 +35,4 @@ class PythonVersionCheckMetric(Metric):
         max_ver = parse_semantic_version(self.max_version)
 
         value = min_ver <= actual <= max_ver
-        return self.measurement(value=value)
+        return self.measure(value=value)

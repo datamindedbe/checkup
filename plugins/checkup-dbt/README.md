@@ -172,5 +172,5 @@ class MyCustomDbtMetric(DbtMetric):
 
     def calculate(self, context, measurements):
         manifest = self.get_manifest(context)
-        return self.measurement(value=len(manifest.nodes))
+        return self.measure(value=len(manifest.nodes))
 ```

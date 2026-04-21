@@ -200,10 +200,10 @@ class SafeMetric(Metric):
     def calculate(self, context, measurements):
         conveyor = context.get("conveyor", {})
         if conveyor.get("error"):
-            return self.measurement(
+            return self.measure(
                 value=None,
                 diagnostic=f"API Error: {conveyor['error']}"
             )
         # Normal calculation...
-        return self.measurement(value=computed_value)
+        return self.measure(value=computed_value)
 ```

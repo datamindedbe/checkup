@@ -77,5 +77,5 @@ class MyCustomGitMetric(GitMetric):
         git_context = self.get_context(context)
         tracked_files = git_context.get("git_tracked_files", [])
         python_files = [f for f in tracked_files if f.endswith(".py")]
-        return self.measurement(value=len(python_files))
+        return self.measure(value=len(python_files))
 ```

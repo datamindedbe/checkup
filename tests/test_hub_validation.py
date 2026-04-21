@@ -40,7 +40,7 @@ class MetricWithProvider(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=1)
+        return self.measure(value=1)
 
 
 class TestProviderValidation:

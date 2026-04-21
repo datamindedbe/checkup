@@ -26,7 +26,7 @@ class SimpleMetric(Metric):
     unit = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
-        return self.measurement(value=42, diagnostic="Calculated successfully")
+        return self.measure(value=42, diagnostic="Calculated successfully")
 
 
 # Run the metric and output to console

@@ -42,20 +42,20 @@ class DbtProfileHostMetric(DbtMetric):
 
         if not profiles_path.exists():
             logger.warning(f"profiles.yml not found at {profiles_path}")
-            return self.measurement(value=None, diagnostic="profiles.yml not found")
+            return self.measure(value=None, diagnostic="profiles.yml not found")
 
         with open(profiles_path) as f:
             profiles = yaml.safe_load(f)
 
         if not profiles:
-            return self.measurement(value=None, diagnostic="profiles.yml is empty")
+            return self.measure(value=None, diagnostic="profiles.yml is empty")
 
         host = self._find_host(profiles)
         if host:
             diagnostic = f"Host: {host}"
         else:
             diagnostic = f"No host found for target '{self.target}'"
-        return self.measurement(value=host, diagnostic=diagnostic)
+        return self.measure(value=host, diagnostic=diagnostic)
 
     def _find_host(self, profiles: dict) -> str | None:
         """Find host in profiles matching the configuration."""

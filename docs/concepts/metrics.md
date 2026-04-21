@@ -19,7 +19,7 @@ class MyMetric(Metric):
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Your calculation logic here
-        return self.measurement(value=42, diagnostic="Additional information")
+        return self.measure(value=42, diagnostic="Additional information")
 ```
 
 ## Required Attributes
@@ -45,10 +45,10 @@ The `calculate` method returns a `Measurement` object containing:
 | `diagnostic` | `str` | Additional diagnostic information |
 | `tags` | `dict` | Key-value pairs for grouping/filtering |
 
-Use `self.measurement()` to create a `Measurement` with the metric's metadata pre-filled:
+Use `self.measure()` to create a `Measurement` with the metric's metadata pre-filled:
 
 ```python
-return self.measurement(value=42, diagnostic="Explanation", tags={"key": "value"})
+return self.measure(value=42, diagnostic="Explanation", tags={"key": "value"})
 ```
 
 ## The Calculate Method
@@ -68,7 +68,7 @@ def calculate(self, context: Context, measurements: dict) -> Measurement:
         other_value = measurements[SomeOtherMetric].value
 
     # Return the result
-    return self.measurement(value=computed_value, diagnostic="Explanation of result")
+    return self.measure(value=computed_value, diagnostic="Explanation of result")
 ```
 
 ## Dependencies
@@ -82,7 +82,7 @@ class BaseMetric(Metric):
     unit = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
-        return self.measurement(value=100)
+        return self.measure(value=100)
 
 
 class DerivedMetric(Metric):
@@ -96,7 +96,7 @@ class DerivedMetric(Metric):
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         base_value = measurements[BaseMetric].value
-        return self.measurement(value=base_value * 0.5)
+        return self.measure(value=base_value * 0.5)
 ```
 
 ## Providers
@@ -124,7 +124,7 @@ class MyMetric(Metric):
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access provider data under its namespace
         data = context["my_data"]
-        return self.measurement(value=len(data.get("items", [])))
+        return self.measure(value=len(data.get("items", [])))
 ```
 
 ## Executor Types
@@ -167,7 +167,7 @@ class TaggedMetric(Metric):
     unit = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
-        return self.measurement(
+        return self.measure(
             value=42,
             tags={"domain": "data-platform", "project": "analytics"}
         )
@@ -213,7 +213,7 @@ class CodeCoverageMetric(Metric):
         coverage_data = context.get("coverage", {})
 
         if not coverage_data:
-            return self.measurement(value=None, diagnostic="No coverage data available")
+            return self.measure(value=None, diagnostic="No coverage data available")
 
         total_lines = coverage_data.get("total_lines", 0)
         covered_lines = coverage_data.get("covered_lines", 0)
@@ -225,7 +225,7 @@ class CodeCoverageMetric(Metric):
             value = 0
             diagnostic = "No lines to cover"
 
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=diagnostic,
             tags={"project": coverage_data.get("project_name", "unknown")}

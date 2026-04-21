@@ -20,7 +20,7 @@ class ConveyorLastDeploymentTime(ConveyorMetric):
     ) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
-            return self.measurement(value=None)
+            return self.measure(value=None)
         r = requests.get(
             f"{self.base_url}/projects/{proj_id}/deployments",
             headers=self.get_conveyor_api_headers(context),
@@ -28,8 +28,8 @@ class ConveyorLastDeploymentTime(ConveyorMetric):
         deployments = r.get("deployment", [])
         if not deployments:
             logger.warning("No deployments found for project %s", proj_id)
-            return self.measurement(value=None)
-        return self.measurement(
+            return self.measure(value=None)
+        return self.measure(
             value=deployments[0]["deployedOn"],
             diagnostic="Deploy the project again to update this value.",
         )
@@ -45,7 +45,7 @@ class ConveyorIsDirtyDeployment(ConveyorMetric):
     ) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
-            return self.measurement(value=None)
+            return self.measure(value=None)
         r = requests.get(
             f"{self.base_url}/projects/{proj_id}/builds",
             headers=self.get_conveyor_api_headers(context),
@@ -53,12 +53,12 @@ class ConveyorIsDirtyDeployment(ConveyorMetric):
         builds = r.get("builds", [])
         if not builds:
             logger.warning("No builds found for project %s", proj_id)
-            return self.measurement(value=None)
+            return self.measure(value=None)
         is_dirty = builds[0]["gitHash"].endswith(".dirty")
         diagnostic = (
             "Commit changes to git, and deploy the project again." if is_dirty else ""
         )
-        return self.measurement(value=is_dirty, diagnostic=diagnostic)
+        return self.measure(value=is_dirty, diagnostic=diagnostic)
 
 
 class ConveyorLastRunStatus(ConveyorMetric):
@@ -71,10 +71,10 @@ class ConveyorLastRunStatus(ConveyorMetric):
     ) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
-            return self.measurement(value=None)
+            return self.measure(value=None)
         env_id = self.get_environment_id(context)
         if env_id is None:
-            return self.measurement(value=None)
+            return self.measure(value=None)
         r = requests.get(
             f"{self.base_url}/environments/{env_id}/application_runs",
             params={
@@ -91,5 +91,5 @@ class ConveyorLastRunStatus(ConveyorMetric):
                 proj_id,
                 env_id,
             )
-            return self.measurement(value=None)
-        return self.measurement(value=runs[0]["phase"])
+            return self.measure(value=None)
+        return self.measure(value=runs[0]["phase"])

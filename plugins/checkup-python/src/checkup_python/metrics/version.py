@@ -37,7 +37,7 @@ class PythonVersionMetric(Metric):
             or self._get_runtime_version()
         )
 
-        return self.measurement(value=version)
+        return self.measure(value=version)
 
     def _read_python_version_file(self, path: Path) -> str | None:
         """
