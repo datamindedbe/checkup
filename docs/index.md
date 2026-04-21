@@ -16,7 +16,7 @@ CheckUp is an extensible Python framework designed to calculate metrics from con
 ## Quick Example
 
 ```python
-from checkup import CheckHub, ConsoleMaterializer, Metric
+from checkup import CheckHub, ConsoleMaterializer, Metric, Measurement
 from checkup.types import Context
 
 
@@ -25,15 +25,14 @@ class SimpleMetric(Metric):
     description = "A simple example metric"
     unit = "count"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 42
-        self.diagnostic = "Calculated successfully"
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
+        return self.measure(value=42, diagnostic="Calculated successfully")
 
 
 # Run the metric and output to console
 (
     CheckHub()
-    .with_metrics([SimpleMetric])
+    .with_metrics([SimpleMetric()])
     .measure()
     .materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
 )

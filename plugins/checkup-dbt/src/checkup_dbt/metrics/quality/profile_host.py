@@ -3,7 +3,7 @@ from typing import ClassVar
 
 import yaml
 
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 
@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class DbtProfileHostMetric(DbtMetric):
-    """Extracts the host value from profiles.yml.
+    """
+    Extracts the host value from profiles.yml.
 
     Searches for a host configuration in the specified profile and target.
     If profile is not specified, searches all profiles.
@@ -33,30 +34,28 @@ class DbtProfileHostMetric(DbtMetric):
     profile: str | None = None
     target: str
 
-    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         project_dir = self.get_project_dir(context)
         profiles_path = project_dir / "profiles.yml"
 
         if not profiles_path.exists():
             logger.warning(f"profiles.yml not found at {profiles_path}")
-            self.value = None
-            self.diagnostic = "profiles.yml not found"
-            return
+            return self.measure(value=None, diagnostic="profiles.yml not found")
 
         with open(profiles_path) as f:
             profiles = yaml.safe_load(f)
 
         if not profiles:
-            self.value = None
-            self.diagnostic = "profiles.yml is empty"
-            return
+            return self.measure(value=None, diagnostic="profiles.yml is empty")
 
         host = self._find_host(profiles)
-        self.value = host
         if host:
-            self.diagnostic = f"Host: {host}"
+            diagnostic = f"Host: {host}"
         else:
-            self.diagnostic = f"No host found for target '{self.target}'"
+            diagnostic = f"No host found for target '{self.target}'"
+        return self.measure(value=host, diagnostic=diagnostic)
 
     def _find_host(self, profiles: dict) -> str | None:
         """Find host in profiles matching the configuration."""

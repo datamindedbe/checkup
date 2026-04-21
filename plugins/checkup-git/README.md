@@ -27,12 +27,12 @@ from checkup_git import (
 results = (
     CheckHub()
     .with_metrics([
-        GitDaysSinceLastUpdateMetric,
-        GitTrackedFileCountMetric,
+        GitDaysSinceLastUpdateMetric(),
+        GitTrackedFileCountMetric(),
     ])
-    .with_providers([
+    .with_providers([[
         GitProvider("./my_repo"),
-    ])
+    ]])
     .measure()
 )
 ```
@@ -73,8 +73,9 @@ class MyCustomGitMetric(GitMetric):
     name = "my_custom_metric"
     description = "My custom git metric"
 
-    def calculate(self, context, metrics):
+    def calculate(self, context, measurements):
         git_context = self.get_context(context)
         tracked_files = git_context.get("git_tracked_files", [])
-        self.value = len([f for f in tracked_files if f.endswith(".py")])
+        python_files = [f for f in tracked_files if f.endswith(".py")]
+        return self.measure(value=len(python_files))
 ```

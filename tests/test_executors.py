@@ -3,7 +3,7 @@
 from typing import ClassVar
 
 from checkup.hub import CheckHub
-from checkup.metric import ExecutorType, Metric
+from checkup.metric import ExecutorType, Measurement, Metric
 from checkup.types import Context
 
 
@@ -15,9 +15,10 @@ class ThreadMetric(Metric):
     unit: ClassVar[str] = "count"
     # executor defaults to ExecutorType.THREAD
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 10
-        self.diagnostic = "Calculated in thread"
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        return self.measure(value=10, diagnostic="Calculated in thread")
 
 
 class ProcessMetric(Metric):
@@ -28,9 +29,10 @@ class ProcessMetric(Metric):
     unit: ClassVar[str] = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.PROCESS
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 20
-        self.diagnostic = "Calculated in process"
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        return self.measure(value=20, diagnostic="Calculated in process")
 
 
 class AsyncMetric(Metric):
@@ -41,9 +43,10 @@ class AsyncMetric(Metric):
     unit: ClassVar[str] = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 30
-        self.diagnostic = "Calculated with asyncio"
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        return self.measure(value=30, diagnostic="Calculated with asyncio")
 
 
 class AsyncMetricWithAsyncCalculate(Metric):
@@ -54,12 +57,13 @@ class AsyncMetricWithAsyncCalculate(Metric):
     unit: ClassVar[str] = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
-    async def calculate(self, context: Context, metrics: dict) -> None:
+    async def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         import asyncio
 
         await asyncio.sleep(0.001)  # Small async operation
-        self.value = 40
-        self.diagnostic = "Calculated with native async"
+        return self.measure(value=40, diagnostic="Calculated with native async")
 
 
 class DependentThreadMetric(Metric):
@@ -74,10 +78,14 @@ class DependentThreadMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [ThreadMetric]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        base_value = metrics[ThreadMetric].value
-        self.value = base_value * 2
-        self.diagnostic = f"Doubled thread metric: {base_value} -> {self.value}"
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        base_value = measurements[ThreadMetric].value
+        value = base_value * 2
+        return self.measure(
+            value=value, diagnostic=f"Doubled thread metric: {base_value} -> {value}"
+        )
 
 
 class DependentProcessMetric(Metric):
@@ -92,10 +100,14 @@ class DependentProcessMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [ThreadMetric]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        base_value = metrics[ThreadMetric].value
-        self.value = base_value * 3
-        self.diagnostic = f"Tripled thread metric: {base_value} -> {self.value}"
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        base_value = measurements[ThreadMetric].value
+        value = base_value * 3
+        return self.measure(
+            value=value, diagnostic=f"Tripled thread metric: {base_value} -> {value}"
+        )
 
 
 class DependentAsyncMetric(Metric):
@@ -110,10 +122,15 @@ class DependentAsyncMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [ProcessMetric]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        base_value = metrics[ProcessMetric].value
-        self.value = base_value + 5
-        self.diagnostic = f"Added 5 to process metric: {base_value} -> {self.value}"
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        base_value = measurements[ProcessMetric].value
+        value = base_value + 5
+        return self.measure(
+            value=value,
+            diagnostic=f"Added 5 to process metric: {base_value} -> {value}",
+        )
 
 
 def test_default_executor_is_thread():
@@ -133,81 +150,89 @@ def test_asyncio_executor_specified():
 
 def test_thread_metric_calculation():
     """Test calculating a metric with ThreadPoolExecutor."""
-    result = CheckHub().with_metrics([ThreadMetric]).measure()
+    result = CheckHub().with_metrics([ThreadMetric()]).measure()
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].name == "thread_metric"
-    assert result.metrics[0].value == 10
+    assert len(result.measurements) == 1
+    assert result.measurements[0].metric.name == "thread_metric"
+    assert result.measurements[0].value == 10
 
 
 def test_process_metric_calculation():
     """Test calculating a metric with ProcessPoolExecutor."""
-    result = CheckHub().with_metrics([ProcessMetric]).measure()
+    result = CheckHub().with_metrics([ProcessMetric()]).measure()
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].name == "process_metric"
-    assert result.metrics[0].value == 20
+    assert len(result.measurements) == 1
+    assert result.measurements[0].metric.name == "process_metric"
+    assert result.measurements[0].value == 20
 
 
 def test_asyncio_metric_calculation():
     """Test calculating a metric with asyncio executor."""
-    result = CheckHub().with_metrics([AsyncMetric]).measure()
+    result = CheckHub().with_metrics([AsyncMetric()]).measure()
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].name == "async_metric"
-    assert result.metrics[0].value == 30
+    assert len(result.measurements) == 1
+    assert result.measurements[0].metric.name == "async_metric"
+    assert result.measurements[0].value == 30
 
 
 def test_asyncio_metric_with_async_calculate():
     """Test calculating a metric with native async calculate method."""
-    result = CheckHub().with_metrics([AsyncMetricWithAsyncCalculate]).measure()
+    result = CheckHub().with_metrics([AsyncMetricWithAsyncCalculate()]).measure()
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].name == "async_metric_native"
-    assert result.metrics[0].value == 40
+    assert len(result.measurements) == 1
+    assert result.measurements[0].metric.name == "async_metric_native"
+    assert result.measurements[0].value == 40
 
 
 def test_mixed_executor_types():
     """Test calculating metrics with different executor types."""
     result = (
-        CheckHub().with_metrics([ThreadMetric, ProcessMetric, AsyncMetric]).measure()
+        CheckHub()
+        .with_metrics([ThreadMetric(), ProcessMetric(), AsyncMetric()])
+        .measure()
     )
 
-    assert len(result.metrics) == 3
-    metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["thread_metric"].value == 10
-    assert metrics_by_name["process_metric"].value == 20
-    assert metrics_by_name["async_metric"].value == 30
+    assert len(result.measurements) == 3
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
+    assert measurements_by_name["thread_metric"].value == 10
+    assert measurements_by_name["process_metric"].value == 20
+    assert measurements_by_name["async_metric"].value == 30
 
 
 def test_thread_dependency_chain():
     """Test dependency chain within thread executor."""
-    result = CheckHub().with_metrics([DependentThreadMetric]).measure()
+    result = (
+        CheckHub().with_metrics([DependentThreadMetric(), ThreadMetric()]).measure()
+    )
 
-    assert len(result.metrics) == 2
-    metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["thread_metric"].value == 10
-    assert metrics_by_name["dependent_thread"].value == 20
+    assert len(result.measurements) == 2
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
+    assert measurements_by_name["thread_metric"].value == 10
+    assert measurements_by_name["dependent_thread"].value == 20
 
 
 def test_cross_executor_dependencies():
     """Test dependencies across different executor types."""
-    result = CheckHub().with_metrics([DependentProcessMetric]).measure()
+    result = (
+        CheckHub().with_metrics([DependentProcessMetric(), ThreadMetric()]).measure()
+    )
 
-    assert len(result.metrics) == 2
-    metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["thread_metric"].value == 10
-    assert metrics_by_name["dependent_process"].value == 30
+    assert len(result.measurements) == 2
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
+    assert measurements_by_name["thread_metric"].value == 10
+    assert measurements_by_name["dependent_process"].value == 30
 
 
 def test_async_depends_on_process():
     """Test async metric depending on process metric."""
-    result = CheckHub().with_metrics([DependentAsyncMetric]).measure()
+    result = (
+        CheckHub().with_metrics([DependentAsyncMetric(), ProcessMetric()]).measure()
+    )
 
-    assert len(result.metrics) == 2
-    metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["process_metric"].value == 20
-    assert metrics_by_name["dependent_async"].value == 25
+    assert len(result.measurements) == 2
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
+    assert measurements_by_name["process_metric"].value == 20
+    assert measurements_by_name["dependent_async"].value == 25
 
 
 def test_complex_mixed_dependencies():
@@ -215,7 +240,11 @@ def test_complex_mixed_dependencies():
     result = (
         CheckHub()
         .with_metrics(
-            [DependentThreadMetric, DependentProcessMetric, DependentAsyncMetric]
+            [
+                DependentThreadMetric(),
+                DependentProcessMetric(),
+                DependentAsyncMetric(),
+            ]
         )
         .measure()
     )
@@ -223,11 +252,11 @@ def test_complex_mixed_dependencies():
     # ThreadMetric -> DependentThreadMetric (thread -> thread)
     # ThreadMetric -> DependentProcessMetric (thread -> process)
     # ProcessMetric -> DependentAsyncMetric (process -> async)
-    assert len(result.metrics) == 5
+    assert len(result.measurements) == 5
 
-    metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["thread_metric"].value == 10
-    assert metrics_by_name["dependent_thread"].value == 20
-    assert metrics_by_name["dependent_process"].value == 30
-    assert metrics_by_name["process_metric"].value == 20
-    assert metrics_by_name["dependent_async"].value == 25
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
+    assert measurements_by_name["thread_metric"].value == 10
+    assert measurements_by_name["dependent_thread"].value == 20
+    assert measurements_by_name["dependent_process"].value == 30
+    assert measurements_by_name["process_metric"].value == 20
+    assert measurements_by_name["dependent_async"].value == 25

@@ -28,13 +28,13 @@ from checkup_dbt import (
 results = (
     CheckHub()
     .with_metrics([
-        DbtModelsMetric,
-        DbtColumnsMetric,
-        DbtTestsMetric,
+        DbtModelsMetric(),
+        DbtColumnsMetric(),
+        DbtTestsMetric(),
     ])
-    .with_providers([
+    .with_providers([[
         DbtManifestProvider(dbt_project_dir="./my_dbt_project"),
-    ])
+    ]])
     .measure()
 )
 ```
@@ -170,7 +170,7 @@ class MyCustomDbtMetric(DbtMetric):
     name = "my_custom_metric"
     description = "My custom dbt metric"
 
-    def calculate(self, context, metrics):
-        manifest = context["dbt"]["manifest"]
-        self.value = len(manifest.nodes)
+    def calculate(self, context, measurements):
+        manifest = self.get_manifest(context)
+        return self.measure(value=len(manifest.nodes))
 ```

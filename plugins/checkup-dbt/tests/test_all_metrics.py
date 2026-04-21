@@ -31,23 +31,23 @@ class Dbt19SupportedVersionMetric(DbtSupportedVersionMetric):
 
 def test_all_metrics(sample_manifest_path: Path):
     all_metrics = [
-        DbtModelsMetric,
-        DbtColumnsMetric,
-        DbtTestsMetric,
-        DbtModelsWithDescriptionMetric,
-        DbtColumnsWithDescriptionMetric,
-        DbtUnitTestsMetric,
-        DbtDataTestsMetric,
-        DbtColumnTestsMetric,
-        DbtTestedColumnsMetric,
-        DbtColumnTestCoverageMetric,
-        DbtOutputModelsMetric,
-        DbtOutputModelsWithDescriptionMetric,
-        DbtOutputModelsWithoutContractsMetric,
-        DbtOutputColumnsWithoutDataTypeMetric,
-        InternalModelNamingMetric,
-        Dbt19SupportedVersionMetric,
-        DbtVersionMetric,
+        DbtModelsMetric(),
+        DbtColumnsMetric(),
+        DbtTestsMetric(),
+        DbtModelsWithDescriptionMetric(),
+        DbtColumnsWithDescriptionMetric(),
+        DbtUnitTestsMetric(),
+        DbtDataTestsMetric(),
+        DbtColumnTestsMetric(),
+        DbtTestedColumnsMetric(),
+        DbtColumnTestCoverageMetric(),
+        DbtOutputModelsMetric(),
+        DbtOutputModelsWithDescriptionMetric(),
+        DbtOutputModelsWithoutContractsMetric(),
+        DbtOutputColumnsWithoutDataTypeMetric(),
+        InternalModelNamingMetric(),
+        Dbt19SupportedVersionMetric(),
+        DbtVersionMetric(),
     ]
 
     result = (
@@ -57,8 +57,8 @@ def test_all_metrics(sample_manifest_path: Path):
         .measure()
     )
 
-    assert len(result.metrics) == 17
+    assert len(result.measurements) == 17
     assert len(result.errors) == 0
 
-    for metric in result.metrics:
-        assert metric.value is not None, f"{metric.name} has no value"
+    for measurement in result.measurements:
+        assert measurement.value is not None, f"{measurement.metric.name} has no value"

@@ -22,7 +22,7 @@ from fixtures import (
 )
 
 from checkup.graph import build_dependency_graph, topological_sort
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 
 # =============================================================================
 # build_dependency_graph tests
@@ -100,18 +100,20 @@ def test_deep_chain_calculation(empty_context):
 
     DummyMetric(10) → DependentDummyMetric(20) → Level2Metric(30) → Level3Metric(900)
     """
+    from checkup.metric import Measurement
+
     graph = build_dependency_graph([Level3Metric])
     order = topological_sort(graph)
 
-    calculated: dict[type[Metric], Metric] = {}
+    calculated: dict[type[Metric], Measurement] = {}
 
     for metric_cls in order:
         if metric_cls is DummyMetric:
             metric: Metric = DummyMetric(expected_value=10)
         else:
             metric = metric_cls()  # type: ignore
-        metric.calculate(empty_context, calculated)
-        calculated[metric_cls] = metric
+        measurement = metric.calculate(empty_context, calculated)
+        calculated[metric_cls] = measurement
 
     assert calculated[DummyMetric].value == 10
     assert calculated[DependentDummyMetric].value == 20  # 10 * 2
@@ -221,12 +223,12 @@ def test_complex_graph_calculation(empty_context):
     graph = build_dependency_graph([LeafAB, LeafC])
     order = topological_sort(graph)
 
-    calculated: dict[type[Metric], Metric] = {}
+    calculated: dict[type[Metric], Measurement] = {}
 
     for metric_cls in order:
         metric = metric_cls()  # type: ignore
-        metric.calculate(empty_context, calculated)
-        calculated[metric_cls] = metric
+        measurement = metric.calculate(empty_context, calculated)
+        calculated[metric_cls] = measurement
 
     # Verify all calculations
     assert calculated[RootA].value == 10
@@ -244,19 +246,19 @@ def test_complex_graph_via_checkhub():
     """Test complex graph calculation through CheckHub."""
     from checkup import CheckHub
 
-    result = CheckHub().with_metrics([LeafAB, LeafC]).measure()
+    result = CheckHub().with_metrics([LeafAB(), LeafC()]).measure()
 
-    metrics_by_name = {m.name: m for m in result.metrics}
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
 
     # All 9 metrics returned (direct and indirect)
-    assert len(result.metrics) == 9
+    assert len(result.measurements) == 9
 
     # Only requested metrics are marked as direct
     assert result.direct_metric_names == {"leaf_ab", "leaf_c"}
 
     # Verify calculated values
-    assert metrics_by_name["leaf_ab"].value == 4200
-    assert metrics_by_name["leaf_c"].value == 10000
+    assert measurements_by_name["leaf_ab"].value == 4200
+    assert measurements_by_name["leaf_c"].value == 10000
 
 
 def test_shared_ancestor_calculated_once(empty_context):
@@ -265,18 +267,20 @@ def test_shared_ancestor_calculated_once(empty_context):
     This verifies the framework doesn't re-calculate metrics that appear
     multiple times in the dependency graph.
     """
+    from checkup.metric import Measurement
+
     graph = build_dependency_graph([LeafAB])
     order = topological_sort(graph)
 
     # Track how many times each metric class is calculated
     calculation_counts: dict[type[Metric], int] = {}
-    calculated: dict[type[Metric], Metric] = {}
+    calculated: dict[type[Metric], Measurement] = {}
 
     for metric_cls in order:
         calculation_counts[metric_cls] = calculation_counts.get(metric_cls, 0) + 1
         metric = metric_cls()  # type: ignore
-        metric.calculate(empty_context, calculated)
-        calculated[metric_cls] = metric
+        measurement = metric.calculate(empty_context, calculated)
+        calculated[metric_cls] = measurement
 
     # Each metric should appear exactly once in the execution order
     for metric_cls, count in calculation_counts.items():
@@ -291,15 +295,15 @@ def test_independent_subgraphs():
     from checkup import CheckHub
 
     # Only request LeafC (independent subgraph) - returns LeafC and RootC
-    result = CheckHub().with_metrics([LeafC]).measure()
+    result = CheckHub().with_metrics([LeafC()]).measure()
 
-    assert len(result.metrics) == 2
+    assert len(result.measurements) == 2
     assert result.direct_metric_names == {"leaf_c"}
-    metrics_by_name = {m.name: m for m in result.metrics}
-    assert metrics_by_name["leaf_c"].value == 10000
+    measurements_by_name = {m.metric.name: m for m in result.measurements}
+    assert measurements_by_name["leaf_c"].value == 10000
 
     # Request both subgraphs - returns all 9 metrics
-    result = CheckHub().with_metrics([LeafAB, LeafC]).measure()
+    result = CheckHub().with_metrics([LeafAB(), LeafC()]).measure()
 
-    assert len(result.metrics) == 9
+    assert len(result.measurements) == 9
     assert result.direct_metric_names == {"leaf_ab", "leaf_c"}

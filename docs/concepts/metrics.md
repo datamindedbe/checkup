@@ -7,7 +7,7 @@ Metrics are the core building blocks of CheckUp. They calculate values from cont
 Create a metric by subclassing the `Metric` base class:
 
 ```python
-from checkup import Metric
+from checkup import Metric, Measurement
 from checkup.types import Context
 
 
@@ -17,10 +17,9 @@ class MyMetric(Metric):
     description = "Description of what this metric measures"
     unit = "count"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Your calculation logic here
-        self.value = 42
-        self.diagnostic = "Additional information"
+        return self.measure(value=42, diagnostic="Additional information")
 ```
 
 ## Required Attributes
@@ -33,35 +32,43 @@ Every metric must define these class attributes:
 | `description` | `str` | Human-readable description |
 | `unit` | `str` | Unit of measurement (e.g., "count", "percent", "ms") |
 
-## Instance Attributes
+## The Measurement Class
 
-After calculation, metrics have these instance attributes:
+The `calculate` method returns a `Measurement` object containing:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
+| `metric_name` | `str` | Name of the metric (set automatically) |
+| `metric_description` | `str` | Description of the metric (set automatically) |
+| `metric_unit` | `str` | Unit of measurement (set automatically) |
 | `value` | `Any` | The calculated metric value |
 | `diagnostic` | `str` | Additional diagnostic information |
 | `tags` | `dict` | Key-value pairs for grouping/filtering |
+
+Use `self.measure()` to create a `Measurement` with the metric's metadata pre-filled:
+
+```python
+return self.measure(value=42, diagnostic="Explanation", tags={"key": "value"})
+```
 
 ## The Calculate Method
 
 The `calculate` method is where you implement your metric logic:
 
 ```python
-def calculate(self, context: Context, metrics: dict) -> None:
+def calculate(self, context: Context, measurements: dict) -> Measurement:
     # context: Dict containing provider data under namespaces
-    # metrics: Dict mapping metric classes to calculated instances
+    # measurements: Dict mapping metric classes to their Measurement results
 
     # Access provider data
     git_data = context.get("git", {})
 
     # Access dependency metrics
-    if SomeOtherMetric in metrics:
-        other_value = metrics[SomeOtherMetric].value
+    if SomeOtherMetric in measurements:
+        other_value = measurements[SomeOtherMetric].value
 
-    # Set the result
-    self.value = computed_value
-    self.diagnostic = "Explanation of result"
+    # Return the result
+    return self.measure(value=computed_value, diagnostic="Explanation of result")
 ```
 
 ## Dependencies
@@ -74,8 +81,8 @@ class BaseMetric(Metric):
     description = "A base metric"
     unit = "count"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 100
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
+        return self.measure(value=100)
 
 
 class DerivedMetric(Metric):
@@ -87,9 +94,9 @@ class DerivedMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [BaseMetric]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        base_value = metrics[BaseMetric].value
-        self.value = base_value * 0.5
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
+        base_value = measurements[BaseMetric].value
+        return self.measure(value=base_value * 0.5)
 ```
 
 ## Providers
@@ -114,10 +121,10 @@ class MyMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [MyDataProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access provider data under its namespace
         data = context["my_data"]
-        self.value = len(data.get("items", []))
+        return self.measure(value=len(data.get("items", [])))
 ```
 
 ## Executor Types
@@ -151,7 +158,7 @@ class AsyncMetric(Metric):
 
 ## Tags
 
-Tags allow grouping and filtering metrics:
+Tags allow grouping and filtering metrics. Tags can be set when creating the measurement:
 
 ```python
 class TaggedMetric(Metric):
@@ -159,12 +166,14 @@ class TaggedMetric(Metric):
     description = "A metric with tags"
     unit = "count"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 42
-        # Tags can be set during calculation
-        self.tags["domain"] = "data-platform"
-        self.tags["project"] = "analytics"
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
+        return self.measure(
+            value=42,
+            tags={"domain": "data-platform", "project": "analytics"}
+        )
 ```
+
+Tags are also merged from `TagProvider` instances in the provider set.
 
 Tags are used by materializers for grouping output:
 
@@ -186,7 +195,7 @@ result.materialize(
 ## Example: Complete Metric
 
 ```python
-from checkup import Metric, Provider, ExecutorType
+from checkup import Metric, Provider, ExecutorType, Measurement
 from checkup.types import Context
 
 
@@ -200,23 +209,25 @@ class CodeCoverageMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [CoverageReportProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         coverage_data = context.get("coverage", {})
 
         if not coverage_data:
-            self.value = None
-            self.diagnostic = "No coverage data available"
-            return
+            return self.measure(value=None, diagnostic="No coverage data available")
 
         total_lines = coverage_data.get("total_lines", 0)
         covered_lines = coverage_data.get("covered_lines", 0)
 
         if total_lines > 0:
-            self.value = round((covered_lines / total_lines) * 100, 2)
-            self.diagnostic = f"{covered_lines}/{total_lines} lines covered"
+            value = round((covered_lines / total_lines) * 100, 2)
+            diagnostic = f"{covered_lines}/{total_lines} lines covered"
         else:
-            self.value = 0
-            self.diagnostic = "No lines to cover"
+            value = 0
+            diagnostic = "No lines to cover"
 
-        self.tags["project"] = coverage_data.get("project_name", "unknown")
+        return self.measure(
+            value=value,
+            diagnostic=diagnostic,
+            tags={"project": coverage_data.get("project_name", "unknown")}
+        )
 ```

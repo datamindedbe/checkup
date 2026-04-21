@@ -38,13 +38,13 @@
 <body>
     <div class='container-fluid'>
         <h1>Metrics Report</h1>
-        
+
         <div class='accordion' id='accordionGroup1'>
             {% for group1_name, group2_dict in grouped|dictsort %}
             {% set group1_idx = loop.index0 %}
             <div class='accordion-item'>
                 <h2 class='accordion-header'>
-                    <button class='accordion-button collapsed' type='button' 
+                    <button class='accordion-button collapsed' type='button'
                             data-bs-toggle='collapse' data-bs-target='#group1_{{ group1_idx }}'>
                         <strong>{{ group1_name }}</strong>
                         <span class='badge bg-secondary ms-2'>
@@ -52,26 +52,26 @@
                         </span>
                     </button>
                 </h2>
-                <div id='group1_{{ group1_idx }}' class='accordion-collapse collapse' 
+                <div id='group1_{{ group1_idx }}' class='accordion-collapse collapse'
                      data-bs-parent='#accordionGroup1'>
                     <div class='accordion-body'>
-                        
+
                         <div class='accordion nested-accordion' id='accordionGroup2_{{ group1_idx }}'>
                             {% for group2_name, metrics in group2_dict|dictsort %}
                             <div class='accordion-item'>
                                 <h2 class='accordion-header'>
-                                    <button class='accordion-button collapsed' type='button' 
-                                            data-bs-toggle='collapse' 
+                                    <button class='accordion-button collapsed' type='button'
+                                            data-bs-toggle='collapse'
                                             data-bs-target='#group1_{{ group1_idx }}_group2_{{ loop.index0 }}'>
                                         {{ group2_name }}
                                         <span class='badge bg-info ms-2'>{{ metrics|length }} metrics</span>
                                     </button>
                                 </h2>
-                                <div id='group1_{{ group1_idx }}_group2_{{ loop.index0 }}' 
-                                     class='accordion-collapse collapse' 
+                                <div id='group1_{{ group1_idx }}_group2_{{ loop.index0 }}'
+                                     class='accordion-collapse collapse'
                                      data-bs-parent='#accordionGroup2_{{ group1_idx }}'>
                                     <div class='accordion-body p-0'>
-                                        
+
                                         <table class='table table-striped table-hover metric-table'>
                                             <thead class='table-light'>
                                                 <tr>
@@ -83,39 +83,39 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for metric in metrics|sort(attribute='name') %}
-                                                <tr class='{% if metric.diagnostic %}
-                                                    {%- if '⚠' in metric.diagnostic or 'warning' in metric.diagnostic|lower -%}
+                                                {% for measurement in metrics|sort(attribute='metric.name') %}
+                                                <tr class='{% if measurement.diagnostic %}
+                                                    {%- if '⚠' in measurement.diagnostic or 'warning' in measurement.diagnostic|lower -%}
                                                         table-warning
-                                                    {%- elif '❌' in metric.diagnostic or 'error' in metric.diagnostic|lower -%}
+                                                    {%- elif '❌' in measurement.diagnostic or 'error' in measurement.diagnostic|lower -%}
                                                         table-danger
-                                                    {%- elif '✅' in metric.diagnostic or 'success' in metric.diagnostic|lower -%}
+                                                    {%- elif '✅' in measurement.diagnostic or 'success' in measurement.diagnostic|lower -%}
                                                         table-success
                                                     {%- endif -%}
                                                 {% endif %}'>
-                                                    <td><strong>{{ metric.name }}</strong></td>
-                                                    <td>{{ metric.value }}</td>
-                                                    <td>{{ metric.unit }}</td>
+                                                    <td><strong>{{ measurement.metric.name }}</strong></td>
+                                                    <td>{{ measurement.value }}</td>
+                                                    <td>{{ measurement.metric.unit }}</td>
                                                     <td class='diagnostic-cell'>
-                                                        <span class='diagnostic-text'>{{ metric.diagnostic }}</span>
-                                                        {% if metric.diagnostic %}
+                                                        <span class='diagnostic-text'>{{ measurement.diagnostic }}</span>
+                                                        {% if measurement.diagnostic %}
                                                         <button class='copy-btn' onclick='copyDiagnostic(this)' title='Copy diagnostic'>
                                                             📋
                                                         </button>
                                                         {% endif %}
                                                     </td>
-                                                    <td><small class='text-muted'>{{ metric.description }}</small></td>
+                                                    <td><small class='text-muted'>{{ measurement.metric.description }}</small></td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>
-                                        
+
                                     </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
-                        
+
                     </div>
                 </div>
             </div>

@@ -13,28 +13,28 @@ def test_days_since_last_update_metric(git_repo: Path):
     """Test days since last update metric."""
     result = (
         CheckHub()
-        .with_metrics([GitDaysSinceLastUpdateMetric])
+        .with_metrics([GitDaysSinceLastUpdateMetric()])
         .with_providers([[GitProvider(repo_path=git_repo)]])
         .measure()
     )
 
-    metric = result.metrics[0]
-    assert metric.name == "git_days_since_last_update"
-    assert metric.value == 0  # Just committed, should be 0 days
+    measurement = result.measurements[0]
+    assert measurement.metric.name == "git_days_since_last_update"
+    assert measurement.value == 0  # Just committed, should be 0 days
 
 
 def test_tracked_file_count_metric(git_repo: Path):
     """Test tracked file count metric."""
     result = (
         CheckHub()
-        .with_metrics([GitTrackedFileCountMetric])
+        .with_metrics([GitTrackedFileCountMetric()])
         .with_providers([[GitProvider(repo_path=git_repo)]])
         .measure()
     )
 
-    metric = result.metrics[0]
-    assert metric.name == "git_tracked_file_count"
-    assert metric.value == 1  # One file (README.md) in the fixture
+    measurement = result.measurements[0]
+    assert measurement.metric.name == "git_tracked_file_count"
+    assert measurement.value == 1  # One file (README.md) in the fixture
 
 
 class DagCountMetric(GitTrackedFileCountMetric):
@@ -85,14 +85,14 @@ def test_tracked_file_count_with_pattern(tmp_path: Path):
     # Test filtering by directory and pattern
     result = (
         CheckHub()
-        .with_metrics([DagCountMetric])
+        .with_metrics([DagCountMetric()])
         .with_providers([[GitProvider(repo_path=repo_path)]])
         .measure()
     )
 
-    metric = result.metrics[0]
-    assert metric.name == "dag_count"
-    assert metric.value == 2  # Only dag1.py and dag2.py
+    measurement = result.measurements[0]
+    assert measurement.metric.name == "dag_count"
+    assert measurement.value == 2  # Only dag1.py and dag2.py
 
 
 class ReadmeExistsMetric(GitTrackedFileCountMetric):
@@ -105,14 +105,14 @@ def test_file_exists_metric_when_file_exists(git_repo: Path):
     """Test file exists metric returns True when file exists."""
     result = (
         CheckHub()
-        .with_metrics([ReadmeExistsMetric])
+        .with_metrics([ReadmeExistsMetric()])
         .with_providers([[GitProvider(repo_path=git_repo)]])
         .measure()
     )
 
-    metric = result.metrics[0]
-    assert metric.name == "readme_exists"
-    assert metric.value == 1
+    measurement = result.measurements[0]
+    assert measurement.metric.name == "readme_exists"
+    assert measurement.value == 1
 
 
 class CruftFileExistsMetric(GitTrackedFileCountMetric):
@@ -125,14 +125,14 @@ def test_tracked_file_count_when_no_match(git_repo: Path):
     """Test tracked file count returns 0 when pattern doesn't match."""
     result = (
         CheckHub()
-        .with_metrics([CruftFileExistsMetric])
+        .with_metrics([CruftFileExistsMetric()])
         .with_providers([[GitProvider(repo_path=git_repo)]])
         .measure()
     )
 
-    metric = result.metrics[0]
-    assert metric.name == "cruft_file_exists"
-    assert metric.value == 0
+    measurement = result.measurements[0]
+    assert measurement.metric.name == "cruft_file_exists"
+    assert measurement.value == 0
 
 
 def test_provider_returns_last_commit_date(git_repo: Path):
@@ -236,10 +236,10 @@ def test_provider_with_nonexistent_path(tmp_path: Path):
     # Metrics should still work
     result = (
         CheckHub()
-        .with_metrics([GitTrackedFileCountMetric])
+        .with_metrics([GitTrackedFileCountMetric()])
         .with_providers([[GitProvider(repo_path=nonexistent)]])
         .measure()
     )
 
-    assert len(result.metrics) == 1
-    assert result.metrics[0].value == 0
+    assert len(result.measurements) == 1
+    assert result.measurements[0].value == 0

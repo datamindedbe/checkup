@@ -3,7 +3,7 @@
 from typing import Any, ClassVar
 
 from checkup.hub import CheckHub
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
@@ -32,8 +32,11 @@ class DataMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [DataProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = context[DataProvider.name]["value"]
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        value = context[DataProvider.name]["value"]
+        return self.measure(value=value)
 
 
 class OtherProvider(Provider):
@@ -65,8 +68,10 @@ class FailingProviderMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [FailingProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = 999
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        return self.measure(value=999)
 
 
 class DependsOnFailingMetric(Metric):
@@ -84,8 +89,11 @@ class DependsOnFailingMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [FailingProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = metrics[FailingProviderMetric].value * 2
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        base_val = measurements[FailingProviderMetric].value
+        return self.measure(value=base_val * 2)
 
 
 class OtherMetric(Metric):
@@ -99,8 +107,11 @@ class OtherMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [OtherProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        self.value = context[OtherProvider.name]["other_value"]
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
+        value = context[OtherProvider.name]["other_value"]
+        return self.measure(value=value)
 
 
 class TestHubExecution:
@@ -110,19 +121,19 @@ class TestHubExecution:
         """Test measuring with single provider set."""
         result = (
             CheckHub()
-            .with_metrics([DataMetric])
+            .with_metrics([DataMetric()])
             .with_providers([[DataProvider(value=42)]])
             .measure()
         )
 
-        assert len(result.metrics) == 1
-        assert result.metrics[0].value == 42
+        assert len(result.measurements) == 1
+        assert result.measurements[0].value == 42
 
     def test_measure_with_multiple_provider_sets(self):
         """Test measuring across multiple provider sets."""
         result = (
             CheckHub()
-            .with_metrics([DataMetric])
+            .with_metrics([DataMetric()])
             .with_providers(
                 [
                     [DataProvider(value=10)],
@@ -133,15 +144,15 @@ class TestHubExecution:
             .measure()
         )
 
-        assert len(result.metrics) == 3
-        values = {m.value for m in result.metrics}
+        assert len(result.measurements) == 3
+        values = {m.value for m in result.measurements}
         assert values == {10, 20, 30}
 
     def test_measure_with_tag_provider(self):
         """Test that TagProvider merges into metric tags."""
         result = (
             CheckHub()
-            .with_metrics([DataMetric])
+            .with_metrics([DataMetric()])
             .with_providers(
                 [
                     [DataProvider(value=42), TagProvider(env="prod", team="data")],
@@ -150,16 +161,16 @@ class TestHubExecution:
             .measure()
         )
 
-        metric = result.metrics[0]
-        assert metric.tags["env"] == "prod"
-        assert metric.tags["team"] == "data"
+        measurement = result.measurements[0]
+        assert measurement.tags["env"] == "prod"
+        assert measurement.tags["team"] == "data"
 
     def test_measure_warns_on_missing_providers(self, caplog):
         """Test that measure() warns when providers are missing."""
         import logging
 
         with caplog.at_level(logging.WARNING):
-            CheckHub().with_metrics([DataMetric]).with_providers([[]]).measure()
+            CheckHub().with_metrics([DataMetric()]).with_providers([[]]).measure()
 
         assert "data" in caplog.text.lower()
 
@@ -167,10 +178,10 @@ class TestHubExecution:
         """Test measuring without providers when none required."""
         from fixtures import DummyMetric
 
-        result = CheckHub().with_metrics([DummyMetric]).measure()
+        result = CheckHub().with_metrics([DummyMetric()]).measure()
 
-        assert len(result.metrics) == 1
-        assert result.metrics[0].value == 42
+        assert len(result.measurements) == 1
+        assert result.measurements[0].value == 42
 
     def test_measure_skips_only_metrics_with_missing_providers(self, caplog):
         """Test that metrics with available providers are still calculated when others are missing."""
@@ -180,16 +191,16 @@ class TestHubExecution:
         with caplog.at_level(logging.WARNING):
             result = (
                 CheckHub()
-                .with_metrics([DataMetric, OtherMetric])
+                .with_metrics([DataMetric(), OtherMetric()])
                 .with_providers([[DataProvider(value=42)]])
                 .measure()
             )
 
         # DataMetric should be calculated (has its provider)
         # OtherMetric should be skipped (missing OtherProvider)
-        assert len(result.metrics) == 1
-        assert result.metrics[0].name == "data_metric"
-        assert result.metrics[0].value == 42
+        assert len(result.measurements) == 1
+        assert result.measurements[0].metric.name == "data_metric"
+        assert result.measurements[0].value == 42
 
         # Warning should be logged for the missing provider
         assert "other" in caplog.text.lower()
@@ -203,13 +214,13 @@ class TestHubExecution:
         # If we don't provide IntegrationProvider, both should be skipped
         result = (
             CheckHub()
-            .with_metrics([IntegrationBaseMetric, IntegrationDerivedMetric])
+            .with_metrics([IntegrationBaseMetric(), IntegrationDerivedMetric()])
             .with_providers([[]])  # No providers
             .measure()
         )
 
         # Both metrics should be skipped - no errors should occur
-        assert len(result.metrics) == 0
+        assert len(result.measurements) == 0
         assert (
             len(result.errors) == 0
         )  # No exceptions from trying to access missing dependency
@@ -218,56 +229,63 @@ class TestHubExecution:
         """When a provider fails, metrics depending on it have value=None with diagnostic."""
         result = (
             CheckHub()
-            .with_metrics([FailingProviderMetric])
+            .with_metrics([FailingProviderMetric()])
             .with_providers([[FailingProvider()]])
             .measure()
         )
 
-        assert len(result.metrics) == 1
-        metric = result.metrics[0]
-        assert metric.name == "failing_provider_metric"
-        assert metric.value is None
-        assert "provider 'failing' failed" in metric.diagnostic
+        assert len(result.measurements) == 1
+        measurement = result.measurements[0]
+        assert measurement.metric.name == "failing_provider_metric"
+        assert measurement.value is None
+        assert "provider 'failing' failed" in measurement.diagnostic
 
     def test_failed_provider_does_not_affect_unrelated_metrics(self):
         """When a provider fails, unrelated metrics are still calculated."""
         result = (
             CheckHub()
-            .with_metrics([DataMetric, FailingProviderMetric])
+            .with_metrics([DataMetric(), FailingProviderMetric()])
             .with_providers([[DataProvider(value=42), FailingProvider()]])
             .measure()
         )
 
-        assert len(result.metrics) == 2
+        assert len(result.measurements) == 2
 
-        data_metric = next(m for m in result.metrics if m.name == "data_metric")
-        assert data_metric.value == 42
-
-        failing_metric = next(
-            m for m in result.metrics if m.name == "failing_provider_metric"
+        data_measurement = next(
+            m for m in result.measurements if m.metric.name == "data_metric"
         )
-        assert failing_metric.value is None
-        assert "failed" in failing_metric.diagnostic
+        assert data_measurement.value == 42
+
+        failing_measurement = next(
+            m for m in result.measurements if m.metric.name == "failing_provider_metric"
+        )
+        assert failing_measurement.value is None
+        assert "failed" in failing_measurement.diagnostic
 
     def test_metric_depending_on_failed_metric_also_fails(self):
         """When a metric fails due to provider failure, dependents also fail."""
         result = (
             CheckHub()
-            .with_metrics([FailingProviderMetric, DependsOnFailingMetric])
+            .with_metrics([FailingProviderMetric(), DependsOnFailingMetric()])
             .with_providers([[FailingProvider()]])
             .measure()
         )
 
-        assert len(result.metrics) == 2
+        assert len(result.measurements) == 2
 
-        base_metric = next(
-            m for m in result.metrics if m.name == "failing_provider_metric"
+        base_measurement = next(
+            m for m in result.measurements if m.metric.name == "failing_provider_metric"
         )
-        assert base_metric.value is None
-        assert "provider 'failing' failed" in base_metric.diagnostic
+        assert base_measurement.value is None
+        assert "provider 'failing' failed" in base_measurement.diagnostic
 
-        dependent_metric = next(
-            m for m in result.metrics if m.name == "depends_on_failing_metric"
+        dependent_measurement = next(
+            m
+            for m in result.measurements
+            if m.metric.name == "depends_on_failing_metric"
         )
-        assert dependent_metric.value is None
-        assert "metric 'failing_provider_metric' failed" in dependent_metric.diagnostic
+        assert dependent_measurement.value is None
+        assert (
+            "metric 'failing_provider_metric' failed"
+            in dependent_measurement.diagnostic
+        )

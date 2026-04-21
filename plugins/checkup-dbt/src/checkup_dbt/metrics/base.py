@@ -9,7 +9,7 @@ from typing import Any, ClassVar
 from dbt.artifacts.resources.types import NodeType
 from dbt.contracts.graph.manifest import Manifest
 
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup_dbt.manifest_query import ManifestQuery
@@ -69,7 +69,8 @@ class DbtMetric(Metric):
 
 
 class DbtCountMetric(DbtMetric):
-    """Base class for metrics that count nodes or columns.
+    """
+    Base class for metrics that count nodes or columns.
 
     Subclasses should define:
     - name, description, unit (ClassVars)
@@ -86,22 +87,26 @@ class DbtCountMetric(DbtMetric):
     predicate: ClassVar[Callable[..., bool] | None] = None
     log_message: ClassVar[str] = "Found {value} items"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
 
         if cls.count_target == CountTarget.COLUMNS:
-            self.value = query.count_columns(cls.predicate)
+            value = query.count_columns(cls.predicate)
         else:
             if cls.predicate:
                 query = query.filter(cls.predicate)
-            self.value = query.count()
+            value = query.count()
 
-        logger.info(cls.log_message.format(value=self.value))
+        logger.info(cls.log_message.format(value=value))
+        return self.measure(value=value)
 
 
 class DbtDiagnosticMetric(DbtMetric):
-    """Base class for metrics that count and list items with diagnostics.
+    """
+    Base class for metrics that count and list items with diagnostics.
 
     Produces both a count and a diagnostic listing the items.
 
@@ -123,7 +128,9 @@ class DbtDiagnosticMetric(DbtMetric):
     log_message: ClassVar[str] = "Found {value} items"
     max_diagnostic_items: ClassVar[int] = 50
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
 
@@ -134,13 +141,15 @@ class DbtDiagnosticMetric(DbtMetric):
                 query = query.filter(cls.predicate)
             names = query.names()
 
-        self.value = len(names)
+        value = len(names)
+        diagnostic = ""
         if names:
             if (overflow := len(names) - cls.max_diagnostic_items) > 0:
                 shown = ", ".join(names[: cls.max_diagnostic_items])
-                self.diagnostic = (
+                diagnostic = (
                     f"{cls.diagnostic_prefix}: {shown}, ... and {overflow} more"
                 )
             else:
-                self.diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
-        logger.info(cls.log_message.format(value=self.value))
+                diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
+        logger.info(cls.log_message.format(value=value))
+        return self.measure(value=value, diagnostic=diagnostic)

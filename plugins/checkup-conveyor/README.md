@@ -23,13 +23,13 @@ from checkup_conveyor import ConveyorProvider
 results = (
     CheckHub()
     .with_metrics([])
-    .with_providers([
+    .with_providers([[
         ConveyorProvider(
             project_name="my-project",
             api_key="your-api-key",
             environment_name="production",
         ),
-    ])
+    ]])
     .measure()
 )
 ```
@@ -51,11 +51,12 @@ class MyConveyorMetric(ConveyorMetric):
     name = "my_conveyor_metric"
     description = "My custom Conveyor metric"
 
-    def calculate(self, context, metrics):
+    def calculate(self, context, measurements):
         api_client = self.get_api_client(context)
         project_name = self.get_project_name(context)
         environment_name = self.get_environment_name(context)
 
         # Use api_client to fetch data from Conveyor
-        self.value = ...
+        value = ...
+        return self.measure(value=value)
 ```
