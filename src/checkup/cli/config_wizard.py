@@ -399,5 +399,5 @@ def _write_config(path: Path, config: dict) -> None:
 
     console.print("[green]Done![/green]", markup=True)
     console.print(
-        "Run [bold]checkup check[/bold] to test your configuration.", markup=True
+        "Run [bold]checkup run[/bold] to test your configuration.", markup=True
     )

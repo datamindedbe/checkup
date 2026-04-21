@@ -38,7 +38,7 @@ def run(
     ] = None,
     dry_run: Annotated[
         bool,
-        typer.Option("--dry-run", help="Don't materialize, just print (same as check)"),
+        typer.Option("--dry-run", help="Don't materialize, just print"),
     ] = False,
     verbose: Annotated[
         bool,
