@@ -18,7 +18,7 @@ class ThreadMetric(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=10, diagnostic="Calculated in thread")
+        return self.measure(value=10, diagnostic="Calculated in thread")
 
 
 class ProcessMetric(Metric):
@@ -32,7 +32,7 @@ class ProcessMetric(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=20, diagnostic="Calculated in process")
+        return self.measure(value=20, diagnostic="Calculated in process")
 
 
 class AsyncMetric(Metric):
@@ -46,7 +46,7 @@ class AsyncMetric(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=30, diagnostic="Calculated with asyncio")
+        return self.measure(value=30, diagnostic="Calculated with asyncio")
 
 
 class AsyncMetricWithAsyncCalculate(Metric):
@@ -63,7 +63,7 @@ class AsyncMetricWithAsyncCalculate(Metric):
         import asyncio
 
         await asyncio.sleep(0.001)  # Small async operation
-        return self.measurement(value=40, diagnostic="Calculated with native async")
+        return self.measure(value=40, diagnostic="Calculated with native async")
 
 
 class DependentThreadMetric(Metric):
@@ -83,7 +83,7 @@ class DependentThreadMetric(Metric):
     ) -> Measurement:
         base_value = measurements[ThreadMetric].value
         value = base_value * 2
-        return self.measurement(
+        return self.measure(
             value=value, diagnostic=f"Doubled thread metric: {base_value} -> {value}"
         )
 
@@ -105,7 +105,7 @@ class DependentProcessMetric(Metric):
     ) -> Measurement:
         base_value = measurements[ThreadMetric].value
         value = base_value * 3
-        return self.measurement(
+        return self.measure(
             value=value, diagnostic=f"Tripled thread metric: {base_value} -> {value}"
         )
 
@@ -127,7 +127,7 @@ class DependentAsyncMetric(Metric):
     ) -> Measurement:
         base_value = measurements[ProcessMetric].value
         value = base_value + 5
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Added 5 to process metric: {base_value} -> {value}",
         )

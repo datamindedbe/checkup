@@ -24,4 +24,4 @@ class DbtVersionMetric(DbtMetric):
     ) -> Measurement:
         manifest = self.get_manifest(context)
         value = manifest.metadata.dbt_version
-        return self.measurement(value=value, diagnostic=f"dbt version: {value}")
+        return self.measure(value=value, diagnostic=f"dbt version: {value}")

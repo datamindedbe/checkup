@@ -45,4 +45,4 @@ class DbtTestedColumnsMetric(DbtMetric):
 
         value = len(all_columns & tested_columns)
         logger.info(f"Found {value} tested columns")
-        return self.measurement(value=value)
+        return self.measure(value=value)

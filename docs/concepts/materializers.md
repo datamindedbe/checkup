@@ -153,7 +153,7 @@ Materializers group output by metric tags:
 ```python
 class MyMetric(Metric):
     def calculate(self, context, measurements):
-        return self.measurement(
+        return self.measure(
             value=42,
             tags={"domain": "analytics", "project": "dashboard"}
         )
