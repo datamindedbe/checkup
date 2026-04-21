@@ -24,7 +24,7 @@ def test_materializer_is_abstract():
 
 
 def test_console_materializer():
-    """Test console output materializer."""
+    """Test console output materializer with two-level grouping."""
     metric = DummyMetric(expected_value=42)
     measurement = metric.measurement(value=42)
 
@@ -32,7 +32,7 @@ def test_console_materializer():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    materializer = ConsoleMaterializer(group_tag_1="domain", group_tag_2="project")
+    materializer = ConsoleMaterializer(group_tags=["domain", "project"])
     materializer.materialize([measurement], {"dummy"})
 
     # Reset stdout
@@ -41,6 +41,53 @@ def test_console_materializer():
     output = captured_output.getvalue()
     assert "dummy" in output
     assert "42" in output
+
+
+def test_console_materializer_no_grouping():
+    """Test console materializer without grouping."""
+    metric = DummyMetric(expected_value=42)
+    measurement = metric.measurement(value=42)
+
+    captured_output = StringIO()
+    sys.stdout = captured_output
+
+    materializer = ConsoleMaterializer()  # No group_tags
+    materializer.materialize([measurement], {"dummy"})
+
+    sys.stdout = sys.__stdout__
+
+    output = captured_output.getvalue()
+    assert "dummy" in output
+    assert "42" in output
+
+
+def test_console_materializer_single_grouping():
+    """Test console materializer with single-level grouping."""
+    metric = DummyMetric(expected_value=42)
+    measurement = metric.measurement(value=42, tags={"domain": "Analytics"})
+
+    captured_output = StringIO()
+    sys.stdout = captured_output
+
+    materializer = ConsoleMaterializer(group_tags=["domain"])
+    materializer.materialize([measurement], {"dummy"})
+
+    sys.stdout = sys.__stdout__
+
+    output = captured_output.getvalue()
+    assert "dummy" in output
+    assert "42" in output
+    assert "domain: Analytics" in output
+
+
+def test_console_materializer_too_many_group_tags():
+    """Test that more than 2 group tags raises an error."""
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError) as exc_info:
+        ConsoleMaterializer(group_tags=["a", "b", "c"])
+
+    assert "Maximum 2 group tags supported" in str(exc_info.value)
 
 
 def test_csv_materializer(tmp_path):
@@ -101,7 +148,7 @@ def test_materializer_filters_indirect_by_default():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    materializer = ConsoleMaterializer(group_tag_1="domain", group_tag_2="project")
+    materializer = ConsoleMaterializer(group_tags=["domain", "project"])
     # Only "dummy" is direct, "indirect" is not
     materializer.materialize([direct_measurement, indirect_measurement], {"dummy"})
 
@@ -127,7 +174,7 @@ def test_materializer_includes_indirect_when_configured():
     sys.stdout = captured_output
 
     materializer = ConsoleMaterializer(
-        include_indirect=True, group_tag_1="domain", group_tag_2="project"
+        include_indirect=True, group_tags=["domain", "project"]
     )
     materializer.materialize([direct_measurement, indirect_measurement], {"dummy"})
 
