@@ -44,4 +44,4 @@ class DbtSupportedVersionMetric(DbtMetric):
                 f"Please upgrade dbt to version {self.min_version} or later."
             )
         logger.info(f"dbt version {version} supported: {bool(value)}")
-        return self.measurement(value=value, diagnostic=diagnostic)
+        return self.measure(value=value, diagnostic=diagnostic)

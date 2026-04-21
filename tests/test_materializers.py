@@ -26,7 +26,7 @@ def test_materializer_is_abstract():
 def test_console_materializer():
     """Test console output materializer with two-level grouping."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
 
     # Capture stdout
     captured_output = StringIO()
@@ -106,7 +106,7 @@ def test_console_materializer_three_level_grouping():
 def test_csv_materializer(tmp_path):
     """Test CSV file materializer."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
 
     output_file = tmp_path / "metrics.csv"
     materializer = CSVMaterializer(output_path=output_file)
@@ -130,10 +130,10 @@ def test_csv_materializer_multiple_metrics(tmp_path):
     from fixtures import OtherDummyMetric
 
     metric1 = DummyMetric(expected_value=42)
-    measurement1 = metric1.measurement(value=42)
+    measurement1 = metric1.measure(value=42)
 
     metric2 = OtherDummyMetric(expected_value=100)
-    measurement2 = metric2.measurement(value=100)
+    measurement2 = metric2.measure(value=100)
 
     output_file = tmp_path / "metrics.csv"
     materializer = CSVMaterializer(output_path=output_file)
@@ -152,10 +152,10 @@ def test_materializer_filters_indirect_by_default():
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(value=42)
+    direct_measurement = direct_metric.measure(value=42)
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(value=100)
+    indirect_measurement = indirect_metric.measure(value=100)
 
     # Capture stdout
     captured_output = StringIO()
@@ -177,10 +177,10 @@ def test_materializer_includes_indirect_when_configured():
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(value=42)
+    direct_measurement = direct_metric.measure(value=42)
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(value=100)
+    indirect_measurement = indirect_metric.measure(value=100)
 
     # Capture stdout
     captured_output = StringIO()
@@ -203,10 +203,10 @@ def test_csv_materializer_filters_indirect(tmp_path):
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(value=42)
+    direct_measurement = direct_metric.measure(value=42)
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(value=100)
+    indirect_measurement = indirect_metric.measure(value=100)
 
     output_file = tmp_path / "metrics.csv"
 
@@ -228,10 +228,10 @@ def test_csv_materializer_includes_indirect(tmp_path):
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(value=42)
+    direct_measurement = direct_metric.measure(value=42)
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(value=100)
+    indirect_measurement = indirect_metric.measure(value=100)
 
     output_file = tmp_path / "metrics.csv"
 
@@ -251,17 +251,17 @@ def test_html_materializer(tmp_path):
     """Test HTML materializer with hierarchical grouping."""
     # Create measurements with tags
     metric1 = DummyMetric(expected_value=42)
-    measurement1 = metric1.measurement(
+    measurement1 = metric1.measure(
         value=42, tags={"domain": "Analytics", "project": "Project A"}
     )
 
     metric2 = DummyMetric(expected_value=100)
-    measurement2 = metric2.measurement(
+    measurement2 = metric2.measure(
         value=100, tags={"domain": "Analytics", "project": "Project B"}
     )
 
     metric3 = DummyMetric(expected_value=75)
-    measurement3 = metric3.measurement(
+    measurement3 = metric3.measure(
         value=75, tags={"domain": "Engineering", "project": "Project C"}
     )
 
@@ -315,14 +315,14 @@ def test_html_materializer_with_diagnostics(tmp_path):
     """Test HTML materializer with diagnostic coloring."""
     # Create measurements with different diagnostics
     metric1 = DummyMetric(expected_value=42)
-    measurement1 = metric1.measurement(
+    measurement1 = metric1.measure(
         value=42,
         diagnostic="✅ All good",
         tags={"domain": "Test", "project": "TestProject"},
     )
 
     metric2 = DummyMetric(expected_value=100)
-    measurement2 = metric2.measurement(
+    measurement2 = metric2.measure(
         value=100,
         diagnostic="⚠ Warning: something to check",
         tags={"domain": "Test", "project": "TestProject"},
@@ -349,7 +349,7 @@ def test_html_materializer_ungrouped_metrics(tmp_path):
     """Test HTML materializer with measurements missing tags."""
     # Create measurement without tags
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42, tags={})
+    measurement = metric.measure(value=42, tags={})
 
     output_file = tmp_path / "metrics.html"
     materializer = HTMLMaterializer(
@@ -369,12 +369,12 @@ def test_html_materializer_filters_indirect(tmp_path):
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(
+    direct_measurement = direct_metric.measure(
         value=42, tags={"domain": "Test", "project": "TestProject"}
     )
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(
+    indirect_measurement = indirect_metric.measure(
         value=100, tags={"domain": "Test", "project": "TestProject"}
     )
 
@@ -396,7 +396,7 @@ def test_html_materializer_filters_indirect(tmp_path):
 def test_html_materializer_escape_html(tmp_path):
     """Test that HTML special characters are escaped."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(
+    measurement = metric.measure(
         value="<script>alert('xss')</script>",
         diagnostic="Test & verify <tags>",
         tags={"domain": "Test & Dev", "project": "Project <A>"},
@@ -426,28 +426,28 @@ def test_html_materializer_end_to_end(tmp_path):
 
     # Create measurements for Analytics domain
     metric1 = DummyMetric(expected_value=42)
-    measurement1 = metric1.measurement(
+    measurement1 = metric1.measure(
         value=42,
         diagnostic="✅ Good coverage",
         tags={"domain": "Analytics", "project": "Customer Insights"},
     )
 
     metric2 = OtherDummyMetric(expected_value=85)
-    measurement2 = metric2.measurement(
+    measurement2 = metric2.measure(
         value=85,
         diagnostic="",
         tags={"domain": "Analytics", "project": "Customer Insights"},
     )
 
     metric3 = DummyMetric(expected_value=100)
-    measurement3 = metric3.measurement(
+    measurement3 = metric3.measure(
         value=100,
         diagnostic="✅ Excellent",
         tags={"domain": "Analytics", "project": "Sales Dashboard"},
     )
 
     metric4 = OtherDummyMetric(expected_value=60)
-    measurement4 = metric4.measurement(
+    measurement4 = metric4.measure(
         value=60,
         diagnostic="⚠ Below target",
         tags={"domain": "Analytics", "project": "Sales Dashboard"},
@@ -455,41 +455,41 @@ def test_html_materializer_end_to_end(tmp_path):
 
     # Create measurements for Engineering domain
     metric5 = DummyMetric(expected_value=95)
-    measurement5 = metric5.measurement(
+    measurement5 = metric5.measure(
         value=95,
         diagnostic="✅ Strong test coverage",
         tags={"domain": "Engineering", "project": "Core Platform"},
     )
 
     metric6 = OtherDummyMetric(expected_value=45)
-    measurement6 = metric6.measurement(
+    measurement6 = metric6.measure(
         value=45,
         diagnostic="❌ Critical - needs attention",
         tags={"domain": "Engineering", "project": "Core Platform"},
     )
 
     metric7 = DummyMetric(expected_value=78)
-    measurement7 = metric7.measurement(
+    measurement7 = metric7.measure(
         value=78, diagnostic="", tags={"domain": "Engineering", "project": "Mobile App"}
     )
 
     # Create measurements for Data Science domain
     metric8 = DummyMetric(expected_value=92)
-    measurement8 = metric8.measurement(
+    measurement8 = metric8.measure(
         value=92,
         diagnostic="✅ Model accuracy within range",
         tags={"domain": "Data Science", "project": "ML Pipeline"},
     )
 
     metric9 = OtherDummyMetric(expected_value=88)
-    measurement9 = metric9.measurement(
+    measurement9 = metric9.measure(
         value=88,
         diagnostic="",
         tags={"domain": "Data Science", "project": "ML Pipeline"},
     )
 
     metric10 = DummyMetric(expected_value=55)
-    measurement10 = metric10.measurement(
+    measurement10 = metric10.measure(
         value=55,
         diagnostic="⚠ Training data quality concerns",
         tags={"domain": "Data Science", "project": "Recommendation Engine"},
@@ -497,7 +497,7 @@ def test_html_materializer_end_to_end(tmp_path):
 
     # Create some ungrouped measurements
     metric11 = DummyMetric(expected_value=70)
-    measurement11 = metric11.measurement(value=70, diagnostic="", tags={})
+    measurement11 = metric11.measure(value=70, diagnostic="", tags={})
 
     all_measurements = [
         measurement1,
@@ -560,7 +560,7 @@ def test_html_materializer_end_to_end(tmp_path):
 def test_sqlalchemy_materializer(tmp_path):
     """Test SQLAlchemy materializer writes measurements to database."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42, tags={"domain": "Analytics"})
+    measurement = metric.measure(value=42, tags={"domain": "Analytics"})
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -587,10 +587,10 @@ def test_sqlalchemy_materializer_multiple_metrics(tmp_path):
     from fixtures import OtherDummyMetric
 
     metric1 = DummyMetric(expected_value=42)
-    measurement1 = metric1.measurement(value=42)
+    measurement1 = metric1.measure(value=42)
 
     metric2 = OtherDummyMetric(expected_value=100)
-    measurement2 = metric2.measurement(value=100)
+    measurement2 = metric2.measure(value=100)
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -610,7 +610,7 @@ def test_sqlalchemy_materializer_multiple_metrics(tmp_path):
 def test_sqlalchemy_materializer_appends_rows(tmp_path):
     """Test that successive materializations append rows."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
 
     db_path = tmp_path / "metrics.db"
     url = f"sqlite:///{db_path}"
@@ -630,7 +630,7 @@ def test_sqlalchemy_materializer_appends_rows(tmp_path):
 def test_sqlalchemy_materializer_custom_table_name(tmp_path):
     """Test SQLAlchemy materializer with custom table name."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -652,10 +652,10 @@ def test_sqlalchemy_materializer_filters_indirect(tmp_path):
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(value=42)
+    direct_measurement = direct_metric.measure(value=42)
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(value=100)
+    indirect_measurement = indirect_metric.measure(value=100)
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -676,10 +676,10 @@ def test_sqlalchemy_materializer_includes_indirect(tmp_path):
     from fixtures import IndirectDummyMetric
 
     direct_metric = DummyMetric(expected_value=42)
-    direct_measurement = direct_metric.measurement(value=42)
+    direct_measurement = direct_metric.measure(value=42)
 
     indirect_metric = IndirectDummyMetric(expected_value=100)
-    indirect_measurement = indirect_metric.measurement(value=100)
+    indirect_measurement = indirect_metric.measure(value=100)
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -700,7 +700,7 @@ def test_sqlalchemy_materializer_includes_indirect(tmp_path):
 def test_sqlalchemy_materializer_none_value(tmp_path):
     """Test SQLAlchemy materializer handles None values."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=None, tags={})
+    measurement = metric.measure(value=None, tags={})
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -762,17 +762,17 @@ def test_sqlalchemy_materializer_expand_tags(tmp_path):
     from fixtures import IndirectDummyMetric, OtherDummyMetric
 
     metric1 = DummyMetric(expected_value=42)
-    measurement1 = metric1.measurement(
+    measurement1 = metric1.measure(
         value=42, tags={"domain": "Analytics", "env": "prod"}
     )
 
     metric2 = OtherDummyMetric(expected_value=100)
-    measurement2 = metric2.measurement(
+    measurement2 = metric2.measure(
         value=100, tags={"domain": "Engineering", "team": "platform"}
     )
 
     metric3 = IndirectDummyMetric(expected_value=50)
-    measurement3 = metric3.measurement(value=50, tags={})
+    measurement3 = metric3.measure(value=50, tags={})
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -826,7 +826,7 @@ def test_sqlalchemy_materializer_expand_tags(tmp_path):
 def test_sqlalchemy_materializer_expand_tags_no_tags(tmp_path):
     """Test expand_tags handles measurements with no tags."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42, tags={})
+    measurement = metric.measure(value=42, tags={})
 
     db_path = tmp_path / "metrics.db"
     materializer = SQLAlchemyMaterializer(
@@ -856,7 +856,7 @@ def test_sqlalchemy_materializer_batch_size(tmp_path):
     measurements = []
     for i in range(25):
         metric = DummyMetric(expected_value=i)
-        measurement = metric.measurement(value=i)
+        measurement = metric.measure(value=i)
         measurements.append(measurement)
 
     db_path = tmp_path / "metrics.db"

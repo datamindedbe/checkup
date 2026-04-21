@@ -31,7 +31,7 @@ def test_checkhub_with_metrics():
 def test_measurement_result_creation():
     """Test creating a MeasurementResult."""
     metric = DummyMetric()
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
     result = MeasurementResult(measurements=[measurement])
 
     assert len(result.measurements) == 1
@@ -43,7 +43,7 @@ def test_measurement_result_with_errors():
     from checkup.providers.tags import TagProvider
 
     metric = DummyMetric()
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
 
     provider = TagProvider(path="/bad/path")
     errors = [([provider], ValueError("Path not found"))]
@@ -58,7 +58,7 @@ def test_measurement_result_with_errors():
 def test_measurement_result_errors_default_empty():
     """Test MeasurementResult.errors defaults to empty list."""
     metric = DummyMetric()
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
     result = MeasurementResult(measurements=[measurement])
 
     assert result.errors == []

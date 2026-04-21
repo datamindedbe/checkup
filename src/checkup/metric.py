@@ -58,7 +58,7 @@ class Metric(ABC, BaseModel):
         """
         pass
 
-    def measurement(
+    def measure(
         self,
         value: Any = None,
         tags: dict | None = None,
@@ -77,7 +77,6 @@ class Metric(ABC, BaseModel):
         Returns:
             Measurement instance
         """
-
         return Measurement(
             metric=self,
             value=value,

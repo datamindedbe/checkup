@@ -39,13 +39,13 @@ class DbtFlaggedPackagesMetric(DbtMetric):
 
         if not packages_path.exists():
             logger.warning(f"packages.yml not found at {packages_path}")
-            return self.measurement(value=0, diagnostic="packages.yml not found")
+            return self.measure(value=0, diagnostic="packages.yml not found")
 
         with open(packages_path) as f:
             packages_data = yaml.safe_load(f)
 
         if not packages_data or "packages" not in packages_data:
-            return self.measurement(
+            return self.measure(
                 value=0, diagnostic="No packages defined in packages.yml"
             )
 
@@ -60,4 +60,4 @@ class DbtFlaggedPackagesMetric(DbtMetric):
         value = len(flagged)
         diagnostic = f"Flagged packages: {', '.join(flagged)}" if flagged else ""
         logger.info(f"Found {value} flagged packages")
-        return self.measurement(value=value, diagnostic=diagnostic)
+        return self.measure(value=value, diagnostic=diagnostic)

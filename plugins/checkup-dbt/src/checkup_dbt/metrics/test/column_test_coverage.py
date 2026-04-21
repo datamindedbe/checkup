@@ -38,4 +38,4 @@ class DbtColumnTestCoverageMetric(DbtMetric):
             value = 0
 
         logger.info(f"Column test coverage: {value}%")
-        return self.measurement(value=value)
+        return self.measure(value=value)

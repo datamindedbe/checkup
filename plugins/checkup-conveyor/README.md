@@ -58,5 +58,5 @@ class MyConveyorMetric(ConveyorMetric):
 
         # Use api_client to fetch data from Conveyor
         value = ...
-        return self.measurement(value=value)
+        return self.measure(value=value)
 ```

@@ -18,7 +18,7 @@ class DummyMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         """Set value to expected_value."""
-        return self.measurement(
+        return self.measure(
             value=self.expected_value,
             diagnostic=f"Dummy metric calculated with expected_value={self.expected_value}",
         )
@@ -42,7 +42,7 @@ class DependentDummyMetric(Metric):
         """Double the DummyMetric value."""
         base_value = measurements[DummyMetric].value
         value = base_value * 2
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Doubled DummyMetric value from {base_value} to {value}",
         )
@@ -63,7 +63,7 @@ class Level2Metric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         value = measurements[DependentDummyMetric].value + 10
-        return self.measurement(
+        return self.measure(
             value=value, diagnostic=f"Added 10 to DependentDummyMetric value: {value}"
         )
 
@@ -84,7 +84,7 @@ class Level3Metric(Metric):
     ) -> Measurement:
         level2_value = measurements[Level2Metric].value
         value = level2_value**2
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Squared Level2Metric value: {level2_value}^2 = {value}",
         )
@@ -104,7 +104,7 @@ class CyclicMetricA(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=1, diagnostic="CyclicMetricA calculated")
+        return self.measure(value=1, diagnostic="CyclicMetricA calculated")
 
 
 class CyclicMetricB(Metric):
@@ -121,7 +121,7 @@ class CyclicMetricB(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=1, diagnostic="CyclicMetricB calculated")
+        return self.measure(value=1, diagnostic="CyclicMetricB calculated")
 
 
 class RootA(Metric):
@@ -135,7 +135,7 @@ class RootA(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(
+        return self.measure(
             value=self.base_value,
             diagnostic=f"RootA calculated with base_value={self.base_value}",
         )
@@ -152,7 +152,7 @@ class RootB(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(
+        return self.measure(
             value=self.base_value,
             diagnostic=f"RootB calculated with base_value={self.base_value}",
         )
@@ -169,7 +169,7 @@ class RootC(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(
+        return self.measure(
             value=self.base_value,
             diagnostic=f"RootC calculated with base_value={self.base_value}",
         )
@@ -192,7 +192,7 @@ class SharedAB(Metric):
         root_a_val = measurements[RootA].value
         root_b_val = measurements[RootB].value
         value = root_a_val + root_b_val
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Sum of RootA ({root_a_val}) and RootB ({root_b_val}) = {value}",
         )
@@ -214,7 +214,7 @@ class BranchB(Metric):
     ) -> Measurement:
         root_b_val = measurements[RootB].value
         value = root_b_val * 3
-        return self.measurement(
+        return self.measure(
             value=value, diagnostic=f"Tripled RootB value: {root_b_val} * 3 = {value}"
         )
 
@@ -235,7 +235,7 @@ class LeafC(Metric):
     ) -> Measurement:
         root_c_val = measurements[RootC].value
         value = root_c_val**2
-        return self.measurement(
+        return self.measure(
             value=value, diagnostic=f"Squared RootC value: {root_c_val}^2 = {value}"
         )
 
@@ -256,7 +256,7 @@ class MidShared(Metric):
     ) -> Measurement:
         shared_ab_val = measurements[SharedAB].value
         value = shared_ab_val + 5
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Added 5 to SharedAB value: {shared_ab_val} + 5 = {value}",
         )
@@ -278,7 +278,7 @@ class MidBranch(Metric):
     ) -> Measurement:
         branch_b_val = measurements[BranchB].value
         value = branch_b_val * 2
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Doubled BranchB value: {branch_b_val} * 2 = {value}",
         )
@@ -301,7 +301,7 @@ class LeafAB(Metric):
         mid_shared_val = measurements[MidShared].value
         mid_branch_val = measurements[MidBranch].value
         value = mid_shared_val * mid_branch_val
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Product of MidShared ({mid_shared_val}) and MidBranch ({mid_branch_val}) = {value}",
         )
@@ -334,7 +334,7 @@ class ProviderDummyMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         value = context[DummyProvider.name]["data"]
-        return self.measurement(
+        return self.measure(
             value=value, diagnostic=f"Retrieved dummy_data from context: {value}"
         )
 
@@ -351,7 +351,7 @@ class FailingMetric(Metric):
     ) -> Measurement:
         if context.get("should_fail"):
             raise ValueError("Intentional failure")
-        return self.measurement(value=1, diagnostic="Metric calculated successfully")
+        return self.measure(value=1, diagnostic="Metric calculated successfully")
 
 
 class IntegrationProvider(Provider):
@@ -382,7 +382,7 @@ class IntegrationBaseMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         value = context[IntegrationProvider.name]["base_value"]
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Retrieved base_value from integration provider: {value}",
         )
@@ -405,7 +405,7 @@ class IntegrationDerivedMetric(Metric):
     ) -> Measurement:
         base_val = measurements[IntegrationBaseMetric].value
         value = base_val * self.multiplier
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Multiplied base metric value: {base_val} * {self.multiplier} = {value}",
         )
@@ -440,7 +440,7 @@ class PathMetric(Metric):
     ) -> Measurement:
         path_len = context[PathLengthProvider.name]["length"]
         value = path_len * self.multiplier
-        return self.measurement(
+        return self.measure(
             value=value,
             diagnostic=f"Path length {path_len} * multiplier {self.multiplier} = {value}",
         )
@@ -459,7 +459,7 @@ class OtherDummyMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         """Set value to expected_value."""
-        return self.measurement(
+        return self.measure(
             value=self.expected_value,
             diagnostic=f"Other metric calculated with expected_value={self.expected_value}",
         )
@@ -478,7 +478,7 @@ class IndirectDummyMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         """Set value to expected_value."""
-        return self.measurement(
+        return self.measure(
             value=self.expected_value,
             diagnostic=f"Indirect metric calculated with expected_value={self.expected_value}",
         )

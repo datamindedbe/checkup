@@ -101,7 +101,7 @@ class DbtCountMetric(DbtMetric):
             value = query.count()
 
         logger.info(cls.log_message.format(value=value))
-        return self.measurement(value=value)
+        return self.measure(value=value)
 
 
 class DbtDiagnosticMetric(DbtMetric):
@@ -152,4 +152,4 @@ class DbtDiagnosticMetric(DbtMetric):
             else:
                 diagnostic = f"{cls.diagnostic_prefix}: {', '.join(names)}"
         logger.info(cls.log_message.format(value=value))
-        return self.measurement(value=value, diagnostic=diagnostic)
+        return self.measure(value=value, diagnostic=diagnostic)

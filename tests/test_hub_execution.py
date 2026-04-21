@@ -36,7 +36,7 @@ class DataMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         value = context[DataProvider.name]["value"]
-        return self.measurement(value=value)
+        return self.measure(value=value)
 
 
 class OtherProvider(Provider):
@@ -71,7 +71,7 @@ class FailingProviderMetric(Metric):
     def calculate(
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
-        return self.measurement(value=999)
+        return self.measure(value=999)
 
 
 class DependsOnFailingMetric(Metric):
@@ -93,7 +93,7 @@ class DependsOnFailingMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         base_val = measurements[FailingProviderMetric].value
-        return self.measurement(value=base_val * 2)
+        return self.measure(value=base_val * 2)
 
 
 class OtherMetric(Metric):
@@ -111,7 +111,7 @@ class OtherMetric(Metric):
         self, context: Context, measurements: dict[type[Metric], Measurement]
     ) -> Measurement:
         value = context[OtherProvider.name]["other_value"]
-        return self.measurement(value=value)
+        return self.measure(value=value)
 
 
 class TestHubExecution:

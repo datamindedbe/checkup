@@ -130,7 +130,7 @@ class MyServiceMetric(Metric):
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         data = context["myservice"]["data"]
-        return self.measurement(value=data.get("status", "unknown"))
+        return self.measure(value=data.get("status", "unknown"))
 ```
 
 5. Export in `__init__.py`:

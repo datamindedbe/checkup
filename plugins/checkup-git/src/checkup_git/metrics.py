@@ -36,11 +36,11 @@ class GitDaysSinceLastUpdateMetric(GitMetric):
         last_commit_date = git_context.get("git_last_commit_date")
 
         if not isinstance(last_commit_date, datetime):
-            return self.measurement(value=None, diagnostic="No commits found")
+            return self.measure(value=None, diagnostic="No commits found")
 
         now = datetime.now(UTC)
         delta = now - last_commit_date
-        return self.measurement(
+        return self.measure(
             value=delta.days,
             diagnostic=f"Last commit: {last_commit_date.strftime('%Y-%m-%d')}",
         )
@@ -74,19 +74,19 @@ class GitTrackedFileCountMetric(GitMetric):
         tracked_files = git_context.get("git_tracked_files", [])
 
         if not isinstance(tracked_files, list):
-            return self.measurement(value=0, diagnostic="No git repository found")
+            return self.measure(value=0, diagnostic="No git repository found")
 
         if self.pattern != "*":
             matched_files = [f for f in tracked_files if fnmatch(f, self.pattern)]
             if matched_files:
-                return self.measurement(
+                return self.measure(
                     value=len(matched_files),
                     diagnostic=f"Matched files: {', '.join(matched_files)}",
                 )
             else:
-                return self.measurement(
+                return self.measure(
                     value=len(matched_files),
                     diagnostic=f"No files matching pattern: {self.pattern}",
                 )
         else:
-            return self.measurement(value=len(tracked_files))
+            return self.measure(value=len(tracked_files))
