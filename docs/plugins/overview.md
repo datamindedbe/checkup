@@ -37,7 +37,7 @@ from checkup_dbt import DbtProvider, ModelTestCoverageMetric
 # Use in your pipeline
 result = (
     CheckHub()
-    .with_metrics([BranchCountMetric, CommitFrequencyMetric])
+    .with_metrics([BranchCountMetric(), CommitFrequencyMetric()])
     .with_providers([
         [GitProvider(repo_path="/path/to/repo")]
     ])
@@ -114,7 +114,7 @@ class MyServiceProvider(Provider):
 
 ```python
 # src/checkup_myservice/metrics.py
-from checkup import Metric, Provider
+from checkup import Metric, Measurement, Provider
 from checkup.types import Context
 from .providers import MyServiceProvider
 
@@ -128,9 +128,9 @@ class MyServiceMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [MyServiceProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         data = context["myservice"]["data"]
-        self.value = data.get("status", "unknown")
+        return self.measurement(value=data.get("status", "unknown"))
 ```
 
 5. Export in `__init__.py`:

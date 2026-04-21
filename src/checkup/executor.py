@@ -7,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_compl
 from typing import Any
 
 from checkup.errors import ProviderError
-from checkup.metric import ExecutorType, Metric
+from checkup.metric import ExecutorType, Measurement, Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup.validators import validate_pickleable
@@ -16,35 +16,28 @@ logger = logging.getLogger(__name__)
 
 
 def _calculate_metric_in_process(
-    metric_cls: type[Metric],
-    config: dict,
+    metric: Metric,
     context: Context,
     tags: dict[str, Any],
-    calculated_data: dict[type[Metric], dict],
-) -> Metric:
+    calculated: dict[type[Metric], Measurement],
+) -> Measurement:
     """Calculate a single metric in a subprocess.
 
     This is a module-level function for ProcessPoolExecutor compatibility.
 
     Args:
-        metric_cls: Metric class to instantiate and calculate
-        config: Config dict for the metric
+        metric: Metric instance to calculate
         context: Context dict from providers
         tags: Tags dict to merge into metrics
-        calculated_data: Dict mapping metric classes to their serialized data
+        calculated: Dict mapping metric classes to Measurements
 
     Returns:
-        Calculated metric instance
+        Calculated Measurement
     """
-    # Reconstruct calculated metrics from serialized data
-    calculated: dict[type[Metric], Metric] = {}
-    for cls, data in calculated_data.items():
-        calculated[cls] = cls(**data)
 
-    metric = metric_cls(**config)
-    metric.tags.update(tags)
-    metric.calculate(context, calculated)
-    return metric
+    measurement = metric.calculate(context, calculated)
+    measurement.tags.update(tags)
+    return measurement
 
 
 class ProviderExecutor:
@@ -92,28 +85,22 @@ class ProviderExecutor:
 class MetricCalculator:
     """Calculates metrics for a given context."""
 
-    def __init__(self, metric_configs: dict | None = None):
-        """Initialize calculator with optional metric configs.
-
-        Args:
-            metric_configs: Optional dict mapping metric names to config dicts
-        """
-        self._configs = metric_configs or {}
-
     def calculate(
         self,
+        metrics: list[Metric],
         execution_order: list[type[Metric]],
         context: Context,
         tags: dict[str, Any],
         provided_classes: set[type[Provider]],
         failed_providers: dict[type[Provider], ProviderError] | None = None,
-    ) -> list[Metric]:
+    ) -> list[Measurement]:
         """Calculate all metrics in execution order.
 
         Metrics are batched by executor type for efficient execution.
         Each batch is executed using the appropriate executor.
 
         Args:
+            metrics: List of metric instances to calculate
             execution_order: Topologically sorted metric classes
             context: Context dict from providers
             tags: Tags dict to merge into metrics
@@ -121,14 +108,22 @@ class MetricCalculator:
             failed_providers: Dict mapping failed provider classes to their errors
 
         Returns:
-            List of calculated metrics
+            List of Measurements
         """
         failed_providers = failed_providers or {}
         logger.debug("Starting metric calculation for %d metrics", len(execution_order))
-        calculated: dict[type[Metric], Metric] = {}
+
+        class_to_instance: dict[type[Metric], Metric] = {type(m): m for m in metrics}
+
+        for metric_cls in execution_order:
+            if metric_cls not in class_to_instance:
+                # Instantiate dependent metrics implicitly with default constructor.
+                class_to_instance[metric_cls] = metric_cls()
+
+        calculated: dict[type[Metric], Measurement] = {}
         skipped: set[type[Metric]] = set()
         failed: set[type[Metric]] = set()
-        result_metrics: list[Metric] = []
+        result_measurements: list[Measurement] = []
 
         i = 0
         batch_num = 0
@@ -141,26 +136,28 @@ class MetricCalculator:
                 i += 1
                 continue
 
+            metric = class_to_instance[metric_cls]
+
             # Check for failed provider dependencies
             failed_deps = self._get_failed_providers(
                 metric_cls, failed_providers, failed
             )
             if failed_deps:
-                metric = self._create_failed_metric(metric_cls, tags, failed_deps)
-                calculated[metric_cls] = metric
-                result_metrics.append(metric)
+                measurement = self._create_failed_measurement(metric, tags, failed_deps)
+                calculated[metric_cls] = measurement
+                result_measurements.append(measurement)
                 failed.add(metric_cls)
                 i += 1
                 continue
 
             # Start a new batch with this executor type
             current_executor = metric_cls.executor
-            batch: list[type[Metric]] = [metric_cls]
+            batch: list[Metric] = [metric]
             i += 1
 
             # Add more metrics to batch if they have same executor type
             # and don't depend on any metrics in the current batch
-            batch_set = set(batch)
+            batch_classes = {metric_cls}
             while i < len(execution_order):
                 next_cls = execution_order[i]
 
@@ -169,13 +166,17 @@ class MetricCalculator:
                     i += 1
                     continue
 
+                next_metric = class_to_instance[next_cls]
+
                 failed_deps = self._get_failed_providers(
                     next_cls, failed_providers, failed
                 )
                 if failed_deps:
-                    metric = self._create_failed_metric(next_cls, tags, failed_deps)
-                    calculated[next_cls] = metric
-                    result_metrics.append(metric)
+                    measurement = self._create_failed_measurement(
+                        next_metric, tags, failed_deps
+                    )
+                    calculated[next_cls] = measurement
+                    result_measurements.append(measurement)
                     failed.add(next_cls)
                     i += 1
                     continue
@@ -184,11 +185,11 @@ class MetricCalculator:
                     break  # Different executor, start new batch
 
                 # Check if this metric depends on any metric in the current batch
-                if set(next_cls.depends_on()) & batch_set:
+                if set(next_cls.depends_on()) & batch_classes:
                     break  # Has dependency in batch, must process batch first
 
-                batch.append(next_cls)
-                batch_set.add(next_cls)
+                batch.append(next_metric)
+                batch_classes.add(next_cls)
                 i += 1
 
             # Execute the batch with appropriate executor
@@ -202,22 +203,22 @@ class MetricCalculator:
             batch_results = self._execute_batch(
                 batch, current_executor, context, tags, calculated
             )
-            for metric_cls_result, metric in batch_results.items():
-                calculated[metric_cls_result] = metric
-                result_metrics.append(metric)
+            for metric_cls_key, measurement in batch_results.items():
+                calculated[metric_cls_key] = measurement
+                result_measurements.append(measurement)
                 logger.debug(
                     "Metric %s calculated: value=%s",
-                    metric_cls_result.name,
-                    metric.value,
+                    metric_cls_key.name,
+                    measurement.value,
                 )
 
         logger.info(
             "Metric calculation complete: %d calculated, %d skipped, %d failed",
-            len(result_metrics) - len(failed),
+            len(result_measurements) - len(failed),
             len(skipped),
             len(failed),
         )
-        return result_metrics
+        return result_measurements
 
     def _should_skip(
         self,
@@ -285,52 +286,54 @@ class MetricCalculator:
 
         return failed_names
 
-    def _create_failed_metric(
+    def _create_failed_measurement(
         self,
-        metric_cls: type[Metric],
+        metric: Metric,
         tags: dict[str, Any],
         failed_deps: list[str],
-    ) -> Metric:
-        """Create a metric instance with null value due to failed dependencies.
+    ) -> Measurement:
+        """Create a Measurement with null value due to failed dependencies.
 
         Args:
-            metric_cls: Metric class to instantiate
-            tags: Tags to merge into the metric
+            metric: Metric instance
+            tags: Tags to merge into the measurement
             failed_deps: List of failed dependency names
 
         Returns:
-            Metric instance with value=None and diagnostic explaining failure
+            Measurement with value=None and diagnostic explaining failure
         """
-        metric = metric_cls(**self._configs.get(metric_cls.name, {}))
-        metric.tags.update(tags)
-        metric.value = None
-        metric.diagnostic = f"Failed: {', '.join(failed_deps)} failed"
+        diagnostic = f"Failed: {', '.join(failed_deps)} failed"
         logger.debug(
             "Metric %s marked as failed: %s",
-            metric_cls.name,
-            metric.diagnostic,
+            metric.name,
+            diagnostic,
         )
-        return metric
+        return Measurement(
+            metric=metric,
+            value=None,
+            tags=dict(tags),
+            diagnostic=diagnostic,
+        )
 
     def _execute_batch(
         self,
-        batch: list[type[Metric]],
+        batch: list[Metric],
         executor_type: ExecutorType,
         context: Context,
         tags: dict[str, Any],
-        calculated: dict[type[Metric], Metric],
-    ) -> dict[type[Metric], Metric]:
+        calculated: dict[type[Metric], Measurement],
+    ) -> dict[type[Metric], Measurement]:
         """Execute a batch of metrics with the appropriate executor.
 
         Args:
-            batch: List of metric classes to execute
+            batch: List of metric instances to execute
             executor_type: Type of executor to use
             context: Context dict from providers
-            tags: Tags dict to merge into metrics
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Dict mapping metric classes to calculated metric instances
+            Dict mapping metric classes to Measurements
         """
         if executor_type == ExecutorType.THREAD:
             return self._execute_batch_thread(batch, context, tags, calculated)
@@ -343,95 +346,93 @@ class MetricCalculator:
 
     def _execute_batch_thread(
         self,
-        batch: list[type[Metric]],
+        batch: list[Metric],
         context: Context,
         tags: dict[str, Any],
-        calculated: dict[type[Metric], Metric],
-    ) -> dict[type[Metric], Metric]:
+        calculated: dict[type[Metric], Measurement],
+    ) -> dict[type[Metric], Measurement]:
         """Execute metrics using ThreadPoolExecutor.
 
         Args:
-            batch: List of metric classes to execute
+            batch: List of metric instances to execute
             context: Context dict from providers
-            tags: Tags dict to merge into metrics
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Dict mapping metric classes to calculated metric instances
+            Dict mapping metric classes to Measurements
         """
-        results: dict[type[Metric], Metric] = {}
+        results: dict[type[Metric], Measurement] = {}
 
         with ThreadPoolExecutor(max_workers=len(batch)) as executor:
-            future_to_cls = {
+            future_to_metric = {
                 executor.submit(
                     self._calculate_single_metric,
-                    metric_cls,
+                    metric,
                     context,
                     tags,
                     calculated,
-                ): metric_cls
-                for metric_cls in batch
+                ): metric
+                for metric in batch
             }
 
-            for future in as_completed(future_to_cls):
-                metric_cls = future_to_cls[future]
-                metric = future.result()
-                results[metric_cls] = metric
-                # Update calculated for subsequent metrics in the same batch
-                calculated[metric_cls] = metric
+            for future in as_completed(future_to_metric):
+                metric = future_to_metric[future]
+                measurement = future.result()
+                results[type(metric)] = measurement
+                calculated[type(metric)] = measurement
 
         return results
 
     def _execute_batch_process(
         self,
-        batch: list[type[Metric]],
+        batch: list[Metric],
         context: Context,
         tags: dict[str, Any],
-        calculated: dict[type[Metric], Metric],
-    ) -> dict[type[Metric], Metric]:
+        calculated: dict[type[Metric], Measurement],
+    ) -> dict[type[Metric], Measurement]:
         """Execute metrics using ProcessPoolExecutor.
 
         Args:
-            batch: List of metric classes to execute
+            batch: List of metric instances to execute
             context: Context dict from providers
-            tags: Tags dict to merge into metrics
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Dict mapping metric classes to calculated metric instances
+            Dict mapping metric classes to Measurements
 
         Raises:
-            MetricPicklingError: If a metric class cannot be pickled
+            MetricPicklingError: If a metric cannot be pickled
         """
-        # Validate all metrics in batch are pickleable before starting
-        for metric_cls in batch:
-            validate_pickleable(metric_cls)
 
-        results: dict[type[Metric], Metric] = {}
+        for metric in batch:
+            validate_pickleable(type(metric))
+
+        results: dict[type[Metric], Measurement] = {}
 
         with ProcessPoolExecutor(max_workers=len(batch)) as executor:
-            future_to_cls = {
+            future_to_metric = {
                 executor.submit(
                     _calculate_metric_in_process,
-                    metric_cls,
-                    self._configs.get(metric_cls.name, {}),
+                    metric,
                     context,
                     tags,
-                    {cls: m.model_dump() for cls, m in calculated.items()},
-                ): metric_cls
-                for metric_cls in batch
+                    calculated,
+                ): metric
+                for metric in batch
             }
 
-            for future in as_completed(future_to_cls):
-                metric_cls = future_to_cls[future]
+            for future in as_completed(future_to_metric):
+                metric = future_to_metric[future]
                 try:
-                    metric = future.result()
-                    results[metric_cls] = metric
-                    calculated[metric_cls] = metric
+                    measurement = future.result()
+                    results[type(metric)] = measurement
+                    calculated[type(metric)] = measurement
                 except Exception as e:
                     logger.error(
                         "Metric %s failed in process executor: %s",
-                        metric_cls.name,
+                        metric.name,
                         e,
                     )
                     raise
@@ -440,23 +441,23 @@ class MetricCalculator:
 
     def _execute_batch_asyncio(
         self,
-        batch: list[type[Metric]],
+        batch: list[Metric],
         context: Context,
         tags: dict[str, Any],
-        calculated: dict[type[Metric], Metric],
-    ) -> dict[type[Metric], Metric]:
+        calculated: dict[type[Metric], Measurement],
+    ) -> dict[type[Metric], Measurement]:
         """Execute metrics using asyncio.
 
         Supports both sync and async calculate methods.
 
         Args:
-            batch: List of metric classes to execute
+            batch: List of metric instances to execute
             context: Context dict from providers
-            tags: Tags dict to merge into metrics
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Dict mapping metric classes to calculated metric instances
+            Dict mapping metric classes to Measurements
         """
         return asyncio.run(
             self._execute_batch_asyncio_impl(batch, context, tags, calculated)
@@ -464,72 +465,72 @@ class MetricCalculator:
 
     async def _execute_batch_asyncio_impl(
         self,
-        batch: list[type[Metric]],
+        batch: list[Metric],
         context: Context,
         tags: dict[str, Any],
-        calculated: dict[type[Metric], Metric],
-    ) -> dict[type[Metric], Metric]:
+        calculated: dict[type[Metric], Measurement],
+    ) -> dict[type[Metric], Measurement]:
         """Async implementation of batch execution.
 
         Args:
-            batch: List of metric classes to execute
+            batch: List of metric instances to execute
             context: Context dict from providers
-            tags: Tags dict to merge into metrics
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Dict mapping metric classes to calculated metric instances
+            Dict mapping metric classes to Measurements
         """
-        tasks = []
-        for metric_cls in batch:
-            metric = metric_cls(**self._configs.get(metric_cls.name, {}))
-            metric.tags.update(tags)
-            tasks.append(self._calculate_async_metric(metric, context, calculated))
-
-        metrics = await asyncio.gather(*tasks)
-        return {type(m): m for m in metrics}
+        tasks = [
+            self._calculate_async_metric(metric, context, tags, calculated)
+            for metric in batch
+        ]
+        results = await asyncio.gather(*tasks)
+        return {type(m): r for m, r in zip(batch, results, strict=True)}
 
     async def _calculate_async_metric(
         self,
         metric: Metric,
         context: Context,
-        calculated: dict[type[Metric], Metric],
-    ) -> Metric:
+        tags: dict[str, Any],
+        calculated: dict[type[Metric], Measurement],
+    ) -> Measurement:
         """Calculate a single metric, handling both sync and async calculate methods.
 
         Args:
             metric: Metric instance to calculate
             context: Context dict from providers
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Calculated metric instance
+            Measurement
         """
         if inspect.iscoroutinefunction(metric.calculate):
-            await metric.calculate(context, calculated)
+            measurement = await metric.calculate(context, calculated)
         else:
-            metric.calculate(context, calculated)
-        return metric
+            measurement = metric.calculate(context, calculated)
+        measurement.tags.update(tags)
+        return measurement
 
     def _calculate_single_metric(
         self,
-        metric_cls: type[Metric],
+        metric: Metric,
         context: Context,
         tags: dict[str, Any],
-        calculated: dict[type[Metric], Metric],
-    ) -> Metric:
+        calculated: dict[type[Metric], Measurement],
+    ) -> Measurement:
         """Calculate a single metric.
 
         Args:
-            metric_cls: Metric class to instantiate and calculate
+            metric: Metric instance to calculate
             context: Context dict from providers
-            tags: Tags dict to merge into metrics
-            calculated: Dict of already-calculated metrics
+            tags: Tags dict to merge into measurements
+            calculated: Dict of already-calculated measurements (keyed by class)
 
         Returns:
-            Calculated metric instance
+            Measurement
         """
-        metric = metric_cls(**self._configs.get(metric_cls.name, {}))
-        metric.tags.update(tags)
-        metric.calculate(context, calculated)
-        return metric
+        measurement = metric.calculate(context, calculated)
+        measurement.tags.update(tags)
+        return measurement

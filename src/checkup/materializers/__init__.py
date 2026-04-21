@@ -1,9 +1,9 @@
-"""Materializers for outputting metrics."""
+"""Materializers for outputting measurements."""
 
 from checkup.materializers.base import (
     Materializer,
-    group_metrics_by_tags,
-    group_metrics_hierarchical,
+    group_measurements_by_tags,
+    group_measurements_hierarchical,
 )
 from checkup.materializers.console import ConsoleMaterializer
 from checkup.materializers.csv_file import CSVMaterializer
@@ -16,6 +16,6 @@ __all__ = [
     "HTMLMaterializer",
     "Materializer",
     "SQLAlchemyMaterializer",
-    "group_metrics_by_tags",
-    "group_metrics_hierarchical",
+    "group_measurements_by_tags",
+    "group_measurements_hierarchical",
 ]

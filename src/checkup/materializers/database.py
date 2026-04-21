@@ -19,13 +19,13 @@ from sqlalchemy import (
 )
 
 from checkup.materializers.base import Materializer
-from checkup.metric import Metric
+from checkup.metric import Measurement
 
 
 class SQLAlchemyMaterializer(Materializer):
-    """Output metrics to a database via SQLAlchemy.
+    """Output measurements to a database via SQLAlchemy.
 
-    Writes metrics as rows to a database table. The table is created
+    Writes measurements as rows to a database table. The table is created
     automatically if it doesn't exist. Rows are appended on each
     materialization, with a ``measured_at`` timestamp to distinguish runs.
 
@@ -53,9 +53,11 @@ class SQLAlchemyMaterializer(Materializer):
     expand_tags: bool = False
     batch_size: int = 1000
 
-    def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
-        """Write metrics to the database."""
-        filtered = self._filter_metrics(metrics, direct_metric_names)
+    def materialize(
+        self, measurements: list[Measurement], direct_metric_names: set[str]
+    ) -> None:
+        """Write measurements to the database."""
+        filtered = self._filter_measurements(measurements, direct_metric_names)
         if not filtered:
             return
 
@@ -74,9 +76,7 @@ class SQLAlchemyMaterializer(Materializer):
         ]
 
         if self.expand_tags:
-            tag_keys = {
-                key for metric in filtered if metric.tags for key in metric.tags
-            }
+            tag_keys = {key for m in filtered if m.tags for key in m.tags}
             tag_columns = [
                 Column(f"tag_{key}", String(255)) for key in sorted(tag_keys)
             ]
@@ -96,22 +96,20 @@ class SQLAlchemyMaterializer(Materializer):
 
         now = datetime.now(UTC)
         rows = []
-        for metric in filtered:
+        for m in filtered:
             row = {
-                "name": metric.name,
-                "value": str(metric.value) if metric.value is not None else None,
-                "unit": metric.unit,
-                "diagnostic": metric.diagnostic,
-                "description": metric.description,
+                "name": m.metric.name,
+                "value": str(m.value) if m.value is not None else None,
+                "unit": m.metric.unit,
+                "diagnostic": m.diagnostic,
+                "description": m.metric.description,
                 "measured_at": now,
             }
             if self.expand_tags:
                 for key in tag_keys:
-                    row[f"tag_{key}"] = metric.tags.get(key) if metric.tags else None
+                    row[f"tag_{key}"] = m.tags.get(key) if m.tags else None
             else:
-                row["tags"] = (
-                    json.dumps(metric.tags) if metric.tags is not None else None
-                )
+                row["tags"] = json.dumps(m.tags) if m.tags is not None else None
             rows.append(row)
 
         with engine.connect() as conn:

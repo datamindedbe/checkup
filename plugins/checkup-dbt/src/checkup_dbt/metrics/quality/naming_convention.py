@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
+from checkup.metric import Measurement, Metric
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric, NamingConventionChecker
 
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
-    """Metric for checking model naming conventions.
+    """
+    Metric for checking model naming conventions.
 
     This metric requires a custom checker function that defines the naming
     convention. Use with_checker() to create a configured metric class.
@@ -37,7 +39,9 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
 
         return CustomNamingConventionMetric
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         manifest = self.get_manifest(context)
         checker = self.get_checker()
 
@@ -47,7 +51,9 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
             if node.resource_type == NodeType.Model and not checker(context, node)
         ]
 
-        self.value = len(non_adhering_models)
+        value = len(non_adhering_models)
+        diagnostic = ""
         if non_adhering_models:
-            self.diagnostic = f"Models not adhering to naming convention: {', '.join(sorted(non_adhering_models))}"
-        logger.info(f"Found {self.value} models not adhering to naming convention")
+            diagnostic = f"Models not adhering to naming convention: {', '.join(sorted(non_adhering_models))}"
+        logger.info(f"Found {value} models not adhering to naming convention")
+        return self.measurement(value=value, diagnostic=diagnostic)

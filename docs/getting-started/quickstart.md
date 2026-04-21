@@ -4,10 +4,10 @@ This guide will help you get started with CheckUp by walking through a complete 
 
 ## Creating Your First Metric
 
-A metric is a class that calculates a value from context. Here's a simple example:
+A metric is a class that calculates a value from context and returns a Measurement. Here's a simple example:
 
 ```python
-from checkup import Metric
+from checkup import Metric, Measurement
 from checkup.types import Context
 
 
@@ -16,19 +16,20 @@ class FileCountMetric(Metric):
     description = "Number of files in the project"
     unit = "files"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access data from context and calculate your metric
         files = context.get("files", [])
-        self.value = len(files)
-        self.diagnostic = f"Found {self.value} files"
+        return self.measurement(
+            value=len(files),
+            diagnostic=f"Found {len(files)} files"
+        )
 ```
 
 Every metric must:
 
 1. Define `name`, `description`, and `unit` class attributes
 2. Implement the `calculate()` method
-3. Set `self.value` with the calculated result
-4. Optionally set `self.diagnostic` with additional information
+3. Return a `Measurement` using `self.measurement(value=..., diagnostic=...)`
 
 ## Running Metrics with CheckHub
 
@@ -41,7 +42,7 @@ from checkup import CheckHub, ConsoleMaterializer
 # Create and run the pipeline
 result = (
     CheckHub()
-    .with_metrics([FileCountMetric])
+    .with_metrics([FileCountMetric()])
     .measure()
 )
 
@@ -84,10 +85,10 @@ class FileCountMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [FileProvider]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access provider data under its namespace
         files = context["files"]["file_list"]
-        self.value = len(files)
+        return self.measurement(value=len(files))
 ```
 
 Run with providers:
@@ -97,7 +98,7 @@ from pathlib import Path
 
 result = (
     CheckHub()
-    .with_metrics([FileCountMetric])
+    .with_metrics([FileCountMetric()])
     .with_providers([
         [FileProvider(Path("./src"))],
         [FileProvider(Path("./tests"))],
@@ -116,9 +117,9 @@ class TotalLinesMetric(Metric):
     description = "Total lines of code"
     unit = "lines"
 
-    def calculate(self, context: Context, metrics: dict) -> None:
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Count lines in all files
-        self.value = 1000  # simplified
+        return self.measurement(value=1000)  # simplified
 
 
 class AverageLinesPerFileMetric(Metric):
@@ -130,15 +131,14 @@ class AverageLinesPerFileMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [FileCountMetric, TotalLinesMetric]
 
-    def calculate(self, context: Context, metrics: dict) -> None:
-        file_count = metrics[FileCountMetric].value
-        total_lines = metrics[TotalLinesMetric].value
+    def calculate(self, context: Context, measurements: dict) -> Measurement:
+        file_count = measurements[FileCountMetric].value
+        total_lines = measurements[TotalLinesMetric].value
 
         if file_count > 0:
-            self.value = total_lines / file_count
+            return self.measurement(value=total_lines / file_count)
         else:
-            self.value = 0
-            self.diagnostic = "No files found"
+            return self.measurement(value=0, diagnostic="No files found")
 ```
 
 CheckUp automatically resolves dependencies and calculates metrics in the correct order.
@@ -201,7 +201,7 @@ from pathlib import Path
 
 result = (
     CheckHub(config_path=Path("checkup.yaml"))
-    .with_metrics([FileCountMetric, TotalLinesMetric])
+    .with_metrics([FileCountMetric(), TotalLinesMetric()])
     .measure()
 )
 ```
