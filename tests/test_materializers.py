@@ -46,7 +46,7 @@ def test_console_materializer():
 def test_console_materializer_no_grouping():
     """Test console materializer without grouping."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42)
+    measurement = metric.measure(value=42)
 
     captured_output = StringIO()
     sys.stdout = captured_output
@@ -64,7 +64,7 @@ def test_console_materializer_no_grouping():
 def test_console_materializer_single_grouping():
     """Test console materializer with single-level grouping."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(value=42, tags={"domain": "Analytics"})
+    measurement = metric.measure(value=42, tags={"domain": "Analytics"})
 
     captured_output = StringIO()
     sys.stdout = captured_output
@@ -83,7 +83,7 @@ def test_console_materializer_single_grouping():
 def test_console_materializer_three_level_grouping():
     """Test console materializer with three-level grouping."""
     metric = DummyMetric(expected_value=42)
-    measurement = metric.measurement(
+    measurement = metric.measure(
         value=42, tags={"domain": "Analytics", "project": "Core", "env": "prod"}
     )
 
