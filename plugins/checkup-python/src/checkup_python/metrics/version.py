@@ -3,9 +3,8 @@ import sys
 from pathlib import Path
 from typing import ClassVar
 
-from checkup.metric import Metric
+from checkup.metric import Measurement, Metric
 from checkup.types import Context
-from checkup_python.metrics.utils import parse_semantic_version
 
 
 class PythonVersionMetric(Metric):
@@ -22,7 +21,9 @@ class PythonVersionMetric(Metric):
     description: ClassVar[str] = "The Python version configured for the project"
     unit: ClassVar[str] = "version"
 
-    def calculate(self, context: Context, metrics: dict[type[Metric], Metric]) -> None:
+    def calculate(
+        self, context: Context, measurements: dict[type[Metric], Measurement]
+    ) -> Measurement:
         path = None
 
         if "path" in context:
@@ -36,7 +37,7 @@ class PythonVersionMetric(Metric):
             or self._get_runtime_version()
         )
 
-        self.value = version
+        return self.measurement(value=version)
 
     def _read_python_version_file(self, path: Path) -> str | None:
         """
@@ -80,33 +81,3 @@ class PythonVersionMetric(Metric):
         """
 
         return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-
-    def __lt__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) < parse_semantic_version(other.value)
-
-    def __le__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) <= parse_semantic_version(other.value)
-
-    def __gt__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) > parse_semantic_version(other.value)
-
-    def __ge__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) >= parse_semantic_version(other.value)
-
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) == parse_semantic_version(other.value)
-
-    def __ne__(self, other) -> bool:
-        if not isinstance(other, PythonVersionMetric):
-            return NotImplemented
-        return parse_semantic_version(self.value) != parse_semantic_version(other.value)

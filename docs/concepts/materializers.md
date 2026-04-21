@@ -19,7 +19,7 @@ Materializers are called on `MeasurementResult`:
 ```python
 from checkup import CheckHub, ConsoleMaterializer
 
-result = CheckHub().with_metrics([MyMetric]).measure()
+result = CheckHub().with_metrics([MyMetric()]).measure()
 result.materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
 ```
 
@@ -104,7 +104,7 @@ Features:
 You can materialize to multiple formats:
 
 ```python
-result = CheckHub().with_metrics([MyMetric]).measure()
+result = CheckHub().with_metrics([MyMetric()]).measure()
 
 # Output to console
 result.materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
@@ -152,10 +152,11 @@ Materializers group output by metric tags:
 
 ```python
 class MyMetric(Metric):
-    def calculate(self, context, metrics):
-        self.value = 42
-        self.tags["domain"] = "analytics"
-        self.tags["project"] = "dashboard"
+    def calculate(self, context, measurements):
+        return self.measurement(
+            value=42,
+            tags={"domain": "analytics", "project": "dashboard"}
+        )
 ```
 
 When materialized with `group_tag_1="domain"` and `group_tag_2="project"`, metrics are grouped accordingly.
@@ -165,8 +166,8 @@ When materialized with `group_tag_1="domain"` and `group_tag_2="project"`, metri
 Create custom materializers by extending the base class:
 
 ```python
-from checkup import Materializer, Metric
-from pydantic import BaseModel
+from checkup import Materializer, Measurement
+from pathlib import Path
 
 
 class JSONMaterializer(Materializer):
@@ -174,15 +175,15 @@ class JSONMaterializer(Materializer):
 
     output_path: Path
 
-    def materialize(self, metrics: list[Metric], direct_metric_names: set[str]) -> None:
-        filtered = self._filter_metrics(metrics, direct_metric_names)
+    def materialize(self, measurements: list[Measurement], direct_metric_names: set[str]) -> None:
+        filtered = self._filter_measurements(measurements, direct_metric_names)
 
         data = [
             {
-                "name": m.name,
+                "name": m.metric.name,
                 "value": m.value,
-                "unit": m.unit,
-                "description": m.description,
+                "unit": m.metric.unit,
+                "description": m.metric.description,
                 "diagnostic": m.diagnostic,
                 "tags": m.tags,
             }
@@ -196,28 +197,28 @@ class JSONMaterializer(Materializer):
 
 ## Utility Functions
 
-CheckUp provides helper functions for grouping metrics:
+CheckUp provides helper functions for grouping measurements:
 
 ```python
-from checkup.materializers import group_metrics_by_tags, group_metrics_hierarchical
+from checkup.materializers import group_measurements_by_tags, group_measurements_hierarchical
 
 # Flat grouping by two tags
-groups = group_metrics_by_tags(
-    metrics,
+groups = group_measurements_by_tags(
+    measurements,
     tag1="domain",
     tag2="project",
     default_value="Unknown"
 )
-# Returns: {("analytics", "dashboard"): [metrics...]}
+# Returns: {("analytics", "dashboard"): [measurements...]}
 
 # Hierarchical grouping
-hierarchy = group_metrics_hierarchical(
-    metrics,
+hierarchy = group_measurements_hierarchical(
+    measurements,
     tag1="domain",
     tag2="project",
     default_value="Ungrouped"
 )
-# Returns: {"analytics": {"dashboard": [metrics...]}}
+# Returns: {"analytics": {"dashboard": [measurements...]}}
 ```
 
 ## Best Practices

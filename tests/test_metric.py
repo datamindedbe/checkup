@@ -22,7 +22,6 @@ def test_dummy_metric_with_explicit_value():
     assert metric.name == "dummy"
     assert metric.description == "Test metric"
     assert metric.unit == "count"
-    assert metric.value is None
     assert metric.expected_value == 42
 
 
@@ -31,7 +30,6 @@ def test_dummy_metric_with_default_value():
     metric = DummyMetric()
 
     assert metric.expected_value == 42
-    assert metric.value is None
 
 
 # =============================================================================
@@ -39,22 +37,21 @@ def test_dummy_metric_with_default_value():
 # =============================================================================
 
 
-def test_dummy_metric_calculate_sets_value(empty_context):
-    """Test that DummyMetric.calculate() sets value correctly."""
+def test_dummy_metric_calculate_returns_measurement(empty_context):
+    """Test that DummyMetric.calculate() returns a Measurement."""
     metric = DummyMetric(expected_value=100)
 
-    assert metric.value is None
+    measurement = metric.calculate(context=empty_context, measurements={})
 
-    metric.calculate(context=empty_context, metrics={})
-
-    assert metric.value == 100
+    assert measurement.value == 100
+    assert measurement.metric.name == "dummy"
 
 
 def test_dummy_metric_calculate_uses_fixture(dummy_metric, empty_context):
     """Test calculate using pytest fixtures."""
-    dummy_metric.calculate(context=empty_context, metrics={})
+    measurement = dummy_metric.calculate(context=empty_context, measurements={})
 
-    assert dummy_metric.value == 42
+    assert measurement.value == 42
 
 
 # =============================================================================
@@ -88,7 +85,6 @@ def test_metric_pydantic_model_dump():
     # Instance fields are in model_dump
     data = metric.model_dump()
     assert data["expected_value"] == 50
-    assert data["value"] is None
     assert "name" not in data  # ClassVar not included in dump
 
 
@@ -104,23 +100,27 @@ def test_dependent_metric_depends_on():
     assert deps == [DummyMetric]
 
 
-def test_dependent_metric_calculate(dummy_metric_with_value):
+def test_dependent_metric_calculate(dummy_measurement_with_value):
     """Test that DependentDummyMetric uses dependency value."""
     dependent = DependentDummyMetric()
-    dependent.calculate(context={}, metrics={DummyMetric: dummy_metric_with_value})
+    measurement = dependent.calculate(
+        context={}, measurements={DummyMetric: dummy_measurement_with_value}
+    )
 
-    assert dependent.value == 20  # 10 * 2
+    assert measurement.value == 20  # 10 * 2
 
 
 def test_dependent_metric_calculate_custom_base(empty_context):
     """Test calculation with custom base value."""
     base_metric = DummyMetric(expected_value=25)
-    base_metric.calculate(context=empty_context, metrics={})
+    base_measurement = base_metric.calculate(context=empty_context, measurements={})
 
     dependent = DependentDummyMetric()
-    dependent.calculate(context=empty_context, metrics={DummyMetric: base_metric})
+    measurement = dependent.calculate(
+        context=empty_context, measurements={DummyMetric: base_measurement}
+    )
 
-    assert dependent.value == 50  # 25 * 2
+    assert measurement.value == 50  # 25 * 2
 
 
 # =============================================================================
@@ -156,6 +156,6 @@ def test_provider_dummy_metric_calculate():
     context = {DummyProvider.name: provider.provide()}
 
     metric = ProviderDummyMetric()
-    metric.calculate(context=context, metrics={})
+    measurement = metric.calculate(context=context, measurements={})
 
-    assert metric.value == 100
+    assert measurement.value == 100

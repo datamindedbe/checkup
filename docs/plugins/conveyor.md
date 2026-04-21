@@ -197,11 +197,13 @@ Check for errors in your metrics:
 
 ```python
 class SafeMetric(Metric):
-    def calculate(self, context, metrics):
+    def calculate(self, context, measurements):
         conveyor = context.get("conveyor", {})
         if conveyor.get("error"):
-            self.value = None
-            self.diagnostic = f"API Error: {conveyor['error']}"
-            return
+            return self.measurement(
+                value=None,
+                diagnostic=f"API Error: {conveyor['error']}"
+            )
         # Normal calculation...
+        return self.measurement(value=computed_value)
 ```
