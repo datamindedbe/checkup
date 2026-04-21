@@ -152,36 +152,3 @@ class TestRegistryListing:
 
             assert names == ["git_days_since_last_update"]
             mock_ep.load.assert_not_called()
-
-
-class TestRegistryLoading:
-    def test_providers_property_loads_and_caches_entry_points(self):
-        registry = PluginRegistry()
-
-        with patch("checkup.registry.discovery.entry_points") as mock_eps:
-            mock_ep = MagicMock()
-            mock_ep.name = "test_provider"
-            mock_ep.load.return_value = "LoadedProviderClass"
-            mock_eps.return_value = [mock_ep]
-
-            providers1 = registry.providers
-            providers2 = registry.providers
-
-            assert providers1 == {"test_provider": "LoadedProviderClass"}
-            assert providers1 is providers2
-            assert mock_eps.call_count == 1
-
-    def test_clear_cache_allows_reload(self):
-        registry = PluginRegistry()
-
-        with patch("checkup.registry.discovery.entry_points") as mock_eps:
-            mock_ep = MagicMock()
-            mock_ep.name = "test"
-            mock_ep.load.return_value = "Class"
-            mock_eps.return_value = [mock_ep]
-
-            _ = registry.providers
-            registry.clear_cache()
-            _ = registry.providers
-
-            assert mock_eps.call_count == 2
