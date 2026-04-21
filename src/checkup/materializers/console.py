@@ -1,6 +1,5 @@
 """Console materializer for terminal output."""
 
-from pydantic import field_validator
 from rich.console import Console
 from rich.table import Table
 
@@ -13,21 +12,14 @@ class ConsoleMaterializer(Materializer):
     Output measurements to console.
 
     Outputs a rich table with measurement details.
-    Optionally groups measurements by tag values (max 2 levels).
+    Optionally groups measurements by tag values.
 
     Args:
-        group_tags: List of tag names to group by (max 2). If empty, no grouping.
+        group_tags: List of tag names to group by. If empty, no grouping.
         include_indirect: If True, include indirect measurements.
     """
 
     group_tags: list[str] = []
-
-    @field_validator("group_tags")
-    @classmethod
-    def validate_group_tags(cls, v: list[str]) -> list[str]:
-        if len(v) > 2:
-            raise ValueError(f"Maximum 2 group tags supported, got {len(v)}: {v}")
-        return v
 
     def materialize(
         self, measurements: list[Measurement], direct_metric_names: set[str]
@@ -41,18 +33,13 @@ class ConsoleMaterializer(Materializer):
 
         if not self.group_tags:
             self._print_table(console, filtered, title=None)
-        elif len(self.group_tags) == 1:
-            groups = self._group_by_single_tag(filtered, self.group_tags[0])
-            for tag_value, group_measurements in sorted(groups.items()):
-                title = f"{self.group_tags[0]}: {tag_value}"
-                self._print_table(console, group_measurements, title=title)
-                console.print()
         else:
-            groups = self._group_by_two_tags(
-                filtered, self.group_tags[0], self.group_tags[1]
-            )
-            for (tag1_value, tag2_value), group_measurements in sorted(groups.items()):
-                title = f"{self.group_tags[0]}: {tag1_value} | {self.group_tags[1]}: {tag2_value}"
+            groups = self._group_by_tags(filtered)
+            for tag_values, group_measurements in sorted(groups.items()):
+                title = " | ".join(
+                    f"{tag}: {value}"
+                    for tag, value in zip(self.group_tags, tag_values, strict=True)
+                )
                 self._print_table(console, group_measurements, title=title)
                 console.print()
 
@@ -85,41 +72,18 @@ class ConsoleMaterializer(Materializer):
 
         console.print(table)
 
-    def _group_by_single_tag(
+    def _group_by_tags(
         self,
         measurements: list[Measurement],
-        tag: str,
         default: str = "Unknown",
-    ) -> dict[str, list[Measurement]]:
+    ) -> dict[tuple[str, ...], list[Measurement]]:
         """
-        Group measurements by a single tag value.
+        Group measurements by tag values.
         """
 
-        groups: dict[str, list[Measurement]] = {}
+        groups: dict[tuple[str, ...], list[Measurement]] = {}
         for measurement in measurements:
-            key = measurement.tags.get(tag, default)
-            if key not in groups:
-                groups[key] = []
-            groups[key].append(measurement)
-        return groups
-
-    def _group_by_two_tags(
-        self,
-        measurements: list[Measurement],
-        tag1: str,
-        tag2: str,
-        default: str = "Unknown",
-    ) -> dict[tuple[str, str], list[Measurement]]:
-        """
-        Group measurements by two tag values.
-        """
-
-        groups: dict[tuple[str, str], list[Measurement]] = {}
-        for measurement in measurements:
-            key = (
-                measurement.tags.get(tag1, default),
-                measurement.tags.get(tag2, default),
-            )
+            key = tuple(measurement.tags.get(tag, default) for tag in self.group_tags)
             if key not in groups:
                 groups[key] = []
             groups[key].append(measurement)

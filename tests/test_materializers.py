@@ -80,14 +80,27 @@ def test_console_materializer_single_grouping():
     assert "domain: Analytics" in output
 
 
-def test_console_materializer_too_many_group_tags():
-    """Test that more than 2 group tags raises an error."""
-    from pydantic import ValidationError
+def test_console_materializer_three_level_grouping():
+    """Test console materializer with three-level grouping."""
+    metric = DummyMetric(expected_value=42)
+    measurement = metric.measurement(
+        value=42, tags={"domain": "Analytics", "project": "Core", "env": "prod"}
+    )
 
-    with pytest.raises(ValidationError) as exc_info:
-        ConsoleMaterializer(group_tags=["a", "b", "c"])
+    captured_output = StringIO()
+    sys.stdout = captured_output
 
-    assert "Maximum 2 group tags supported" in str(exc_info.value)
+    materializer = ConsoleMaterializer(group_tags=["domain", "project", "env"])
+    materializer.materialize([measurement], {"dummy"})
+
+    sys.stdout = sys.__stdout__
+
+    output = captured_output.getvalue()
+    assert "dummy" in output
+    assert "42" in output
+    assert "domain: Analytics" in output
+    assert "project: Core" in output
+    assert "env: prod" in output
 
 
 def test_csv_materializer(tmp_path):
