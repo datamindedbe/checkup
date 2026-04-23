@@ -1,6 +1,6 @@
 [project]
 name = "checkup"
-version = "0.2.10"
+version = "0.3.0"
 description = "Computational governance framework for measuring data product health"
 readme = "README.md"
 authors = [{ name = "Jan Vanbuel", email = "jan.vanbuel@ond.vlaanderen.be" }]
