@@ -2,7 +2,11 @@
 CLI utility functions.
 """
 
+import logging
+
 from checkup.configuration import CheckupConfig, MetricConfig, ProviderConfig
+
+logger = logging.getLogger(__name__)
 
 
 def apply_cli_overrides(
@@ -59,11 +63,13 @@ def parse_cli_item(item: str) -> tuple[str, dict]:
         return item, {}
 
     name, config_str = item.split(":", 1)
-    config = {}
+    config: dict[str, str] = {}
 
     for pair in config_str.split(","):
-        if "=" in pair:
-            key, value = pair.split("=", 1)
-            config[key] = value
+        if "=" not in pair:
+            logger.warning("Ignoring malformed config pair %r in %r", pair, item)
+            continue
+        key, value = pair.split("=", 1)
+        config[key] = value
 
     return name, config

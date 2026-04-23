@@ -4,6 +4,7 @@ Tests for CLI configuration loading and parsing.
 
 import yaml
 
+from checkup.cli.utils import parse_cli_item
 from checkup.configuration.env import (
     apply_naming_convention_overrides,
     substitute_env_vars,
@@ -250,3 +251,36 @@ class TestLoadConfig:
         result = load_config(start_dir=child_dir)
 
         assert result.tags == {"team": "platform", "product": "my-product"}
+
+
+class TestParseCliItem:
+    def test_name_only(self):
+        name, config = parse_cli_item("git")
+
+        assert name == "git"
+        assert config == {}
+
+    def test_empty_config(self):
+        name, config = parse_cli_item("git:")
+
+        assert name == "git"
+        assert config == {}
+
+    def test_name_with_config_pairs(self):
+        name, config = parse_cli_item("dbt:project_dir=./dbt,profiles_dir=~/.dbt")
+
+        assert name == "dbt"
+        assert config == {"project_dir": "./dbt", "profiles_dir": "~/.dbt"}
+
+    def test_value_containing_special_characters(self):
+        name, config = parse_cli_item("db:url=postgres://host:5432,user=name=admin")
+
+        assert name == "db"
+        assert config == {"url": "postgres://host:5432", "user": "name=admin"}
+
+    def test_malformed_pair_is_skipped(self, caplog):
+        name, config = parse_cli_item("dbt:project_dir=./dbt,malformed,other=value")
+
+        assert name == "dbt"
+        assert config == {"project_dir": "./dbt", "other": "value"}
+        assert "malformed" in caplog.text
