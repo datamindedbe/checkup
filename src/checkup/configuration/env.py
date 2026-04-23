@@ -71,16 +71,30 @@ def apply_naming_convention_overrides(config: dict[str, Any]) -> dict[str, Any]:
             continue
 
         parts = key[len(prefix) :].lower().split("__")
-        if len(parts) < 2:
-            continue
-
         section = parts[0]
 
-        if section == "materializer" and len(parts) >= 3:
-            _apply_materializer_override(config, parts, value, key)
+        if section == "materializer":
+            if len(parts) >= 3:
+                _apply_materializer_override(config, parts, value, key)
+            else:
+                logger.warning(
+                    "Ignoring malformed env var %s (expected CHECKUP__MATERIALIZER__<type>__<key>)",
+                    key,
+                )
 
-        elif section == "provider" and len(parts) >= 3:
-            _apply_provider_override(config, parts, value, key)
+        elif section == "provider":
+            if len(parts) >= 3:
+                _apply_provider_override(config, parts, value, key)
+            else:
+                logger.warning(
+                    "Ignoring malformed env var %s (expected CHECKUP__PROVIDER__<name>__<key>)",
+                    key,
+                )
+
+        else:
+            logger.warning(
+                "Ignoring unknown env var %s (unknown section %r)", key, section
+            )
 
     return config
 

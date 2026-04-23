@@ -205,6 +205,24 @@ class TestNamingConventionOverrides:
 
         assert result["materializer"]["connection_url"] == "yaml-url"
 
+    def test_malformed_materializer_env_var_logs_warning(self, monkeypatch, caplog):
+        monkeypatch.setenv("CHECKUP__MATERIALIZER__SQLALCHEMY", "value")
+        config = {"materializer": {"type": "sqlalchemy"}}
+
+        apply_naming_convention_overrides(config)
+
+        assert "malformed" in caplog.text.lower()
+        assert "CHECKUP__MATERIALIZER__SQLALCHEMY" in caplog.text
+
+    def test_malformed_provider_env_var_logs_warning(self, monkeypatch, caplog):
+        monkeypatch.setenv("CHECKUP__PROVIDER__GIT", "value")
+        config = {"providers": [{"name": "git"}]}
+
+        apply_naming_convention_overrides(config)
+
+        assert "malformed" in caplog.text.lower()
+        assert "CHECKUP__PROVIDER__GIT" in caplog.text
+
 
 class TestLoadConfig:
     def test_loads_yaml_file(self, tmp_path):
