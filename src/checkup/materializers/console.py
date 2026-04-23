@@ -33,15 +33,17 @@ class ConsoleMaterializer(Materializer):
 
         if not self.group_tags:
             self._print_table(console, filtered, title=None)
-        else:
-            groups = self._group_by_tags(filtered)
-            for tag_values, group_measurements in sorted(groups.items()):
-                title = " | ".join(
-                    f"{tag}: {value}"
-                    for tag, value in zip(self.group_tags, tag_values, strict=True)
-                )
-                self._print_table(console, group_measurements, title=title)
+            return
+
+        groups = self._group_by_tags(filtered)
+        for i, (tag_values, group_measurements) in enumerate(sorted(groups.items())):
+            if i > 0:
                 console.print()
+            title = " | ".join(
+                f"{tag}: {value}"
+                for tag, value in zip(self.group_tags, tag_values, strict=True)
+            )
+            self._print_table(console, group_measurements, title=title)
 
     def _print_table(
         self,
