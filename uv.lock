@@ -320,7 +320,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-gitlab"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "plugins/checkup-gitlab" }
 dependencies = [
     { name = "checkup" },
