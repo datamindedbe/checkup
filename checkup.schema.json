@@ -1,0 +1,678 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://checkup.dev/schemas/checkup.yaml.json",
+  "title": "Checkup Configuration",
+  "description": "Configuration file for checkup",
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "object",
+      "description": "Tags to identify the data product (e.g., product, team)",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "providers": {
+      "type": "array",
+      "description": "Data providers for context enrichment",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "airflow"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "bitbucket"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "conveyor"
+              },
+              "project_name": {
+                "type": "string"
+              },
+              "api_key": {
+                "type": "string"
+              },
+              "environment_name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt"
+              },
+              "manifest_path": {
+                "type": "string",
+                "default": null
+              },
+              "dbt_project_dir": {
+                "type": "string",
+                "default": null
+              },
+              "profiles_dir": {
+                "type": "string",
+                "default": null
+              },
+              "verbose": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "git"
+              },
+              "repo_path": {
+                "type": "string",
+                "default": "."
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "github"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "gitlab"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "description": "Metrics to calculate",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "conveyor_is_dirty_deployment"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "conveyor_last_deployment_time"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "conveyor_last_run_status"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_column_test_coverage"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_column_tests"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_columns"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_columns_with_description"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_columns_without_description"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_data_tests"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_flagged_packages"
+              },
+              "flagged_packages": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Flagged Packages",
+                "type": "array"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_models"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_models_not_adhering_to_naming_convention"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_models_with_description"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_models_without_description"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_output_columns_without_data_type"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_output_models"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_output_models_with_description"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_output_models_without_contracts"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_output_models_without_description"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_profile_host"
+              },
+              "profile": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Profile"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_supported_version"
+              },
+              "min_version": {
+                "title": "Min Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_tested_columns"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_tests"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_unit_tests"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "dbt_version"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "git_days_since_last_update"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "git_tracked_file_count"
+              },
+              "pattern": {
+                "default": "*",
+                "title": "Pattern",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "python_version"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "python_version_check"
+              },
+              "min_version": {
+                "title": "Min Version",
+                "type": "string"
+              },
+              "max_version": {
+                "title": "Max Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "materializer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "console"
+            },
+            "include_indirect": {
+              "default": false,
+              "title": "Include Indirect",
+              "type": "boolean"
+            },
+            "group_tags": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Group Tags",
+              "type": "array"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "csv"
+            },
+            "include_indirect": {
+              "default": false,
+              "title": "Include Indirect",
+              "type": "boolean"
+            },
+            "output_path": {
+              "format": "path",
+              "title": "Output Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "html"
+            },
+            "include_indirect": {
+              "default": false,
+              "title": "Include Indirect",
+              "type": "boolean"
+            },
+            "output_path": {
+              "format": "path",
+              "title": "Output Path",
+              "type": "string"
+            },
+            "group_tag_1": {
+              "title": "Group Tag 1",
+              "type": "string"
+            },
+            "group_tag_2": {
+              "title": "Group Tag 2",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "sqlalchemy"
+            },
+            "include_indirect": {
+              "default": false,
+              "title": "Include Indirect",
+              "type": "boolean"
+            },
+            "connection_url": {
+              "format": "password",
+              "title": "Connection Url",
+              "type": "string",
+              "writeOnly": true
+            },
+            "table_name": {
+              "default": "metrics",
+              "title": "Table Name",
+              "type": "string"
+            },
+            "table_schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Table Schema"
+            },
+            "connect_args": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Connect Args"
+            },
+            "expand_tags": {
+              "default": false,
+              "title": "Expand Tags",
+              "type": "boolean"
+            },
+            "batch_size": {
+              "default": 1000,
+              "title": "Batch Size",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

@@ -18,6 +18,33 @@ dev = [
 [tool.uv.sources]
 checkup = { workspace = true }
 
+[project.entry-points."checkup.providers"]
+dbt = "checkup_dbt:DbtManifestProvider"
+
+[project.entry-points."checkup.metrics"]
+dbt_models = "checkup_dbt:DbtModelsMetric"
+dbt_columns = "checkup_dbt:DbtColumnsMetric"
+dbt_tests = "checkup_dbt:DbtTestsMetric"
+dbt_models_with_description = "checkup_dbt:DbtModelsWithDescriptionMetric"
+dbt_models_without_description = "checkup_dbt:DbtModelsWithoutDescriptionMetric"
+dbt_columns_with_description = "checkup_dbt:DbtColumnsWithDescriptionMetric"
+dbt_columns_without_description = "checkup_dbt:DbtColumnsWithoutDescriptionMetric"
+dbt_unit_tests = "checkup_dbt:DbtUnitTestsMetric"
+dbt_data_tests = "checkup_dbt:DbtDataTestsMetric"
+dbt_column_tests = "checkup_dbt:DbtColumnTestsMetric"
+dbt_tested_columns = "checkup_dbt:DbtTestedColumnsMetric"
+dbt_column_test_coverage = "checkup_dbt:DbtColumnTestCoverageMetric"
+dbt_output_models = "checkup_dbt:DbtOutputModelsMetric"
+dbt_output_models_with_description = "checkup_dbt:DbtOutputModelsWithDescriptionMetric"
+dbt_output_models_without_description = "checkup_dbt:DbtOutputModelsWithoutDescriptionMetric"
+dbt_output_models_without_contracts = "checkup_dbt:DbtOutputModelsWithoutContractsMetric"
+dbt_output_columns_without_data_type = "checkup_dbt:DbtOutputColumnsWithoutDataTypeMetric"
+dbt_flagged_packages = "checkup_dbt:DbtFlaggedPackagesMetric"
+dbt_profile_host = "checkup_dbt:DbtProfileHostMetric"
+dbt_models_not_adhering_to_naming_convention = "checkup_dbt:DbtModelsNotAdheringToNamingConventionMetric"
+dbt_supported_version = "checkup_dbt:DbtSupportedVersionMetric"
+dbt_version = "checkup_dbt:DbtVersionMetric"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

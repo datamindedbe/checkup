@@ -1,4 +1,4 @@
-"""Checkup - Extensible metrics calculation framework."""
+"""Checkup - Computational governance framework for measuring data product health."""
 
 from checkup.errors import (
     DuplicateMetricNameError,
@@ -49,6 +49,6 @@ __all__ = [
 
 
 def main() -> None:
-    """CLI entry point."""
-    print("Checkup metrics framework")
-    print("Import CheckHub to get started")
+    from checkup.cli import app
+
+    app()
