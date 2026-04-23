@@ -22,6 +22,7 @@ from checkup.configuration.models import (
 logger = logging.getLogger(__name__)
 
 CONFIG_FILENAME = "checkup.yaml"
+SCHEMA_FILENAME = "checkup.schema.json"
 
 
 def load_yaml_file(path: Path) -> dict[str, Any]:

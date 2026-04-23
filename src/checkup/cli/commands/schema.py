@@ -8,6 +8,7 @@ from typing import Annotated
 import typer
 from rich.console import Console
 
+from checkup.configuration.io import SCHEMA_FILENAME
 from checkup.configuration.schema import write_schema
 
 console = Console()
@@ -23,6 +24,6 @@ def schema(
     Generate JSON schema for checkup.yaml.
     """
 
-    path = output or Path.cwd() / "checkup.schema.json"
+    path = output or Path.cwd() / SCHEMA_FILENAME
     write_schema(path)
     console.print(f"[green]Schema written to {path}[/green]")
