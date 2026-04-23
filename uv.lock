@@ -282,7 +282,7 @@ dev = [
 
 [[package]]
 name = "checkup-git"
-version = "0.2.2"
+version = "0.3.0"
 source = { editable = "plugins/checkup-git" }
 dependencies = [
     { name = "checkup" },
