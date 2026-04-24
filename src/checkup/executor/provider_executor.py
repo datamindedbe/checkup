@@ -40,10 +40,9 @@ class ProviderExecutor:
             try:
                 logger.debug("Executing provider: %s", provider.name)
                 data = provider.provide()
+                context[provider.name] = data
                 if provider.is_tag_provider():
                     tags.update(data)
-                else:
-                    context[provider.name] = data
                 logger.debug("Provider %s completed successfully", provider.name)
             except Exception as e:
                 error = ProviderError(provider, e)
