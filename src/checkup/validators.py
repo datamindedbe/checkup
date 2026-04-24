@@ -27,29 +27,33 @@ def validate_pickleable(metric_cls: type[Metric]) -> None:
         raise MetricPicklingError(metric_cls, e) from e
 
 
-def validate_unique_metric_names(metrics: list[type[Metric]]) -> None:
-    """Validate that all metrics have unique names.
+def validate_unique_metric_names(metrics: list[Metric]) -> None:
+    """
+    Validate that all metric instances have unique names.
 
     Args:
-        metrics: List of metric classes to validate
+        metrics: List of metric instances to validate
 
     Raises:
         DuplicateMetricNameError: If multiple metrics share the same name
     """
-    name_to_classes: dict[str, list[type[Metric]]] = {}
-    for metric_cls in metrics:
-        name = metric_cls.name
-        if name not in name_to_classes:
-            name_to_classes[name] = []
-        name_to_classes[name].append(metric_cls)
+
+    name_to_metrics: dict[str, list[Metric]] = {}
+    for metric in metrics:
+        name = metric.name
+        if name not in name_to_metrics:
+            name_to_metrics[name] = []
+        name_to_metrics[name].append(metric)
 
     duplicates = {
-        name: classes for name, classes in name_to_classes.items() if len(classes) > 1
+        name: instances
+        for name, instances in name_to_metrics.items()
+        if len(instances) > 1
     }
     if duplicates:
         # Report the first duplicate found
-        name, classes = next(iter(duplicates.items()))
-        raise DuplicateMetricNameError(name, classes)
+        name, instances = next(iter(duplicates.items()))
+        raise DuplicateMetricNameError(name, [type(m) for m in instances])
 
 
 def collect_required_providers(metrics: list[type[Metric]]) -> set[type[Provider]]:

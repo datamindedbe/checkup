@@ -1,5 +1,4 @@
 import logging
-from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
@@ -14,41 +13,30 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
     """
     Metric for checking model naming conventions.
 
-    This metric requires a custom checker function that defines the naming
-    convention. Use with_checker() to create a configured metric class.
+    Requires a checker function that defines the naming convention.
+
+    Example:
+        DbtModelsNotAdheringToNamingConventionMetric(
+            name="dbt_staging_naming",
+            checker=lambda ctx, node: node.name.startswith("stg_")
+        )
     """
 
-    name: ClassVar[str] = "dbt_models_not_adhering_to_naming_convention"
-    description: ClassVar[str] = "Number of models not adhering to naming convention"
-    unit: ClassVar[str] = "models"
+    name: str = "dbt_models_not_adhering_to_naming_convention"
+    description: str = "Number of models not adhering to naming convention"
+    unit: str = "models"
 
-    @classmethod
-    def get_checker(cls) -> NamingConventionChecker:
-        raise NotImplementedError(
-            "Subclasses must override get_checker() or use with_checker() to create a metric"
-        )
-
-    @classmethod
-    def with_checker(
-        cls, checker: NamingConventionChecker
-    ) -> type["DbtModelsNotAdheringToNamingConventionMetric"]:
-        class CustomNamingConventionMetric(cls):
-            @classmethod
-            def get_checker(cls) -> NamingConventionChecker:
-                return checker
-
-        return CustomNamingConventionMetric
+    checker: NamingConventionChecker
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         manifest = self.get_manifest(context)
-        checker = self.get_checker()
 
         non_adhering_models = [
             node.name
             for node in manifest.nodes.values()
-            if node.resource_type == NodeType.Model and not checker(context, node)
+            if node.resource_type == NodeType.Model and not self.checker(context, node)
         ]
 
         value = len(non_adhering_models)

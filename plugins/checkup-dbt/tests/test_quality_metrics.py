@@ -2,6 +2,7 @@ from pathlib import Path
 
 from checkup_dbt import (
     DbtFlaggedPackagesMetric,
+    DbtModelsNotAdheringToNamingConventionMetric,
     DbtProfileHostMetric,
     DbtSupportedVersionMetric,
     DbtVersionMetric,
@@ -10,13 +11,19 @@ from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
 
-from .conftest import FactDimNamingMetric, InternalModelNamingMetric
+from .conftest import fact_dim_naming_checker, internal_model_naming_checker
 
 
 def test_naming_convention_metric(sample_manifest_path: Path):
     result = (
         CheckHub()
-        .with_metrics([InternalModelNamingMetric()])
+        .with_metrics(
+            [
+                DbtModelsNotAdheringToNamingConventionMetric(
+                    checker=internal_model_naming_checker
+                )
+            ]
+        )
         .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
         .measure()
     )
@@ -29,7 +36,13 @@ def test_naming_convention_metric(sample_manifest_path: Path):
 def test_naming_convention_metric_custom_checker(sample_manifest_path: Path):
     result = (
         CheckHub()
-        .with_metrics([FactDimNamingMetric()])
+        .with_metrics(
+            [
+                DbtModelsNotAdheringToNamingConventionMetric(
+                    checker=fact_dim_naming_checker
+                )
+            ]
+        )
         .with_providers([[DbtManifestProvider(manifest_path=sample_manifest_path)]])
         .measure()
     )

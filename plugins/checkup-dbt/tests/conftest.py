@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from checkup_dbt import DbtModelsNotAdheringToNamingConventionMetric
 
 from checkup.types import Context
 
@@ -83,17 +82,5 @@ def internal_model_naming_checker(context: Context, model: Any) -> bool:
     return alias.startswith("stg_") or alias.startswith("int_")
 
 
-class InternalModelNamingMetric(DbtModelsNotAdheringToNamingConventionMetric):
-    @classmethod
-    def get_checker(cls):
-        return internal_model_naming_checker
-
-
 def fact_dim_naming_checker(context: Context, model: Any) -> bool:
     return model.name.startswith("fact_") or model.name.startswith("dim_")
-
-
-class FactDimNamingMetric(DbtModelsNotAdheringToNamingConventionMetric):
-    @classmethod
-    def get_checker(cls):
-        return fact_dim_naming_checker

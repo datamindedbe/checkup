@@ -1,5 +1,3 @@
-from typing import ClassVar
-
 from checkup.metric import Measurement, Metric
 from checkup.types import Context
 from checkup_python.metrics.utils import parse_semantic_version
@@ -12,11 +10,9 @@ class PythonVersionCheckMetric(Metric):
     and compares it to given thresholds.
     """
 
-    name: ClassVar[str] = "python_version_check"
-    description: ClassVar[str] = (
-        "The Python version adheres to a minimum and maximum boundary"
-    )
-    unit: ClassVar[str] = "bool"
+    name: str = "python_version_check"
+    description: str = "The Python version adheres to a minimum and maximum boundary"
+    unit: str = "bool"
 
     min_version: str
     max_version: str
@@ -26,9 +22,9 @@ class PythonVersionCheckMetric(Metric):
         return [PythonVersionMetric]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
-        actual_version = measurements[PythonVersionMetric].value
+        actual_version = self.get_single(measurements, PythonVersionMetric).value
 
         actual = parse_semantic_version(actual_version)
         min_ver = parse_semantic_version(self.min_version)

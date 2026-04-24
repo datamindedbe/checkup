@@ -27,7 +27,7 @@ class MetricPicklingError(Exception):
         self.metric_cls = metric_cls
         self.original_error = original_error
         super().__init__(
-            f"Metric '{metric_cls.name}' cannot be pickled for process execution. "
+            f"Metric '{metric_cls.__name__}' cannot be pickled for process execution. "
             f"Consider using ExecutorType.THREAD instead. Original error: {original_error}"
         )
 

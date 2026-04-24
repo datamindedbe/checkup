@@ -2,6 +2,13 @@
 
 from typing import Any, ClassVar
 
+from fixtures import (
+    DependentDummyMetric,
+    DummyMetric,
+    IntegrationBaseMetric,
+    IntegrationDerivedMetric,
+)
+
 from checkup.hub import CheckHub
 from checkup.metric import Measurement, Metric
 from checkup.provider import Provider
@@ -24,16 +31,16 @@ class DataProvider(Provider):
 class DataMetric(Metric):
     """Metric that uses DataProvider."""
 
-    name: ClassVar[str] = "data_metric"
-    description: ClassVar[str] = "Uses data provider"
-    unit: ClassVar[str] = "count"
+    name: str = "data_metric"
+    description: str = "Uses data provider"
+    unit: str = "count"
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
         return [DataProvider]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         value = context[DataProvider.name]["value"]
         return self.measure(value=value)
@@ -60,16 +67,16 @@ class FailingProvider(Provider):
 class FailingProviderMetric(Metric):
     """Metric that depends on FailingProvider."""
 
-    name: ClassVar[str] = "failing_provider_metric"
-    description: ClassVar[str] = "Uses failing provider"
-    unit: ClassVar[str] = "count"
+    name: str = "failing_provider_metric"
+    description: str = "Uses failing provider"
+    unit: str = "count"
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
         return [FailingProvider]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         return self.measure(value=999)
 
@@ -77,9 +84,9 @@ class FailingProviderMetric(Metric):
 class DependsOnFailingMetric(Metric):
     """Metric that depends on FailingProviderMetric."""
 
-    name: ClassVar[str] = "depends_on_failing_metric"
-    description: ClassVar[str] = "Depends on failing metric"
-    unit: ClassVar[str] = "count"
+    name: str = "depends_on_failing_metric"
+    description: str = "Depends on failing metric"
+    unit: str = "count"
 
     @classmethod
     def depends_on(cls) -> list[type[Metric]]:
@@ -90,25 +97,25 @@ class DependsOnFailingMetric(Metric):
         return [FailingProvider]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
-        base_val = measurements[FailingProviderMetric].value
+        base_val = self.get_single(measurements, FailingProviderMetric).value
         return self.measure(value=base_val * 2)
 
 
 class OtherMetric(Metric):
     """Metric that uses OtherProvider."""
 
-    name: ClassVar[str] = "other_metric"
-    description: ClassVar[str] = "Uses other provider"
-    unit: ClassVar[str] = "count"
+    name: str = "other_metric"
+    description: str = "Uses other provider"
+    unit: str = "count"
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
         return [OtherProvider]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         value = context[OtherProvider.name]["other_value"]
         return self.measure(value=value)
@@ -176,8 +183,6 @@ class TestHubExecution:
 
     def test_measure_with_empty_provider_sets_and_no_requirements(self):
         """Test measuring without providers when none required."""
-        from fixtures import DummyMetric
-
         result = CheckHub().with_metrics([DummyMetric()]).measure()
 
         assert len(result.measurements) == 1
@@ -207,8 +212,6 @@ class TestHubExecution:
 
     def test_measure_skips_dependent_metrics_when_dependency_skipped(self):
         """When a metric's dependency is skipped due to missing provider, the dependent is also skipped."""
-        from fixtures import IntegrationBaseMetric, IntegrationDerivedMetric
-
         # IntegrationBaseMetric requires IntegrationProvider
         # IntegrationDerivedMetric depends on IntegrationBaseMetric
         # If we don't provide IntegrationProvider, both should be skipped
@@ -286,6 +289,48 @@ class TestHubExecution:
         )
         assert dependent_measurement.value is None
         assert (
-            "metric 'failing_provider_metric' failed"
-            in dependent_measurement.diagnostic
+            "metric 'FailingProviderMetric' failed" in dependent_measurement.diagnostic
+        )
+
+    def test_multiple_instances_of_same_metric_class(self):
+        """Test that multiple instances of the same metric class each produce measurements."""
+
+        result = (
+            CheckHub()
+            .with_metrics(
+                [
+                    DummyMetric(name="dummy_a", expected_value=10),
+                    DummyMetric(name="dummy_b", expected_value=20),
+                    DummyMetric(name="dummy_c", expected_value=30),
+                ]
+            )
+            .measure()
+        )
+
+        assert len(result.measurements) == 3
+        measurements_by_name = {m.metric.name: m for m in result.measurements}
+        assert measurements_by_name["dummy_a"].value == 10
+        assert measurements_by_name["dummy_b"].value == 20
+        assert measurements_by_name["dummy_c"].value == 30
+
+    def test_multiple_instances_dependency_with_get_single_fails(self):
+        """Test that get_single raises when multiple instances exist for a dependency."""
+
+        # DependentDummyMetric uses get_single() which should fail with multiple DummyMetric instances
+        result = (
+            CheckHub()
+            .with_metrics(
+                [
+                    DummyMetric(name="dummy_1", expected_value=5),
+                    DummyMetric(name="dummy_2", expected_value=15),
+                    DependentDummyMetric(),
+                ]
+            )
+            .measure()
+        )
+
+        # The whole provider set fails because get_single() raises during calculation
+        assert len(result.errors) == 1
+        assert "Expected single measurement for DummyMetric, got 2" in str(
+            result.errors[0][1]
         )

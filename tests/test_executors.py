@@ -10,13 +10,13 @@ from checkup.types import Context
 class ThreadMetric(Metric):
     """Metric that uses ThreadPoolExecutor (default)."""
 
-    name: ClassVar[str] = "thread_metric"
-    description: ClassVar[str] = "Thread-based metric"
-    unit: ClassVar[str] = "count"
+    name: str = "thread_metric"
+    description: str = "Thread-based metric"
+    unit: str = "count"
     # executor defaults to ExecutorType.THREAD
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         return self.measure(value=10, diagnostic="Calculated in thread")
 
@@ -24,13 +24,13 @@ class ThreadMetric(Metric):
 class ProcessMetric(Metric):
     """Metric that uses ProcessPoolExecutor."""
 
-    name: ClassVar[str] = "process_metric"
-    description: ClassVar[str] = "Process-based metric"
-    unit: ClassVar[str] = "count"
+    name: str = "process_metric"
+    description: str = "Process-based metric"
+    unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.PROCESS
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         return self.measure(value=20, diagnostic="Calculated in process")
 
@@ -38,13 +38,13 @@ class ProcessMetric(Metric):
 class AsyncMetric(Metric):
     """Metric that uses asyncio executor."""
 
-    name: ClassVar[str] = "async_metric"
-    description: ClassVar[str] = "Async metric"
-    unit: ClassVar[str] = "count"
+    name: str = "async_metric"
+    description: str = "Async metric"
+    unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         return self.measure(value=30, diagnostic="Calculated with asyncio")
 
@@ -52,13 +52,13 @@ class AsyncMetric(Metric):
 class AsyncMetricWithAsyncCalculate(Metric):
     """Metric that uses asyncio executor with async calculate method."""
 
-    name: ClassVar[str] = "async_metric_native"
-    description: ClassVar[str] = "Native async metric"
-    unit: ClassVar[str] = "count"
+    name: str = "async_metric_native"
+    description: str = "Native async metric"
+    unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
     async def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         import asyncio
 
@@ -69,9 +69,9 @@ class AsyncMetricWithAsyncCalculate(Metric):
 class DependentThreadMetric(Metric):
     """Thread metric that depends on another thread metric."""
 
-    name: ClassVar[str] = "dependent_thread"
-    description: ClassVar[str] = "Depends on thread metric"
-    unit: ClassVar[str] = "count"
+    name: str = "dependent_thread"
+    description: str = "Depends on thread metric"
+    unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.THREAD
 
     @classmethod
@@ -79,9 +79,9 @@ class DependentThreadMetric(Metric):
         return [ThreadMetric]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
-        base_value = measurements[ThreadMetric].value
+        base_value = self.get_single(measurements, ThreadMetric).value
         value = base_value * 2
         return self.measure(
             value=value, diagnostic=f"Doubled thread metric: {base_value} -> {value}"
@@ -91,9 +91,9 @@ class DependentThreadMetric(Metric):
 class DependentProcessMetric(Metric):
     """Process metric that depends on a thread metric."""
 
-    name: ClassVar[str] = "dependent_process"
-    description: ClassVar[str] = "Process metric depending on thread metric"
-    unit: ClassVar[str] = "count"
+    name: str = "dependent_process"
+    description: str = "Process metric depending on thread metric"
+    unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.PROCESS
 
     @classmethod
@@ -101,9 +101,9 @@ class DependentProcessMetric(Metric):
         return [ThreadMetric]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
-        base_value = measurements[ThreadMetric].value
+        base_value = self.get_single(measurements, ThreadMetric).value
         value = base_value * 3
         return self.measure(
             value=value, diagnostic=f"Tripled thread metric: {base_value} -> {value}"
@@ -113,9 +113,9 @@ class DependentProcessMetric(Metric):
 class DependentAsyncMetric(Metric):
     """Async metric that depends on a process metric."""
 
-    name: ClassVar[str] = "dependent_async"
-    description: ClassVar[str] = "Async metric depending on process metric"
-    unit: ClassVar[str] = "count"
+    name: str = "dependent_async"
+    description: str = "Async metric depending on process metric"
+    unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
     @classmethod
@@ -123,9 +123,9 @@ class DependentAsyncMetric(Metric):
         return [ProcessMetric]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
-        base_value = measurements[ProcessMetric].value
+        base_value = self.get_single(measurements, ProcessMetric).value
         value = base_value + 5
         return self.measure(
             value=value,
@@ -135,17 +135,17 @@ class DependentAsyncMetric(Metric):
 
 def test_default_executor_is_thread():
     """Test that the default executor is ThreadPoolExecutor."""
-    assert ThreadMetric.executor == ExecutorType.THREAD
+    assert ThreadMetric().get_executor() == ExecutorType.THREAD
 
 
 def test_process_executor_specified():
     """Test that ProcessPoolExecutor can be specified."""
-    assert ProcessMetric.executor == ExecutorType.PROCESS
+    assert ProcessMetric().get_executor() == ExecutorType.PROCESS
 
 
 def test_asyncio_executor_specified():
     """Test that asyncio executor can be specified."""
-    assert AsyncMetric.executor == ExecutorType.ASYNCIO
+    assert AsyncMetric().get_executor() == ExecutorType.ASYNCIO
 
 
 def test_thread_metric_calculation():

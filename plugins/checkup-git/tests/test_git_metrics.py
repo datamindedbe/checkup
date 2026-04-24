@@ -38,8 +38,8 @@ def test_tracked_file_count_metric(git_repo: Path):
 
 
 class DagCountMetric(GitTrackedFileCountMetric):
-    name = "dag_count"
-    description = "Number of DAG files"
+    name: str = "dag_count"
+    description: str = "Number of DAG files"
     pattern: str = "dags/*.py"
 
 
@@ -96,8 +96,8 @@ def test_tracked_file_count_with_pattern(tmp_path: Path):
 
 
 class ReadmeExistsMetric(GitTrackedFileCountMetric):
-    name = "readme_exists"
-    description = "Whether README.md exists"
+    name: str = "readme_exists"
+    description: str = "Whether README.md exists"
     pattern: str = "README.md"
 
 
@@ -116,8 +116,8 @@ def test_file_exists_metric_when_file_exists(git_repo: Path):
 
 
 class CruftFileExistsMetric(GitTrackedFileCountMetric):
-    name = "cruft_file_exists"
-    description = "Whether .cruft.json exists"
+    name: str = "cruft_file_exists"
+    description: str = "Whether .cruft.json exists"
     pattern: str = ".cruft.json"
 
 

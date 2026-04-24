@@ -1,5 +1,4 @@
 import logging
-from typing import ClassVar
 
 import yaml
 
@@ -19,23 +18,27 @@ class DbtProfileHostMetric(DbtMetric):
     The target must be configured.
 
     Example:
-        class DevHostMetric(DbtProfileHostMetric):
-            target: str = "dev"
+        DbtProfileHostMetric(
+            name="dbt_profile_host_dev",
+            target="dev"
+        )
 
-        class ProdHostMetric(DbtProfileHostMetric):
-            profile: str = "my_project"
-            target: str = "prod"
+        DbtProfileHostMetric(
+            name="dbt_profile_host_prod",
+            profile="my_project",
+            target="prod"
+        )
     """
 
-    name: ClassVar[str] = "dbt_profile_host"
-    description: ClassVar[str] = "The host configured in profiles.yml"
-    unit: ClassVar[str] = "url"
+    name: str = "dbt_profile_host"
+    description: str = "The host configured in profiles.yml"
+    unit: str = "url"
 
     profile: str | None = None
     target: str
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         project_dir = self.get_project_dir(context)
         profiles_path = project_dir / "profiles.yml"

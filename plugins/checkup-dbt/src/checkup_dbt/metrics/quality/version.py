@@ -1,7 +1,6 @@
 """Dbt version metric."""
 
 import logging
-from typing import ClassVar
 
 from checkup.metric import Measurement, Metric
 from checkup.types import Context
@@ -15,12 +14,12 @@ class DbtVersionMetric(DbtMetric):
     Metric to detect the dbt version used to generate the manifest.
     """
 
-    name: ClassVar[str] = "dbt_version"
-    description: ClassVar[str] = "The dbt version used to generate the manifest"
-    unit: ClassVar[str] = "version"
+    name: str = "dbt_version"
+    description: str = "The dbt version used to generate the manifest"
+    unit: str = "version"
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
         manifest = self.get_manifest(context)
         value = manifest.metadata.dbt_version

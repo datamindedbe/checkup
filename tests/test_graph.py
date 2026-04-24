@@ -105,7 +105,7 @@ def test_deep_chain_calculation(empty_context):
     graph = build_dependency_graph([Level3Metric])
     order = topological_sort(graph)
 
-    calculated: dict[type[Metric], Measurement] = {}
+    calculated: dict[type[Metric], list[Measurement]] = {}
 
     for metric_cls in order:
         if metric_cls is DummyMetric:
@@ -113,12 +113,12 @@ def test_deep_chain_calculation(empty_context):
         else:
             metric = metric_cls()  # type: ignore
         measurement = metric.calculate(empty_context, calculated)
-        calculated[metric_cls] = measurement
+        calculated[metric_cls] = [measurement]
 
-    assert calculated[DummyMetric].value == 10
-    assert calculated[DependentDummyMetric].value == 20  # 10 * 2
-    assert calculated[Level2Metric].value == 30  # 20 + 10
-    assert calculated[Level3Metric].value == 900  # 30 ** 2
+    assert calculated[DummyMetric][0].value == 10
+    assert calculated[DependentDummyMetric][0].value == 20  # 10 * 2
+    assert calculated[Level2Metric][0].value == 30  # 20 + 10
+    assert calculated[Level3Metric][0].value == 900  # 30 ** 2
 
 
 # =============================================================================
@@ -223,23 +223,23 @@ def test_complex_graph_calculation(empty_context):
     graph = build_dependency_graph([LeafAB, LeafC])
     order = topological_sort(graph)
 
-    calculated: dict[type[Metric], Measurement] = {}
+    calculated: dict[type[Metric], list[Measurement]] = {}
 
     for metric_cls in order:
         metric = metric_cls()  # type: ignore
         measurement = metric.calculate(empty_context, calculated)
-        calculated[metric_cls] = measurement
+        calculated[metric_cls] = [measurement]
 
     # Verify all calculations
-    assert calculated[RootA].value == 10
-    assert calculated[RootB].value == 20
-    assert calculated[RootC].value == 100
-    assert calculated[SharedAB].value == 30  # 10 + 20
-    assert calculated[BranchB].value == 60  # 20 * 3
-    assert calculated[LeafC].value == 10000  # 100 ** 2
-    assert calculated[MidShared].value == 35  # 30 + 5
-    assert calculated[MidBranch].value == 120  # 60 * 2
-    assert calculated[LeafAB].value == 4200  # 35 * 120
+    assert calculated[RootA][0].value == 10
+    assert calculated[RootB][0].value == 20
+    assert calculated[RootC][0].value == 100
+    assert calculated[SharedAB][0].value == 30  # 10 + 20
+    assert calculated[BranchB][0].value == 60  # 20 * 3
+    assert calculated[LeafC][0].value == 10000  # 100 ** 2
+    assert calculated[MidShared][0].value == 35  # 30 + 5
+    assert calculated[MidBranch][0].value == 120  # 60 * 2
+    assert calculated[LeafAB][0].value == 4200  # 35 * 120
 
 
 def test_complex_graph_via_checkhub():
@@ -274,13 +274,13 @@ def test_shared_ancestor_calculated_once(empty_context):
 
     # Track how many times each metric class is calculated
     calculation_counts: dict[type[Metric], int] = {}
-    calculated: dict[type[Metric], Measurement] = {}
+    calculated: dict[type[Metric], list[Measurement]] = {}
 
     for metric_cls in order:
         calculation_counts[metric_cls] = calculation_counts.get(metric_cls, 0) + 1
         metric = metric_cls()  # type: ignore
         measurement = metric.calculate(empty_context, calculated)
-        calculated[metric_cls] = measurement
+        calculated[metric_cls] = [measurement]
 
     # Each metric should appear exactly once in the execution order
     for metric_cls, count in calculation_counts.items():

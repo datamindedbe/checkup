@@ -78,14 +78,9 @@ def test_metric_pydantic_model_dump():
     """Test that we can use Pydantic features."""
     metric = DummyMetric(expected_value=50)
 
-    # ClassVar fields are not included in model_dump, access them directly
-    assert metric.name == "dummy"
-    assert DummyMetric.name == "dummy"  # Can also access on class
-
-    # Instance fields are in model_dump
     data = metric.model_dump()
     assert data["expected_value"] == 50
-    assert "name" not in data  # ClassVar not included in dump
+    assert data["name"] == "dummy"
 
 
 # =============================================================================
@@ -104,7 +99,7 @@ def test_dependent_metric_calculate(dummy_measurement_with_value):
     """Test that DependentDummyMetric uses dependency value."""
     dependent = DependentDummyMetric()
     measurement = dependent.calculate(
-        context={}, measurements={DummyMetric: dummy_measurement_with_value}
+        context={}, measurements={DummyMetric: [dummy_measurement_with_value]}
     )
 
     assert measurement.value == 20  # 10 * 2
@@ -117,7 +112,7 @@ def test_dependent_metric_calculate_custom_base(empty_context):
 
     dependent = DependentDummyMetric()
     measurement = dependent.calculate(
-        context=empty_context, measurements={DummyMetric: base_measurement}
+        context=empty_context, measurements={DummyMetric: [base_measurement]}
     )
 
     assert measurement.value == 50  # 25 * 2

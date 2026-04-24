@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
@@ -31,27 +31,39 @@ class Metric(ABC, BaseModel):
     """
     Base class for all metrics.
 
-    Metrics are immutable Pydantic models that define how to calculate values.
+    Metrics are Pydantic models that define how to calculate values.
     The calculate() method returns a Measurement with the result.
+
+    Subclasses should define name, description, unit as class-level defaults,
+    but these can be overridden via constructor for custom instances.
     """
 
-    name: ClassVar[str]
-    description: ClassVar[str]
-    unit: ClassVar[str]
-    executor: ClassVar[ExecutorType] = ExecutorType.THREAD
+    name: str
+    description: str = ""
+    unit: str = ""
 
-    model_config = {"frozen": True}  # Make instances immutable
+    model_config = {"frozen": True}
+
+    @classmethod
+    def get_executor(cls) -> ExecutorType:
+        """
+        Get the executor type for this metric class.
+        """
+
+        return getattr(cls, "executor", ExecutorType.THREAD)
 
     @abstractmethod
     def calculate(
-        self, context: Context, measurements: dict[type["Metric"], "Measurement"]
+        self,
+        context: Context,
+        measurements: dict[type["Metric"], list["Measurement"]],
     ) -> "Measurement":
         """
         Calculate metric and return a Measurement.
 
         Args:
             context: General context enriched by providers
-            measurements: Dict mapping Metric classes to their Measurements (dependencies)
+            measurements: Dict mapping Metric classes to lists of their Measurements
 
         Returns:
             Measurement with the calculated value
@@ -103,6 +115,38 @@ class Metric(ABC, BaseModel):
             List of provider classes (empty by default)
         """
         return []
+
+    def get_single(
+        self,
+        measurements: dict[type["Metric"], list["Measurement"]],
+        metric_cls: type["Metric"],
+    ) -> "Measurement":
+        """
+        Get a single measurement for a dependency, erroring if not exactly one.
+
+        Convenience method for metrics that expect exactly one instance of a dependent metric.
+
+        Args:
+            measurements: The measurements dict passed to calculate()
+            metric_cls: The metric class to look up
+
+        Returns:
+            The single Measurement
+
+        Raises:
+            ValueError: If there are zero or multiple measurements for the class
+        """
+
+        results = measurements.get(metric_cls, [])
+        if len(results) == 0:
+            raise ValueError(f"No measurements found for {metric_cls.__name__}")
+        if len(results) > 1:
+            raise ValueError(
+                f"Expected single measurement for {metric_cls.__name__}, "
+                f"got {len(results)}"
+            )
+
+        return results[0]
 
 
 class Measurement(BaseModel):

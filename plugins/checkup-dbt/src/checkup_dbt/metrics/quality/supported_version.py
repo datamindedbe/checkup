@@ -1,5 +1,4 @@
 import logging
-from typing import ClassVar
 
 from checkup.metric import Measurement, Metric
 from checkup.types import Context
@@ -14,9 +13,9 @@ class DbtSupportedVersionMetric(DbtMetric):
     Metric for checking dbt version compatibility.
     """
 
-    name: ClassVar[str] = "dbt_supported_version"
-    description: ClassVar[str] = "Whether dbt version meets minimum requirement"
-    unit: ClassVar[str] = "boolean"
+    name: str = "dbt_supported_version"
+    description: str = "Whether dbt version meets minimum requirement"
+    unit: str = "boolean"
 
     min_version: str
 
@@ -25,9 +24,9 @@ class DbtSupportedVersionMetric(DbtMetric):
         return [DbtVersionMetric]
 
     def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
+        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
     ) -> Measurement:
-        version: str = measurements[DbtVersionMetric].value
+        version: str = self.get_single(measurements, DbtVersionMetric).value
 
         major_version = int(version.split(".")[0])
         minor_version = int(version.split(".")[1])

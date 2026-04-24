@@ -7,9 +7,9 @@ from checkup_dbt.metrics.base import DbtCountMetric
 
 
 class DbtUnitTestsMetric(DbtCountMetric):
-    name: ClassVar[str] = "dbt_unit_tests"
-    description: ClassVar[str] = "Number of singular (unit) tests"
-    unit: ClassVar[str] = "tests"
+    name: str = "dbt_unit_tests"
+    description: str = "Number of singular (unit) tests"
+    unit: str = "tests"
     resource_type: ClassVar[NodeType] = NodeType.Test
     predicate = is_singular_test
     log_message: ClassVar[str] = "Found {value} unit tests"

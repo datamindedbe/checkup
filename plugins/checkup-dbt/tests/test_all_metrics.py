@@ -7,6 +7,7 @@ from checkup_dbt import (
     DbtColumnTestsMetric,
     DbtDataTestsMetric,
     DbtModelsMetric,
+    DbtModelsNotAdheringToNamingConventionMetric,
     DbtModelsWithDescriptionMetric,
     DbtOutputColumnsWithoutDataTypeMetric,
     DbtOutputModelsMetric,
@@ -22,7 +23,7 @@ from checkup_dbt.provider import DbtManifestProvider
 
 from checkup.hub import CheckHub
 
-from .conftest import InternalModelNamingMetric
+from .conftest import internal_model_naming_checker
 
 
 class Dbt19SupportedVersionMetric(DbtSupportedVersionMetric):
@@ -45,7 +46,9 @@ def test_all_metrics(sample_manifest_path: Path):
         DbtOutputModelsWithDescriptionMetric(),
         DbtOutputModelsWithoutContractsMetric(),
         DbtOutputColumnsWithoutDataTypeMetric(),
-        InternalModelNamingMetric(),
+        DbtModelsNotAdheringToNamingConventionMetric(
+            checker=internal_model_naming_checker
+        ),
         Dbt19SupportedVersionMetric(),
         DbtVersionMetric(),
     ]

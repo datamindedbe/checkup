@@ -154,7 +154,7 @@ class CheckHub:
         metric_classes = [type(m) for m in self._metrics]
         logger.debug("Building dependency graph")
         execution_order = topological_sort(build_dependency_graph(metric_classes))
-        validate_unique_metric_names(list(execution_order))
+        validate_unique_metric_names(self._metrics)
         direct_metric_names = {m.name for m in self._metrics}
         provider_sets = self._provider_sets if self._provider_sets else [[]]
         validate_providers(list(execution_order), provider_sets)
