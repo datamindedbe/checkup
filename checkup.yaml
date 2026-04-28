@@ -10,6 +10,12 @@ metrics:
 - type: git_days_since_last_update
 - type: git_tracked_file_count
   pattern: src/checkup/*
+- type: git_tracked_file_count
+  name: checkup_yaml_exists
+  pattern: checkup.yaml
+- type: git_tracked_file_count
+  name: pre_commit_config_exists
+  pattern: .pre-commit-config.yaml
 - type: python_version
 - type: python_version_check
   min_version: '3.13'
