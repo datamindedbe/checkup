@@ -98,17 +98,21 @@ def _resolve_metrics(
     metrics: list[Metric] = []
 
     for metric_config in config.metrics:
-        metric_cls = registry.get_metric(metric_config.name)
+        metric_cls = registry.get_metric(metric_config.type)
         if metric_cls is None:
-            console.print(f"[yellow]Unknown metric: {metric_config.name}[/yellow]")
+            console.print(f"[yellow]Unknown metric: {metric_config.type}[/yellow]")
             continue
 
         try:
-            metric = metric_cls(**metric_config.config)
-            metrics.append(metric)
+            metrics.append(
+                metric_cls(
+                    **metric_config.config,
+                    **({"name": metric_config.name} if metric_config.name else {}),
+                )
+            )
         except Exception as e:
             console.print(
-                f"[red]Failed to instantiate metric {metric_config.name}: {e}[/red]"
+                f"[red]Failed to instantiate metric {metric_config.type}: {e}[/red]"
             )
 
     return metrics

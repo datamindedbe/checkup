@@ -79,7 +79,7 @@ def _build_config(registry: "PluginRegistry") -> CheckupConfig | None:
     return CheckupConfig(
         tags=tags,
         providers=[ProviderConfig(name=p) for p in provider_names],
-        metrics=[MetricConfig(name=m) for m in metric_names],
+        metrics=[MetricConfig(type=m) for m in metric_names],
         materializer=MaterializerConfig(type=mat) if mat != "console" else None,
     )
 

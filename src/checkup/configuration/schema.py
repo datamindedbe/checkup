@@ -190,7 +190,9 @@ def generate_schema() -> dict:
             "metrics": {
                 "type": "array",
                 "description": "Metrics to calculate",
-                "items": _build_oneof_schema(metric_names, metric_schemas),
+                "items": _build_oneof_schema(
+                    metric_names, metric_schemas, key_field="type"
+                ),
             },
             "materializer": _build_oneof_schema(
                 materializer_names, materializer_schemas, key_field="type"
