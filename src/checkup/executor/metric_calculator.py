@@ -20,6 +20,7 @@ from checkup.executor.state import (
 )
 from checkup.metric import ExecutorType, Measurement, Metric
 from checkup.provider import Provider
+from checkup.providers.tags import TagProvider
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,6 @@ class MetricCalculator:
         metrics: list[Metric],
         execution_order: list[type[Metric]],
         context: dict[str, Any],
-        tags: dict[str, Any],
         provided_classes: set[type[Provider]],
         failed_providers: dict[type[Provider], ProviderError] | None = None,
     ) -> list[Measurement]:
@@ -48,6 +48,7 @@ class MetricCalculator:
         Calculate all metrics in execution order.
         """
 
+        tags = context.get(TagProvider.name, {})
         state = CalculationState(
             context=context,
             tags=tags,
