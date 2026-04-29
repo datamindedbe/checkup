@@ -46,14 +46,12 @@ def validate_unique_metric_names(metrics: list[Metric]) -> None:
         name_to_metrics[name].append(metric)
 
     duplicates = {
-        name: instances
+        name: [type(m) for m in instances]
         for name, instances in name_to_metrics.items()
         if len(instances) > 1
     }
     if duplicates:
-        # Report the first duplicate found
-        name, instances = next(iter(duplicates.items()))
-        raise DuplicateMetricNameError(name, [type(m) for m in instances])
+        raise DuplicateMetricNameError(duplicates)
 
 
 def collect_required_providers(metrics: list[type[Metric]]) -> set[type[Provider]]:
