@@ -2,7 +2,7 @@ import logging
 
 import yaml
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 
@@ -37,9 +37,7 @@ class DbtProfileHostMetric(DbtMetric):
     profile: str | None = None
     target: str
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         project_dir = self.get_project_dir(context)
         profiles_path = project_dir / "profiles.yml"
 

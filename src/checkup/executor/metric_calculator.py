@@ -18,7 +18,8 @@ from checkup.executor.state import (
     get_failed_dependencies,
     should_skip,
 )
-from checkup.metric import ExecutorType, Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import ExecutorType, Metric
 from checkup.provider import Provider
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class MetricCalculator:
             tags=tags,
             provided_classes=provided_classes,
             failed_providers=failed_providers or {},
-            calculated=defaultdict(list),
+            calculated=Measurements(),
         )
         class_to_instances = self._group_by_class(metrics, execution_order)
 
@@ -177,7 +178,7 @@ class MetricCalculator:
 
         for metric in instances:
             measurement = create_failed_measurement(metric, state.tags, failed_deps)
-            state.calculated[metric_cls].append(measurement)
+            state.calculated.append(metric_cls, measurement)
             state.results.append(measurement)
         state.failed.add(metric_cls)
 
@@ -204,7 +205,7 @@ class MetricCalculator:
         results = execute_fn(batch, state.context, state.tags, state.calculated)
 
         for metric, measurement in results:
-            state.calculated[type(metric)].append(measurement)
+            state.calculated.append(type(metric), measurement)
             state.results.append(measurement)
             logger.debug(
                 "Metric %s calculated: value=%s", metric.name, measurement.value

@@ -1,14 +1,17 @@
-"""Metric and Measurement classes."""
+"""Metric base class."""
+
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from checkup.types import Context
 
 if TYPE_CHECKING:
+    from checkup.measurement import Measurement, Measurements
     from checkup.provider import Provider
 
 
@@ -53,17 +56,13 @@ class Metric(ABC, BaseModel):
         return getattr(cls, "executor", ExecutorType.THREAD)
 
     @abstractmethod
-    def calculate(
-        self,
-        context: Context,
-        measurements: dict[type["Metric"], list["Measurement"]],
-    ) -> "Measurement":
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         """
         Calculate metric and return a Measurement.
 
         Args:
             context: General context enriched by providers
-            measurements: Dict mapping Metric classes to lists of their Measurements
+            measurements: Wrapper for accessing calculated dependency measurements
 
         Returns:
             Measurement with the calculated value
@@ -75,7 +74,7 @@ class Metric(ABC, BaseModel):
         value: Any = None,
         tags: dict | None = None,
         diagnostic: str = "",
-    ) -> "Measurement":
+    ) -> Measurement:
         """
         Create a Measurement for this metric.
 
@@ -89,6 +88,8 @@ class Metric(ABC, BaseModel):
         Returns:
             Measurement instance
         """
+        from checkup.measurement import Measurement
+
         return Measurement(
             metric=self,
             value=value,
@@ -97,7 +98,7 @@ class Metric(ABC, BaseModel):
         )
 
     @classmethod
-    def depends_on(cls) -> list[type["Metric"]]:
+    def depends_on(cls) -> list[type[Metric]]:
         """
         Return list of metric classes this metric depends on.
 
@@ -107,7 +108,7 @@ class Metric(ABC, BaseModel):
         return []
 
     @classmethod
-    def providers(cls) -> list[type["Provider"]]:
+    def providers(cls) -> list[type[Provider]]:
         """
         Return list of provider classes to enrich context.
 
@@ -115,48 +116,3 @@ class Metric(ABC, BaseModel):
             List of provider classes (empty by default)
         """
         return []
-
-    def get_single(
-        self,
-        measurements: dict[type["Metric"], list["Measurement"]],
-        metric_cls: type["Metric"],
-    ) -> "Measurement":
-        """
-        Get a single measurement for a dependency, erroring if not exactly one.
-
-        Convenience method for metrics that expect exactly one instance of a dependent metric.
-
-        Args:
-            measurements: The measurements dict passed to calculate()
-            metric_cls: The metric class to look up
-
-        Returns:
-            The single Measurement
-
-        Raises:
-            ValueError: If there are zero or multiple measurements for the class
-        """
-
-        results = measurements.get(metric_cls, [])
-        if len(results) == 0:
-            raise ValueError(f"No measurements found for {metric_cls.__name__}")
-        if len(results) > 1:
-            raise ValueError(
-                f"Expected single measurement for {metric_cls.__name__}, "
-                f"got {len(results)}"
-            )
-
-        return results[0]
-
-
-class Measurement(BaseModel):
-    """
-    Result of a metric calculation.
-
-    Holds the metric that produced it, the calculated value, tags, and diagnostic information.
-    """
-
-    metric: Metric
-    value: Any = None
-    tags: dict = Field(default_factory=dict)
-    diagnostic: str = ""

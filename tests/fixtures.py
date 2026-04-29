@@ -1,6 +1,7 @@
 from typing import Any, ClassVar
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
 
@@ -14,9 +15,7 @@ class DummyMetric(Metric):
 
     expected_value: int = 42
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         """Set value to expected_value."""
         return self.measure(
             value=self.expected_value,
@@ -36,11 +35,9 @@ class DependentDummyMetric(Metric):
         """Depends on DummyMetric."""
         return [DummyMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         """Double the DummyMetric value."""
-        base_value = self.get_single(measurements, DummyMetric).value
+        base_value = measurements.get(DummyMetric).value
         value = base_value * 2
         return self.measure(
             value=value,
@@ -59,10 +56,8 @@ class Level2Metric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [DependentDummyMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        value = self.get_single(measurements, DependentDummyMetric).value + 10
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        value = measurements.get(DependentDummyMetric).value + 10
         return self.measure(
             value=value, diagnostic=f"Added 10 to DependentDummyMetric value: {value}"
         )
@@ -79,10 +74,8 @@ class Level3Metric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [Level2Metric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        level2_value = self.get_single(measurements, Level2Metric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        level2_value = measurements.get(Level2Metric).value
         value = level2_value**2
         return self.measure(
             value=value,
@@ -101,9 +94,7 @@ class CyclicMetricA(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [CyclicMetricB]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=1, diagnostic="CyclicMetricA calculated")
 
 
@@ -118,9 +109,7 @@ class CyclicMetricB(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [CyclicMetricA]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=1, diagnostic="CyclicMetricB calculated")
 
 
@@ -132,9 +121,7 @@ class RootA(Metric):
     unit: str = "count"
     base_value: int = 10
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(
             value=self.base_value,
             diagnostic=f"RootA calculated with base_value={self.base_value}",
@@ -149,9 +136,7 @@ class RootB(Metric):
     unit: str = "count"
     base_value: int = 20
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(
             value=self.base_value,
             diagnostic=f"RootB calculated with base_value={self.base_value}",
@@ -166,9 +151,7 @@ class RootC(Metric):
     unit: str = "count"
     base_value: int = 100
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(
             value=self.base_value,
             diagnostic=f"RootC calculated with base_value={self.base_value}",
@@ -186,11 +169,9 @@ class SharedAB(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [RootA, RootB]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        root_a_val = self.get_single(measurements, RootA).value
-        root_b_val = self.get_single(measurements, RootB).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        root_a_val = measurements.get(RootA).value
+        root_b_val = measurements.get(RootB).value
         value = root_a_val + root_b_val
         return self.measure(
             value=value,
@@ -209,10 +190,8 @@ class BranchB(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [RootB]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        root_b_val = self.get_single(measurements, RootB).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        root_b_val = measurements.get(RootB).value
         value = root_b_val * 3
         return self.measure(
             value=value, diagnostic=f"Tripled RootB value: {root_b_val} * 3 = {value}"
@@ -230,10 +209,8 @@ class LeafC(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [RootC]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        root_c_val = self.get_single(measurements, RootC).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        root_c_val = measurements.get(RootC).value
         value = root_c_val**2
         return self.measure(
             value=value, diagnostic=f"Squared RootC value: {root_c_val}^2 = {value}"
@@ -251,10 +228,8 @@ class MidShared(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [SharedAB]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        shared_ab_val = self.get_single(measurements, SharedAB).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        shared_ab_val = measurements.get(SharedAB).value
         value = shared_ab_val + 5
         return self.measure(
             value=value,
@@ -273,10 +248,8 @@ class MidBranch(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [BranchB]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        branch_b_val = self.get_single(measurements, BranchB).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        branch_b_val = measurements.get(BranchB).value
         value = branch_b_val * 2
         return self.measure(
             value=value,
@@ -295,11 +268,9 @@ class LeafAB(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [MidShared, MidBranch]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        mid_shared_val = self.get_single(measurements, MidShared).value
-        mid_branch_val = self.get_single(measurements, MidBranch).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        mid_shared_val = measurements.get(MidShared).value
+        mid_branch_val = measurements.get(MidBranch).value
         value = mid_shared_val * mid_branch_val
         return self.measure(
             value=value,
@@ -330,9 +301,7 @@ class ProviderDummyMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [DummyProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         value = context[DummyProvider.name]["data"]
         return self.measure(
             value=value, diagnostic=f"Retrieved dummy_data from context: {value}"
@@ -346,9 +315,7 @@ class FailingMetric(Metric):
     description: str = "Fails when should_fail is True"
     unit: str = "count"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         if context.get("should_fail"):
             raise ValueError("Intentional failure")
         return self.measure(value=1, diagnostic="Metric calculated successfully")
@@ -378,9 +345,7 @@ class IntegrationBaseMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [IntegrationProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         value = context[IntegrationProvider.name]["base_value"]
         return self.measure(
             value=value,
@@ -400,10 +365,8 @@ class IntegrationDerivedMetric(Metric):
     def depends_on(cls):
         return [IntegrationBaseMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        base_val = self.get_single(measurements, IntegrationBaseMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        base_val = measurements.get(IntegrationBaseMetric).value
         value = base_val * self.multiplier
         return self.measure(
             value=value,
@@ -435,9 +398,7 @@ class PathMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [PathLengthProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         path_len = context[PathLengthProvider.name]["length"]
         value = path_len * self.multiplier
         return self.measure(
@@ -455,9 +416,7 @@ class OtherDummyMetric(Metric):
 
     expected_value: int = 100
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         """Set value to expected_value."""
         return self.measure(
             value=self.expected_value,
@@ -474,9 +433,7 @@ class IndirectDummyMetric(Metric):
 
     expected_value: int = 100
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         """Set value to expected_value."""
         return self.measure(
             value=self.expected_value,

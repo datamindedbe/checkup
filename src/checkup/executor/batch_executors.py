@@ -6,7 +6,8 @@ import logging
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from typing import Any
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.types import Context
 from checkup.validators import validate_pickleable
 
@@ -17,7 +18,7 @@ def _calculate_metric_in_process(
     metric: Metric,
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> Measurement:
     """
     Calculate a single metric in a subprocess.
@@ -34,7 +35,7 @@ def execute_batch_thread(
     batch: list[Metric],
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> list[tuple[Metric, Measurement]]:
     """
     Execute metrics using ThreadPoolExecutor.
@@ -66,7 +67,7 @@ def execute_batch_process(
     batch: list[Metric],
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> list[tuple[Metric, Measurement]]:
     """
     Execute metrics using ProcessPoolExecutor.
@@ -109,7 +110,7 @@ def execute_batch_asyncio(
     batch: list[Metric],
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> list[tuple[Metric, Measurement]]:
     """
     Execute metrics using asyncio.
@@ -122,7 +123,7 @@ async def _execute_batch_asyncio_impl(
     batch: list[Metric],
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> list[tuple[Metric, Measurement]]:
     """
     Async implementation of batch execution.
@@ -139,7 +140,7 @@ async def _calculate_async_metric(
     metric: Metric,
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> Measurement:
     """
     Calculate a single metric, handling both sync and async calculate methods.
@@ -157,7 +158,7 @@ def _calculate_single_metric(
     metric: Metric,
     context: Context,
     tags: dict[str, Any],
-    calculated: dict[type[Metric], list[Measurement]],
+    calculated: Measurements,
 ) -> Measurement:
     """
     Calculate a single metric (for thread executor).

@@ -2,7 +2,8 @@ import re
 import sys
 from pathlib import Path
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.types import Context
 
 
@@ -20,9 +21,7 @@ class PythonVersionMetric(Metric):
     description: str = "The Python version configured for the project"
     unit: str = "version"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         path = None
 
         if "path" in context:

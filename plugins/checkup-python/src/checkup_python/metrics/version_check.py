@@ -1,4 +1,5 @@
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.types import Context
 from checkup_python.metrics.utils import parse_semantic_version
 from checkup_python.metrics.version import PythonVersionMetric
@@ -21,10 +22,8 @@ class PythonVersionCheckMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [PythonVersionMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        actual_version = self.get_single(measurements, PythonVersionMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        actual_version = measurements.get(PythonVersionMetric).value
 
         actual = parse_semantic_version(actual_version)
         min_ver = parse_semantic_version(self.min_version)

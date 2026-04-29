@@ -3,7 +3,8 @@
 from typing import ClassVar
 
 from checkup.hub import CheckHub
-from checkup.metric import ExecutorType, Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import ExecutorType, Metric
 from checkup.types import Context
 
 
@@ -15,9 +16,7 @@ class ThreadMetric(Metric):
     unit: str = "count"
     # executor defaults to ExecutorType.THREAD
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=10, diagnostic="Calculated in thread")
 
 
@@ -29,9 +28,7 @@ class ProcessMetric(Metric):
     unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.PROCESS
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=20, diagnostic="Calculated in process")
 
 
@@ -43,9 +40,7 @@ class AsyncMetric(Metric):
     unit: str = "count"
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=30, diagnostic="Calculated with asyncio")
 
 
@@ -58,7 +53,7 @@ class AsyncMetricWithAsyncCalculate(Metric):
     executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO
 
     async def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
+        self, context: Context, measurements: Measurements
     ) -> Measurement:
         import asyncio
 
@@ -78,10 +73,8 @@ class DependentThreadMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [ThreadMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        base_value = self.get_single(measurements, ThreadMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        base_value = measurements.get(ThreadMetric).value
         value = base_value * 2
         return self.measure(
             value=value, diagnostic=f"Doubled thread metric: {base_value} -> {value}"
@@ -100,10 +93,8 @@ class DependentProcessMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [ThreadMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        base_value = self.get_single(measurements, ThreadMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        base_value = measurements.get(ThreadMetric).value
         value = base_value * 3
         return self.measure(
             value=value, diagnostic=f"Tripled thread metric: {base_value} -> {value}"
@@ -122,10 +113,8 @@ class DependentAsyncMetric(Metric):
     def depends_on(cls) -> list[type[Metric]]:
         return [ProcessMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        base_value = self.get_single(measurements, ProcessMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        base_value = measurements.get(ProcessMetric).value
         value = base_value + 5
         return self.measure(
             value=value,
