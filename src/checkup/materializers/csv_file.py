@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 
 from checkup.materializers.base import Materializer
-from checkup.metric import Measurement
+from checkup.measurement import Measurement
 
 
 class CSVMaterializer(Materializer):

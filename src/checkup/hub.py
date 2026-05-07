@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field
 from checkup.errors import DuplicateMetricNameError, MetricPicklingError, ProviderError
 from checkup.executor import MetricCalculator, ProviderExecutor
 from checkup.graph import build_dependency_graph, topological_sort
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.validators import validate_providers, validate_unique_metric_names
 

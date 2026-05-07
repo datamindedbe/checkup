@@ -7,7 +7,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from checkup.errors import ProviderError
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class CalculationState:
     tags: dict[str, Any]
     provided_classes: set[type[Provider]]
     failed_providers: dict[type[Provider], ProviderError]
-    calculated: dict[type[Metric], list[Measurement]] = field(default_factory=dict)
+    calculated: Measurements = field(default_factory=lambda: Measurements({}))
     skipped: set[type[Metric]] = field(default_factory=set)
     failed: set[type[Metric]] = field(default_factory=set)
     results: list[Measurement] = field(default_factory=list)

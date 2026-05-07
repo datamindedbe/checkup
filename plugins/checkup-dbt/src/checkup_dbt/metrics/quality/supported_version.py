@@ -1,6 +1,7 @@
 import logging
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.quality.version import DbtVersionMetric
@@ -23,10 +24,8 @@ class DbtSupportedVersionMetric(DbtMetric):
     def depends_on(cls) -> list[type[Metric]]:
         return [DbtVersionMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        version: str = self.get_single(measurements, DbtVersionMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        version: str = measurements.get(DbtVersionMetric).value
 
         major_version = int(version.split(".")[0])
         minor_version = int(version.split(".")[1])

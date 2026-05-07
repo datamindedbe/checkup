@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from pydantic import BaseModel
 
-from checkup.metric import Measurement
+from checkup.measurement import Measurement
 
 
 def group_measurements_by_tags(

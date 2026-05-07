@@ -19,7 +19,7 @@ from sqlalchemy import (
 )
 
 from checkup.materializers.base import Materializer
-from checkup.metric import Measurement
+from checkup.measurement import Measurement
 
 
 class SQLAlchemyMaterializer(Materializer):

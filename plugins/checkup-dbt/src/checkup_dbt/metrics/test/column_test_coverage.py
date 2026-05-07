@@ -1,6 +1,7 @@
 import logging
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.core.columns import DbtColumnsMetric
@@ -25,11 +26,9 @@ class DbtColumnTestCoverageMetric(DbtMetric):
     def depends_on(cls) -> list[type[Metric]]:
         return [DbtTestedColumnsMetric, DbtColumnsMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        tested = self.get_single(measurements, DbtTestedColumnsMetric).value
-        total = self.get_single(measurements, DbtColumnsMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        tested = measurements.get(DbtTestedColumnsMetric).value
+        total = measurements.get(DbtColumnsMetric).value
 
         if total > 0:
             value = int(tested / total * 100)

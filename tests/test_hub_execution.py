@@ -10,7 +10,8 @@ from fixtures import (
 )
 
 from checkup.hub import CheckHub
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
@@ -39,9 +40,7 @@ class DataMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [DataProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         value = context[DataProvider.name]["value"]
         return self.measure(value=value)
 
@@ -75,9 +74,7 @@ class FailingProviderMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [FailingProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=999)
 
 
@@ -96,10 +93,8 @@ class DependsOnFailingMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [FailingProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
-        base_val = self.get_single(measurements, FailingProviderMetric).value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        base_val = measurements.get(FailingProviderMetric).value
         return self.measure(value=base_val * 2)
 
 
@@ -114,9 +109,7 @@ class OtherMetric(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [OtherProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         value = context[OtherProvider.name]["other_value"]
         return self.measure(value=value)
 
@@ -313,10 +306,10 @@ class TestHubExecution:
         assert measurements_by_name["dummy_b"].value == 20
         assert measurements_by_name["dummy_c"].value == 30
 
-    def test_multiple_instances_dependency_with_get_single_fails(self):
-        """Test that get_single raises when multiple instances exist for a dependency."""
+    def test_multiple_instances_dependency_with_get_fails(self):
+        """Test that .get() raises when multiple instances exist for a dependency."""
 
-        # DependentDummyMetric uses get_single() which should fail with multiple DummyMetric instances
+        # DependentDummyMetric uses .get() which should fail with multiple DummyMetric instances
         result = (
             CheckHub()
             .with_metrics(
@@ -329,8 +322,6 @@ class TestHubExecution:
             .measure()
         )
 
-        # The whole provider set fails because get_single() raises during calculation
+        # The whole provider set fails because .get() raises during calculation
         assert len(result.errors) == 1
-        assert "Expected single measurement for DummyMetric, got 2" in str(
-            result.errors[0][1]
-        )
+        assert "Multiple measurements match for DummyMetric" in str(result.errors[0][1])

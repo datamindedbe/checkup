@@ -3,7 +3,8 @@
 from datetime import UTC, datetime
 from fnmatch import fnmatch
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup_git.provider import GitProvider
@@ -28,9 +29,7 @@ class GitDaysSinceLastUpdateMetric(GitMetric):
     description: str = "Days since the last git commit"
     unit: str = "days"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         git_context = self.get_context(context)
         last_commit_date = git_context.get("git_last_commit_date")
 
@@ -67,9 +66,7 @@ class GitTrackedFileCountMetric(GitMetric):
 
     pattern: str = "*"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         git_context = self.get_context(context)
         tracked_files = git_context.get("git_tracked_files", [])
 

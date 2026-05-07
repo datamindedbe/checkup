@@ -2,7 +2,7 @@ import logging
 
 from dbt.artifacts.resources.types import NodeType
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric, NamingConventionChecker
 
@@ -28,9 +28,7 @@ class DbtModelsNotAdheringToNamingConventionMetric(DbtMetric):
 
     checker: NamingConventionChecker
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], list[Measurement]]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         manifest = self.get_manifest(context)
 
         non_adhering_models = [
