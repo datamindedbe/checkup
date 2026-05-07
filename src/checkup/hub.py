@@ -74,14 +74,13 @@ def _measure_single_provider_set(
         ProviderError: If a provider fails during execution
     """
 
-    context, tags, errors = ProviderExecutor().execute(provider_set)
+    context, errors = ProviderExecutor().execute(provider_set)
     failed_providers = {type(e.provider): e for e in errors}
 
     return MetricCalculator().calculate(
         metrics,
         execution_order,
         context,
-        tags,
         {type(p) for p in provider_set},
         failed_providers,
     )
@@ -188,15 +187,7 @@ class CheckHub:
         if all_errors:
             failed_contexts = []
             for ps, _ in all_errors:
-                tags = {
-                    k: v
-                    for p in ps
-                    if p.is_tag_provider()
-                    for k, v in p.provide().items()
-                }
-                failed_contexts.append(
-                    tags if tags else {"providers": [p.name for p in ps]}
-                )
+                failed_contexts.append({"providers": [p.name for p in ps]})
             failed_contexts_str = "\n  ".join(str(ctx) for ctx in failed_contexts)
             logger.info(
                 "Measurement complete: %d measurements, %d failed contexts:\n  %s",
