@@ -240,7 +240,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-conveyor"
-version = "0.3.0"
+version = "0.4.0"
 source = { editable = "plugins/checkup-conveyor" }
 dependencies = [
     { name = "checkup" },
