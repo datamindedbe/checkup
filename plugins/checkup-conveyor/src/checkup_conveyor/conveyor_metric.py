@@ -4,7 +4,7 @@ from typing import ClassVar
 import requests
 
 from checkup import Context
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
 from checkup_conveyor import ConveyorMetric
 
 logger = logging.getLogger(__name__)
@@ -15,9 +15,7 @@ class ConveyorLastDeploymentTime(ConveyorMetric):
     description: ClassVar[str] = "Time of the last deployment in Conveyor"
     unit: ClassVar[str] = "timestamp"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
             return self.measure(value=None)
@@ -40,9 +38,7 @@ class ConveyorIsDirtyDeployment(ConveyorMetric):
     description: ClassVar[str] = "True if the last deployment was dirty"
     unit: ClassVar[str] = "boolean"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
             return self.measure(value=None)
@@ -66,9 +62,7 @@ class ConveyorLastRunStatus(ConveyorMetric):
     description: ClassVar[str] = "Status of the last run in Conveyor"
     unit: ClassVar[str] = "string"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
         if proj_id is None:
             return self.measure(value=None)

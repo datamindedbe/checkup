@@ -5,9 +5,9 @@ from checkup_dbt.metrics.base import CountTarget, DbtDiagnosticMetric
 
 
 class DbtOutputColumnsWithoutDataTypeMetric(DbtDiagnosticMetric):
-    name: ClassVar[str] = "dbt_output_columns_without_data_type"
-    description: ClassVar[str] = "Number of columns in output models without data type"
-    unit: ClassVar[str] = "columns"
+    name: str = "dbt_output_columns_without_data_type"
+    description: str = "Number of columns in output models without data type"
+    unit: str = "columns"
     predicate = staticmethod(
         lambda n, _name, col: is_output_model(n) and col.data_type is None
     )

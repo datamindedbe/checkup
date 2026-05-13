@@ -9,7 +9,8 @@ from typing import Any, ClassVar
 from dbt.artifacts.resources.types import NodeType
 from dbt.contracts.graph.manifest import Manifest
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup_dbt.manifest_query import ManifestQuery
@@ -73,7 +74,7 @@ class DbtCountMetric(DbtMetric):
     Base class for metrics that count nodes or columns.
 
     Subclasses should define:
-    - name, description, unit (ClassVars)
+    - name, description, unit
     - resource_type: The NodeType to filter by
     - count_target: What to count (NODES or COLUMNS)
     - predicate (optional): Filter function
@@ -87,9 +88,7 @@ class DbtCountMetric(DbtMetric):
     predicate: ClassVar[Callable[..., bool] | None] = None
     log_message: ClassVar[str] = "Found {value} items"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
 
@@ -111,7 +110,7 @@ class DbtDiagnosticMetric(DbtMetric):
     Produces both a count and a diagnostic listing the items.
 
     Subclasses should define:
-    - name, description, unit (ClassVars)
+    - name, description, unit
     - resource_type: The NodeType to filter by
     - count_target: What to count (NODES or COLUMNS)
     - predicate (optional): Filter function
@@ -128,9 +127,7 @@ class DbtDiagnosticMetric(DbtMetric):
     log_message: ClassVar[str] = "Found {value} items"
     max_diagnostic_items: ClassVar[int] = 50
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cls = type(self)
         query = self.query(context).filter_by_type(cls.resource_type)
 

@@ -39,16 +39,3 @@ class Provider(ABC):
             Dict of data to add under context[cls.name]
         """
         ...
-
-    def is_tag_provider(self) -> bool:
-        """Return True if this provider supplies tags instead of context data.
-
-        Tag providers have their data merged directly into metric.tags
-        instead of being added to the context namespace.
-
-        Override this method to return True in tag-providing subclasses.
-
-        Returns:
-            False by default; True for tag providers
-        """
-        return False

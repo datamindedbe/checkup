@@ -5,8 +5,8 @@ from checkup_dbt.metrics.base import DbtCountMetric
 
 
 class DbtOutputModelsMetric(DbtCountMetric):
-    name: ClassVar[str] = "dbt_output_models"
-    description: ClassVar[str] = "Number of output models (non-internal schema)"
-    unit: ClassVar[str] = "models"
+    name: str = "dbt_output_models"
+    description: str = "Number of output models (non-internal schema)"
+    unit: str = "models"
     predicate = is_output_model
     log_message: ClassVar[str] = "Found {value} output models"

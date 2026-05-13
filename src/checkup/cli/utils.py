@@ -41,8 +41,8 @@ def apply_cli_overrides(
     if metrics:
         new_metrics = []
         for m in metrics:
-            name, config = parse_cli_item(m)
-            new_metrics.append(MetricConfig(name=name, config=config))
+            metric_type, config = parse_cli_item(m)
+            new_metrics.append(MetricConfig(type=metric_type, config=config))
     else:
         new_metrics = list(cfg.metrics)
 

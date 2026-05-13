@@ -58,7 +58,7 @@ def _build_config(
     config: CheckupConfig, registry: "PluginRegistry"
 ) -> CheckupConfig | None:
     provider_configs = {p.name: p.config for p in config.providers}
-    metric_configs = {m.name: m.config for m in config.metrics}
+    metric_configs = {m.type: m.config for m in config.metrics}
 
     tags = _prompt_edit_tags(config)
     if tags is None:
@@ -83,7 +83,7 @@ def _build_config(
             for p in provider_names
         ],
         metrics=[
-            MetricConfig(name=m, config=metric_configs.get(m, {})) for m in metric_names
+            MetricConfig(type=m, config=metric_configs.get(m, {})) for m in metric_names
         ],
         materializer=MaterializerConfig(type=mat) if mat else None,
     )
@@ -121,7 +121,7 @@ def _prompt_edit_metrics(
     registry: "PluginRegistry",
     provider_names: list[str],
 ) -> list[str] | None:
-    current_names = [m.name for m in config.metrics]
+    current_types = [m.type for m in config.metrics]
 
     with console.status("Loading metrics..."):
         available = registry.list_compatible_metric_names(provider_names)
@@ -130,8 +130,8 @@ def _prompt_edit_metrics(
     if edit is None:
         return None
     elif edit:
-        return select_multiple(available, current_names, "metrics")
-    return [m.name for m in config.metrics if m.name in available]
+        return select_multiple(available, current_types, "metrics")
+    return [m.type for m in config.metrics if m.type in available]
 
 
 def _prompt_edit_materializer(
@@ -194,7 +194,7 @@ def _show_current_config(config: "CheckupConfig") -> None:
     console.print("[bold]Current configuration:[/bold]", markup=True)
     console.print(f"  Tags: {dict(config.tags) or '(none)'}")
     console.print(f"  Providers: {[p.name for p in config.providers] or '(none)'}")
-    console.print(f"  Metrics: {[m.name for m in config.metrics] or '(none)'}")
+    console.print(f"  Metrics: {[m.type for m in config.metrics] or '(none)'}")
     mat = config.materializer.type if config.materializer else "(none)"
     console.print(f"  Materializer: {mat}")
     console.print()

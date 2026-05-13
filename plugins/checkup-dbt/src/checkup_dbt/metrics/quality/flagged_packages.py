@@ -1,9 +1,8 @@
 import logging
-from typing import ClassVar
 
 import yaml
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 
@@ -18,22 +17,21 @@ class DbtFlaggedPackagesMetric(DbtMetric):
     Useful for identifying deprecated, insecure, or non-approved packages.
 
     Example:
-        class DeprecatedPackagesMetric(DbtFlaggedPackagesMetric):
-            flagged_packages: list[str] = [
+        DbtFlaggedPackagesMetric(
+            flagged_packages=[
                 "https://github.com/org/deprecated-package",
                 "https://github.com/org/insecure-package",
             ]
+        )
     """
 
-    name: ClassVar[str] = "dbt_flagged_packages"
-    description: ClassVar[str] = "Number of flagged packages in packages.yml"
-    unit: ClassVar[str] = "packages"
+    name: str = "dbt_flagged_packages"
+    description: str = "Number of flagged packages in packages.yml"
+    unit: str = "packages"
 
     flagged_packages: list[str]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         project_dir = self.get_project_dir(context)
         packages_path = project_dir / "packages.yml"
 

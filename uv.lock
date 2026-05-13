@@ -151,7 +151,7 @@ wheels = [
 
 [[package]]
 name = "checkup"
-version = "0.2.10"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
@@ -202,7 +202,7 @@ docs = [
 
 [[package]]
 name = "checkup-airflow"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "plugins/checkup-airflow" }
 dependencies = [
     { name = "checkup" },
@@ -221,7 +221,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-bitbucket"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "plugins/checkup-bitbucket" }
 dependencies = [
     { name = "checkup" },
@@ -240,7 +240,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-conveyor"
-version = "0.2.1"
+version = "0.3.0"
 source = { editable = "plugins/checkup-conveyor" }
 dependencies = [
     { name = "checkup" },
@@ -255,7 +255,7 @@ requires-dist = [
 
 [[package]]
 name = "checkup-dbt"
-version = "0.2.2"
+version = "0.3.0"
 source = { editable = "plugins/checkup-dbt" }
 dependencies = [
     { name = "checkup" },
@@ -282,7 +282,7 @@ dev = [
 
 [[package]]
 name = "checkup-git"
-version = "0.2.2"
+version = "0.3.0"
 source = { editable = "plugins/checkup-git" }
 dependencies = [
     { name = "checkup" },
@@ -301,7 +301,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-github"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "plugins/checkup-github" }
 dependencies = [
     { name = "checkup" },
@@ -320,7 +320,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-gitlab"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "plugins/checkup-gitlab" }
 dependencies = [
     { name = "checkup" },
@@ -339,7 +339,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-python"
-version = "0.2.1"
+version = "0.3.0"
 source = { editable = "plugins/checkup-python" }
 dependencies = [
     { name = "checkup" },

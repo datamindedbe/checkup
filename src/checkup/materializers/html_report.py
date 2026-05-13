@@ -5,7 +5,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from checkup.materializers.base import Materializer, group_measurements_hierarchical
-from checkup.metric import Measurement
+from checkup.measurement import Measurement
 
 
 class HTMLMaterializer(Materializer):

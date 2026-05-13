@@ -1,7 +1,7 @@
 import logging
-from typing import ClassVar
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.core.columns import DbtColumnsMetric
@@ -18,19 +18,17 @@ class DbtColumnTestCoverageMetric(DbtMetric):
     so it implements calculate() directly.
     """
 
-    name: ClassVar[str] = "dbt_column_test_coverage"
-    description: ClassVar[str] = "Percentage of columns with at least one test"
-    unit: ClassVar[str] = "percent"
+    name: str = "dbt_column_test_coverage"
+    description: str = "Percentage of columns with at least one test"
+    unit: str = "percent"
 
     @classmethod
     def depends_on(cls) -> list[type[Metric]]:
         return [DbtTestedColumnsMetric, DbtColumnsMetric]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
-        tested = measurements[DbtTestedColumnsMetric].value
-        total = measurements[DbtColumnsMetric].value
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        tested = measurements.get(DbtTestedColumnsMetric).value
+        total = measurements.get(DbtColumnsMetric).value
 
         if total > 0:
             value = int(tested / total * 100)

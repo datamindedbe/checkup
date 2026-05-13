@@ -2,9 +2,9 @@
 
 from datetime import UTC, datetime
 from fnmatch import fnmatch
-from typing import ClassVar
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup_git.provider import GitProvider
@@ -25,13 +25,11 @@ class GitMetric(Metric):
 class GitDaysSinceLastUpdateMetric(GitMetric):
     """Number of days since the last git commit."""
 
-    name: ClassVar[str] = "git_days_since_last_update"
-    description: ClassVar[str] = "Days since the last git commit"
-    unit: ClassVar[str] = "days"
+    name: str = "git_days_since_last_update"
+    description: str = "Days since the last git commit"
+    unit: str = "days"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         git_context = self.get_context(context)
         last_commit_date = git_context.get("git_last_commit_date")
 
@@ -52,24 +50,23 @@ class GitTrackedFileCountMetric(GitMetric):
     Without configuration, counts all tracked files. Can be filtered by
     specifying a glob pattern that matches the full file path.
 
-    Configure via subclassing.
+    Configure via constructor or subclassing.
 
     Example:
-        class PythonTestFileCountMetric(GitTrackedFileCountMetric):
-            name = "python_test_file_count"
-            description = "Number of Python test files"
-            pattern: str = "tests/test_*.py"
+        GitTrackedFileCountMetric(
+            name="python_test_file_count",
+            description="Number of Python test files",
+            pattern="tests/test_*.py"
+        )
     """
 
-    name: ClassVar[str] = "git_tracked_file_count"
-    description: ClassVar[str] = "Number of git tracked files"
-    unit: ClassVar[str] = "files"
+    name: str = "git_tracked_file_count"
+    description: str = "Number of git tracked files"
+    unit: str = "files"
 
     pattern: str = "*"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         git_context = self.get_context(context)
         tracked_files = git_context.get("git_tracked_files", [])
 

@@ -2,7 +2,8 @@
 
 from typing import Any, ClassVar
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup.validators import validate_providers
@@ -37,9 +38,7 @@ class MetricWithProvider(Metric):
     def providers(cls) -> list[type[Provider]]:
         return [RequiredProvider]
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         return self.measure(value=1)
 
 

@@ -1,9 +1,8 @@
 import logging
-from typing import ClassVar
 
 from dbt.artifacts.resources.types import NodeType
 
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement, Measurements
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 
@@ -17,13 +16,11 @@ class DbtTestedColumnsMetric(DbtMetric):
     count patterns, so it implements calculate() directly.
     """
 
-    name: ClassVar[str] = "dbt_tested_columns"
-    description: ClassVar[str] = "Number of columns with at least one test"
-    unit: ClassVar[str] = "columns"
+    name: str = "dbt_tested_columns"
+    description: str = "Number of columns with at least one test"
+    unit: str = "columns"
 
-    def calculate(
-        self, context: Context, measurements: dict[type[Metric], Measurement]
-    ) -> Measurement:
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         manifest = self.get_manifest(context)
 
         all_columns = {

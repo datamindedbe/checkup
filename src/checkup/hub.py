@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field
 from checkup.errors import DuplicateMetricNameError, MetricPicklingError, ProviderError
 from checkup.executor import MetricCalculator, ProviderExecutor
 from checkup.graph import build_dependency_graph, topological_sort
-from checkup.metric import Measurement, Metric
+from checkup.measurement import Measurement
+from checkup.metric import Metric
 from checkup.provider import Provider
 from checkup.validators import validate_providers, validate_unique_metric_names
 
@@ -73,14 +74,13 @@ def _measure_single_provider_set(
         ProviderError: If a provider fails during execution
     """
 
-    context, tags, errors = ProviderExecutor().execute(provider_set)
+    context, errors = ProviderExecutor().execute(provider_set)
     failed_providers = {type(e.provider): e for e in errors}
 
     return MetricCalculator().calculate(
         metrics,
         execution_order,
         context,
-        tags,
         {type(p) for p in provider_set},
         failed_providers,
     )
@@ -154,7 +154,7 @@ class CheckHub:
         metric_classes = [type(m) for m in self._metrics]
         logger.debug("Building dependency graph")
         execution_order = topological_sort(build_dependency_graph(metric_classes))
-        validate_unique_metric_names(list(execution_order))
+        validate_unique_metric_names(self._metrics)
         direct_metric_names = {m.name for m in self._metrics}
         provider_sets = self._provider_sets if self._provider_sets else [[]]
         validate_providers(list(execution_order), provider_sets)
@@ -187,15 +187,7 @@ class CheckHub:
         if all_errors:
             failed_contexts = []
             for ps, _ in all_errors:
-                tags = {
-                    k: v
-                    for p in ps
-                    if p.is_tag_provider()
-                    for k, v in p.provide().items()
-                }
-                failed_contexts.append(
-                    tags if tags else {"providers": [p.name for p in ps]}
-                )
+                failed_contexts.append({"providers": [p.name for p in ps]})
             failed_contexts_str = "\n  ".join(str(ctx) for ctx in failed_contexts)
             logger.info(
                 "Measurement complete: %d measurements, %d failed contexts:\n  %s",

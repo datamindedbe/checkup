@@ -27,7 +27,7 @@ class MetricPicklingError(Exception):
         self.metric_cls = metric_cls
         self.original_error = original_error
         super().__init__(
-            f"Metric '{metric_cls.name}' cannot be pickled for process execution. "
+            f"Metric '{metric_cls.__name__}' cannot be pickled for process execution. "
             f"Consider using ExecutorType.THREAD instead. Original error: {original_error}"
         )
 
@@ -39,15 +39,14 @@ class MetricPicklingError(Exception):
 class DuplicateMetricNameError(Exception):
     """Exception raised when multiple metrics have the same name."""
 
-    def __init__(self, name: str, metric_classes: "list[type[Metric]]"):
-        self.name = name
-        self.metric_classes = metric_classes
-        class_names = ", ".join(cls.__name__ for cls in metric_classes)
-        super().__init__(
-            f"Duplicate metric name '{name}' found in classes: {class_names}. "
-            f"Each metric must have a unique name."
-        )
+    def __init__(self, duplicates: "dict[str, list[type[Metric]]]"):
+        self.duplicates = duplicates
+        lines = []
+        for name, classes in duplicates.items():
+            class_names = ", ".join(cls.__name__ for cls in classes)
+            lines.append(f"  '{name}': {class_names}")
+        super().__init__("Duplicate metric names found:\n" + "\n".join(lines))
 
     def __reduce__(self):
         """Enable pickling across process boundaries."""
-        return (self.__class__, (self.name, self.metric_classes))
+        return (self.__class__, (self.duplicates,))

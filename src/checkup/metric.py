@@ -1,14 +1,17 @@
-"""Metric and Measurement classes."""
+"""Metric base class."""
+
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from checkup.types import Context
 
 if TYPE_CHECKING:
+    from checkup.measurement import Measurement, Measurements
     from checkup.provider import Provider
 
 
@@ -31,27 +34,35 @@ class Metric(ABC, BaseModel):
     """
     Base class for all metrics.
 
-    Metrics are immutable Pydantic models that define how to calculate values.
+    Metrics are Pydantic models that define how to calculate values.
     The calculate() method returns a Measurement with the result.
+
+    Subclasses should define name, description, unit as class-level defaults,
+    but these can be overridden via constructor for custom instances.
     """
 
-    name: ClassVar[str]
-    description: ClassVar[str]
-    unit: ClassVar[str]
-    executor: ClassVar[ExecutorType] = ExecutorType.THREAD
+    name: str
+    description: str = ""
+    unit: str = ""
 
-    model_config = {"frozen": True}  # Make instances immutable
+    model_config = {"frozen": True}
+
+    @classmethod
+    def get_executor(cls) -> ExecutorType:
+        """
+        Get the executor type for this metric class.
+        """
+
+        return getattr(cls, "executor", ExecutorType.THREAD)
 
     @abstractmethod
-    def calculate(
-        self, context: Context, measurements: dict[type["Metric"], "Measurement"]
-    ) -> "Measurement":
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         """
         Calculate metric and return a Measurement.
 
         Args:
             context: General context enriched by providers
-            measurements: Dict mapping Metric classes to their Measurements (dependencies)
+            measurements: Wrapper for accessing calculated dependency measurements
 
         Returns:
             Measurement with the calculated value
@@ -63,7 +74,7 @@ class Metric(ABC, BaseModel):
         value: Any = None,
         tags: dict | None = None,
         diagnostic: str = "",
-    ) -> "Measurement":
+    ) -> Measurement:
         """
         Create a Measurement for this metric.
 
@@ -77,6 +88,8 @@ class Metric(ABC, BaseModel):
         Returns:
             Measurement instance
         """
+        from checkup.measurement import Measurement
+
         return Measurement(
             metric=self,
             value=value,
@@ -85,7 +98,7 @@ class Metric(ABC, BaseModel):
         )
 
     @classmethod
-    def depends_on(cls) -> list[type["Metric"]]:
+    def depends_on(cls) -> list[type[Metric]]:
         """
         Return list of metric classes this metric depends on.
 
@@ -95,7 +108,7 @@ class Metric(ABC, BaseModel):
         return []
 
     @classmethod
-    def providers(cls) -> list[type["Provider"]]:
+    def providers(cls) -> list[type[Provider]]:
         """
         Return list of provider classes to enrich context.
 
@@ -103,16 +116,3 @@ class Metric(ABC, BaseModel):
             List of provider classes (empty by default)
         """
         return []
-
-
-class Measurement(BaseModel):
-    """
-    Result of a metric calculation.
-
-    Holds the metric that produced it, the calculated value, tags, and diagnostic information.
-    """
-
-    metric: Metric
-    value: Any = None
-    tags: dict = Field(default_factory=dict)
-    diagnostic: str = ""

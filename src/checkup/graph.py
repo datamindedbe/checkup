@@ -33,7 +33,7 @@ def build_dependency_graph(
         graph[metric_cls] = deps
         logger.debug(
             "Added metric %s with %d dependencies",
-            metric_cls.name,
+            metric_cls.__name__,
             len(deps),
         )
 
