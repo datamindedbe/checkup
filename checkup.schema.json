@@ -141,116 +141,221 @@
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "conveyor_is_dirty_deployment"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "conveyor_last_deployment_time"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "conveyor_last_run_status"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_column_test_coverage"
+              },
+              "name": {
+                "default": "dbt_column_test_coverage",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Percentage of columns with at least one test",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "percent",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_column_tests"
+              },
+              "name": {
+                "default": "dbt_column_tests",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of tests targeting specific columns",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "tests",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_columns"
+              },
+              "name": {
+                "default": "dbt_columns",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Total number of columns across all models",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "columns",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_columns_with_description"
+              },
+              "name": {
+                "default": "dbt_columns_with_description",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of columns with descriptions",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "columns",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_columns_without_description"
+              },
+              "name": {
+                "default": "dbt_columns_without_description",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of columns without descriptions",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "columns",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_data_tests"
+              },
+              "name": {
+                "default": "dbt_data_tests",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of generic (data) tests",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "tests",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_flagged_packages"
+              },
+              "name": {
+                "default": "dbt_flagged_packages",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of flagged packages in packages.yml",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "packages",
+                "title": "Unit",
+                "type": "string"
               },
               "flagged_packages": {
                 "items": {
@@ -261,123 +366,258 @@
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_models"
+              },
+              "name": {
+                "default": "dbt_models",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Total number of dbt models",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_models_not_adhering_to_naming_convention"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_models_with_description"
+              },
+              "name": {
+                "default": "dbt_models_with_description",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of models with descriptions",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_models_without_description"
+              },
+              "name": {
+                "default": "dbt_models_without_description",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of models without descriptions",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_output_columns_without_data_type"
+              },
+              "name": {
+                "default": "dbt_output_columns_without_data_type",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of columns in output models without data type",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "columns",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_output_models"
+              },
+              "name": {
+                "default": "dbt_output_models",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of output models (non-internal schema)",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_output_models_with_description"
+              },
+              "name": {
+                "default": "dbt_output_models_with_description",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of output models with descriptions",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_output_models_without_contracts"
+              },
+              "name": {
+                "default": "dbt_output_models_without_contracts",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of output models without enforced contracts",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_output_models_without_description"
+              },
+              "name": {
+                "default": "dbt_output_models_without_description",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of output models without descriptions",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "models",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_profile_host"
+              },
+              "name": {
+                "default": "dbt_profile_host",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "The host configured in profiles.yml",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "url",
+                "title": "Unit",
+                "type": "string"
               },
               "profile": {
                 "anyOf": [
@@ -397,15 +637,30 @@
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_supported_version"
+              },
+              "name": {
+                "default": "dbt_supported_version",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Whether dbt version meets minimum requirement",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "boolean",
+                "title": "Unit",
+                "type": "string"
               },
               "min_version": {
                 "title": "Min Version",
@@ -413,75 +668,165 @@
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_tested_columns"
+              },
+              "name": {
+                "default": "dbt_tested_columns",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of columns with at least one test",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "columns",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_tests"
+              },
+              "name": {
+                "default": "dbt_tests",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Total number of dbt tests",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "tests",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_unit_tests"
+              },
+              "name": {
+                "default": "dbt_unit_tests",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of singular (unit) tests",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "tests",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "dbt_version"
+              },
+              "name": {
+                "default": "dbt_version",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "The dbt version used to generate the manifest",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "version",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "git_days_since_last_update"
+              },
+              "name": {
+                "default": "git_days_since_last_update",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Days since the last git commit",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "days",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "git_tracked_file_count"
+              },
+              "name": {
+                "default": "git_tracked_file_count",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of git tracked files",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "files",
+                "title": "Unit",
+                "type": "string"
               },
               "pattern": {
                 "default": "*",
@@ -490,27 +835,57 @@
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "python_version"
+              },
+              "name": {
+                "default": "python_version",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "The Python version configured for the project",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "version",
+                "title": "Unit",
+                "type": "string"
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "name": {
+              "type": {
                 "const": "python_version_check"
+              },
+              "name": {
+                "default": "python_version_check",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "The Python version adheres to a minimum and maximum boundary",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "bool",
+                "title": "Unit",
+                "type": "string"
               },
               "min_version": {
                 "title": "Min Version",
@@ -522,7 +897,7 @@
               }
             },
             "required": [
-              "name"
+              "type"
             ],
             "additionalProperties": false
           }

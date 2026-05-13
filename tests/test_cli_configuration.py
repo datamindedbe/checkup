@@ -61,18 +61,16 @@ class TestParseProviders:
 
 
 class TestParseMetrics:
-    def test_string_shorthand_creates_metric_with_empty_config(self):
+    def test_string_shorthand_is_ignored(self):
         raw = ["git_days_since_last_update", "python_version"]
         result = parse_metrics(raw)
 
-        assert len(result) == 2
-        assert result[0].name == "git_days_since_last_update"
-        assert result[0].config == {}
+        assert len(result) == 0
 
-    def test_dict_with_name_field_extracts_config(self):
+    def test_dict_with_type_field_extracts_config(self):
         raw = [
             {
-                "name": "python_version_check",
+                "type": "python_version_check",
                 "min_version": "3.10",
                 "max_version": "3.13",
             },
@@ -80,8 +78,29 @@ class TestParseMetrics:
         result = parse_metrics(raw)
 
         assert len(result) == 1
-        assert result[0].name == "python_version_check"
+        assert result[0].type == "python_version_check"
+        assert result[0].name is None
         assert result[0].config == {"min_version": "3.10", "max_version": "3.13"}
+
+    def test_dict_with_type_and_name_for_multiple_instances(self):
+        raw = [
+            {
+                "type": "git_tracked_file_count",
+                "name": "readme_exists",
+                "pattern": "README.md",
+            },
+            {
+                "type": "git_tracked_file_count",
+                "name": "license_exists",
+                "pattern": "LICENSE",
+            },
+        ]
+        result = parse_metrics(raw)
+
+        assert [(m.type, m.name) for m in result] == [
+            ("git_tracked_file_count", "readme_exists"),
+            ("git_tracked_file_count", "license_exists"),
+        ]
 
 
 class TestParseMaterializer:
@@ -232,7 +251,7 @@ class TestLoadConfig:
                 {
                     "tags": {"product": "test"},
                     "providers": [{"name": "git"}],
-                    "metrics": [{"name": "dummy_metric"}],
+                    "metrics": [{"type": "dummy_metric"}],
                 }
             )
         )

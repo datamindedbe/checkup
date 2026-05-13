@@ -15,10 +15,13 @@ class ProviderConfig(BaseModel):
 
 
 class MetricConfig(BaseModel):
-    """Configuration for a single metric."""
-
-    name: str
+    type: str
+    name: str | None = None
     config: dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def instance_name(self) -> str:
+        return self.name or self.type
 
 
 class MaterializerConfig(BaseModel):

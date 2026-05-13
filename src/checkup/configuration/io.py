@@ -80,13 +80,17 @@ def merge_configs(base: dict[str, Any], override: dict[str, Any]) -> dict[str, A
             result[key] = value
         elif key == "metrics":
             if key in result:
-                base_metrics = {
-                    (m if isinstance(m, str) else list(m.keys())[0]): m
-                    for m in result.get(key, [])
-                }
+
+                def _metric_key(m: dict) -> tuple:
+                    """
+                    Key by (type, name) to allow multiple instances of same type
+                    """
+
+                    return (m.get("type"), m.get("name"))
+
+                base_metrics = {_metric_key(m): m for m in result.get(key, [])}
                 for metric in value:
-                    name = metric if isinstance(metric, str) else list(metric.keys())[0]
-                    base_metrics[name] = metric
+                    base_metrics[_metric_key(metric)] = metric
                 result[key] = list(base_metrics.values())
             else:
                 result[key] = value
@@ -126,9 +130,10 @@ def parse_metrics(raw: list[Any] | None) -> list[MetricConfig]:
     Parse metric configuration from raw YAML.
 
     Supports:
-        - name: git_days_since_last_update
-        - name: python_version
-          version: "3.12"
+        - type: git_tracked_file_count
+        - type: git_tracked_file_count
+          name: cruft_file_exists
+          pattern: ".cruft.json"
     """
 
     if not raw:
@@ -136,13 +141,14 @@ def parse_metrics(raw: list[Any] | None) -> list[MetricConfig]:
 
     metrics = []
     for item in raw:
-        if isinstance(item, str):
-            metrics.append(MetricConfig(name=item))
-        elif isinstance(item, dict):
-            name = item.get("name")
-            if name:
-                config = {k: v for k, v in item.items() if k != "name"}
-                metrics.append(MetricConfig(name=name, config=config))
+        if not isinstance(item, dict):
+            continue
+        metric_type = item.get("type")
+        if not metric_type:
+            continue
+        name = item.get("name")
+        config = {k: v for k, v in item.items() if k not in ("type", "name")}
+        metrics.append(MetricConfig(type=metric_type, name=name, config=config))
     return metrics
 
 
