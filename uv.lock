@@ -221,7 +221,7 @@ dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "checkup-bitbucket"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "plugins/checkup-bitbucket" }
 dependencies = [
     { name = "checkup" },
