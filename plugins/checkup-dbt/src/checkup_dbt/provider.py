@@ -65,15 +65,14 @@ class DbtManifestProvider(Provider):
 
         Args:
             manifest_path: Path to pre-generated manifest.json
-            dbt_project_dir: Path to dbt project (runs dbt parse)
+            dbt_project_dir: Path to dbt project (runs dbt parse). Defaults to
+                the current working directory if neither manifest_path nor
+                dbt_project_dir is provided.
             profiles_dir: Optional profiles directory (defaults to project dir)
             verbose: If True, show dbt subprocess output. Defaults to False.
-
-        Raises:
-            ValueError: If neither manifest_path nor dbt_project_dir provided
         """
         if manifest_path is None and dbt_project_dir is None:
-            raise ValueError("Must provide either 'manifest_path' or 'dbt_project_dir'")
+            dbt_project_dir = Path.cwd()
 
         self.manifest_path = Path(manifest_path) if manifest_path else None
         self.dbt_project_dir = Path(dbt_project_dir) if dbt_project_dir else None
