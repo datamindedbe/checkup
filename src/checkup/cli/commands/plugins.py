@@ -27,7 +27,7 @@ def plugins() -> None:
         ("Metrics", "metrics"),
         ("Materializers", "materializers"),
     ]
-    populated_kinds = [
+    populated_kinds = [  # Hide columns that are empty
         (header, attr)
         for header, attr in kinds
         if any(getattr(p, attr) for p in all_plugins.values())
