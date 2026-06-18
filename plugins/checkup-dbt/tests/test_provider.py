@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 from checkup_dbt import DbtModelsMetric
 from checkup_dbt.provider import DbtManifestProvider
 
@@ -41,13 +40,11 @@ def test_dbt_project_dir_mode(sample_dbt_project_dir: Path):
     assert result.measurements[0].value == 3
 
 
-def test_missing_args_raises_error():
-    with pytest.raises(ValueError) as exc_info:
-        DbtManifestProvider()
+def test_missing_args_defaults_to_cwd():
+    provider = DbtManifestProvider()
 
-    assert "manifest_path" in str(exc_info.value) or "dbt_project_dir" in str(
-        exc_info.value
-    )
+    assert provider.manifest_path is None
+    assert provider.dbt_project_dir == Path.cwd()
 
 
 def test_multiple_projects(sample_manifest_path: Path):
