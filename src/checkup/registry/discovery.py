@@ -3,6 +3,7 @@ Plugin discovery via Python entry points.
 """
 
 import logging
+from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,19 @@ if TYPE_CHECKING:
     from checkup.provider import Provider
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Plugin:
+    """
+    A distribution registering one or more checkup entry points.
+    """
+
+    version: str | None
+    providers: list[str] = field(default_factory=list)
+    metrics: list[str] = field(default_factory=list)
+    materializers: list[str] = field(default_factory=list)
+
 
 # Entry point group names
 PROVIDERS_GROUP = "checkup.providers"
@@ -136,6 +150,37 @@ class PluginRegistry:
         """
 
         return self._list_entry_point_names(MATERIALIZERS_GROUP)
+
+    def list_plugins(self) -> dict[str, Plugin]:
+        """
+        List installed plugins grouped by distribution.
+
+        Walks all checkup entry-point groups and groups them by the
+        distribution that registers them. Does not load plugin code.
+        """
+
+        groups = {
+            "providers": PROVIDERS_GROUP,
+            "metrics": METRICS_GROUP,
+            "materializers": MATERIALIZERS_GROUP,
+        }
+
+        plugins: dict[str, Plugin] = {}
+
+        for kind, group in groups.items():
+            for ep in entry_points(group=group):
+                dist = ep.dist
+                dist_name = dist.name if dist else "unknown"
+                dist_version = dist.version if dist else None
+
+                plugin = plugins.setdefault(dist_name, Plugin(version=dist_version))
+                getattr(plugin, kind).append(ep.name)
+
+        for plugin in plugins.values():
+            for kind in groups:
+                getattr(plugin, kind).sort()
+
+        return dict(sorted(plugins.items()))
 
     def list_compatible_metric_names(self, provider_names: list[str]) -> list[str]:
         """

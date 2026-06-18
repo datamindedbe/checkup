@@ -7,7 +7,7 @@ from typing import Annotated
 
 import typer
 
-from checkup.cli.commands import config, init, run, schema
+from checkup.cli.commands import config, init, plugins, run, schema
 
 app = typer.Typer(
     name="checkup",
@@ -36,3 +36,4 @@ app.command()(run)
 app.command()(init)
 app.command()(config)
 app.command()(schema)
+app.command()(plugins)
