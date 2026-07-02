@@ -1,0 +1,88 @@
+name: Release Prepare
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to release
+        required: true
+        type: choice
+        options:
+          - checkup
+          - checkup-git
+          - checkup-dbt
+          - checkup-python
+          - checkup-conveyor
+          - checkup-airflow
+          - checkup-github
+          - checkup-gitlab
+          - checkup-bitbucket
+      level:
+        description: Version bump level
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  prepare:
+    name: Open release PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install just
+        uses: extractions/setup-just@v3
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version and open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ inputs.package }}
+          LEVEL: ${{ inputs.level }}
+        run: |
+          set -e
+          just bump "$PACKAGE" "$LEVEL"
+          VERSION=$(uv version --short --package "$PACKAGE")
+          BRANCH="release/${PACKAGE}-v${VERSION}"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "Error: branch $BRANCH already exists on remote"
+            exit 1
+          fi
+
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "Release: ${PACKAGE} v${VERSION}"
+          git push origin "$BRANCH"
+
+          BODY=$(printf '%s\n\n%s\n\n%s\n' \
+            "Release PR for **${PACKAGE} v${VERSION}**." \
+            "Merging this PR will trigger the \`release-finalize\` workflow, which tests, builds, publishes to PyPI, and tags the merge commit \`${PACKAGE}-v${VERSION}\`." \
+            "Do not merge until checks pass.")
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Release: ${PACKAGE} v${VERSION}" \
+            --body "$BODY"
