@@ -56,35 +56,6 @@ verify-version package version:
     fi
     echo "Version verified: $TOML_VERSION"
 
-# Bump version, commit, tag and push to trigger CD release
-release-cd package level:
-    #!/usr/bin/env bash
-    set -e
-    git diff --quiet && git diff --cached --quiet || (echo "Error: Git tree is not clean" && exit 1)
-    just bump {{ package }} {{ level }}
-    VERSION=$(uv version --short --package {{ package }})
-    git add -A && git commit -m "Bump {{ package }} to $VERSION"
-    just tag {{ package }}
-
-# Tag and push to trigger CD release
-tag package:
-    #!/usr/bin/env bash
-    set -e
-    TAG="{{ package }}-v$(uv version --short --package {{ package }})"
-    git tag -l "$TAG" | grep -q . && echo "Error: Tag $TAG already exists locally" && exit 1
-    git ls-remote --tags origin "$TAG" | grep -q . && echo "Error: Tag $TAG already exists on remote" && exit 1
-    echo "Creating tag: $TAG"
-    git tag "$TAG" && git push origin "$TAG"
-
-# Remove tag locally and from remote (in case of failed releases)
-untag package:
-    #!/usr/bin/env bash
-    set -e
-    TAG="{{ package }}-v$(uv version --short --package {{ package }})"
-    echo "Removing tag: $TAG"
-    git tag -d "$TAG" 2>/dev/null || true
-    git push origin --delete "$TAG" 2>/dev/null || true
-
 # Build a specific package
 build package:
     uv build --package {{ package }}
@@ -106,23 +77,3 @@ release package version:
     just publish
 
     echo "Successfully released {{ package }} version {{ version }}"
-
-# Release checkup
-release-checkup version:
-    just release checkup {{ version }}
-
-# Release checkup-git plugin
-release-checkup-git version:
-    just release checkup-git {{ version }}
-
-# Release checkup-dbt plugin
-release-checkup-dbt version:
-    just release checkup-dbt {{ version }}
-
-# Release checkup-python plugin
-release-checkup-python version:
-    just release checkup-python {{ version }}
-
-# Release checkup-conveyor plugin
-release-checkup-conveyor version:
-    just release checkup-conveyor {{ version }}

@@ -1,19 +1,25 @@
-name: CD
+name: Release Finalize
 
 on:
-  push:
-    tags:
-      - 'checkup*-v*'
+  pull_request:
+    types: [closed]
+    branches:
+      - main
 
 env:
   PACKAGES: checkup checkup-git checkup-dbt checkup-python checkup-conveyor checkup-airflow checkup-github checkup-gitlab checkup-bitbucket
 
 jobs:
-  release:
-    name: Release Package
+  finalize:
+    name: Publish and tag
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -26,20 +32,20 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Determine package from tag
+      - name: Determine package and version from branch
         id: package
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-
+          NAME_VERSION="${HEAD_REF#release/}"
           for pkg in $PACKAGES; do
-            if [[ "$TAG" =~ ^${pkg}-v(.+)$ ]]; then
+            if [[ "$NAME_VERSION" =~ ^${pkg}-v(.+)$ ]]; then
               echo "name=$pkg" >> $GITHUB_OUTPUT
               echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
               exit 0
             fi
           done
-
-          echo "Unknown tag format: $TAG"
+          echo "Unknown release branch format: $HEAD_REF"
           exit 1
 
       - name: Install dependencies
@@ -49,3 +55,12 @@ jobs:
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: just release ${{ steps.package.outputs.name }} ${{ steps.package.outputs.version }}
+
+      - name: Tag merge commit
+        env:
+          TAG: ${{ steps.package.outputs.name }}-v${{ steps.package.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
