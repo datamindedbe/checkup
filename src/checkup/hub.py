@@ -57,6 +57,7 @@ def _measure_single_provider_set(
     provider_set: list[Provider],
     metrics: list[Metric],
     execution_order: list[type[Metric]],
+    multiprocessing: bool = True,
 ) -> list[Measurement]:
     """Calculate all metrics for a single provider set.
 
@@ -66,6 +67,7 @@ def _measure_single_provider_set(
         provider_set: List of provider instances
         metrics: List of metric instances to calculate
         execution_order: Topologically sorted metric classes
+        multiprocessing: If False, run metric batches without subprocesses
 
     Returns:
         List of Measurements with tags merged
@@ -77,7 +79,7 @@ def _measure_single_provider_set(
     context, errors = ProviderExecutor().execute(provider_set)
     failed_providers = {type(e.provider): e for e in errors}
 
-    return MetricCalculator().calculate(
+    return MetricCalculator(multiprocessing=multiprocessing).calculate(
         metrics,
         execution_order,
         context,
@@ -133,11 +135,17 @@ class CheckHub:
     def measure(
         self,
         max_workers: int | None = None,
+        multiprocessing: bool = True,
     ) -> MeasurementResult:
-        """Execute the measurement pipeline.
+        """
+        Execute the measurement pipeline.
 
         Args:
             max_workers: Max parallel workers. None = use all CPUs.
+                Ignored when multiprocessing=False.
+            multiprocessing: If True, provider sets run in parallel via ProcessPoolExecutor.
+                If False, provider sets run sequentially and
+                metrics requesting the PROCESS executor fall back to threads.
 
         Returns:
             MeasurementResult containing all calculated measurements and errors
@@ -161,28 +169,46 @@ class CheckHub:
 
         all_measurements: list[Measurement] = []
         all_errors: list[tuple[list[Provider], Exception]] = []
-        workers = max_workers if max_workers is not None else os.cpu_count()
 
-        logger.debug("Executing with %d workers", workers)
-        with ProcessPoolExecutor(max_workers=workers) as executor:
-            future_to_provider_set = {
-                executor.submit(
-                    _measure_single_provider_set,
-                    provider_set=ps,
-                    metrics=self._metrics,
-                    execution_order=execution_order,
-                ): ps
-                for ps in provider_sets
-            }
+        def _record(ps: list[Provider], e: Exception) -> None:
+            logger.error("Provider set failed: %s", e)
+            logger.debug("Provider set failure details:", exc_info=True)
+            all_errors.append((ps, e))
 
-            for future in as_completed(future_to_provider_set):
-                ps = future_to_provider_set[future]
+        if multiprocessing:
+            workers = max_workers if max_workers is not None else os.cpu_count()
+            logger.debug("Executing with %d workers", workers)
+            with ProcessPoolExecutor(max_workers=workers) as executor:
+                future_to_provider_set = {
+                    executor.submit(
+                        _measure_single_provider_set,
+                        provider_set=ps,
+                        metrics=self._metrics,
+                        execution_order=execution_order,
+                    ): ps
+                    for ps in provider_sets
+                }
+
+                for future in as_completed(future_to_provider_set):
+                    ps = future_to_provider_set[future]
+                    try:
+                        all_measurements.extend(future.result())
+                    except Exception as e:
+                        _record(ps, e)
+        else:
+            logger.debug("Executing sequentially")
+            for ps in provider_sets:
                 try:
-                    all_measurements.extend(future.result())
+                    all_measurements.extend(
+                        _measure_single_provider_set(
+                            provider_set=ps,
+                            metrics=self._metrics,
+                            execution_order=execution_order,
+                            multiprocessing=False,
+                        )
+                    )
                 except Exception as e:
-                    logger.error("Provider set failed: %s", e)
-                    logger.debug("Provider set failure details:", exc_info=True)
-                    all_errors.append((ps, e))
+                    _record(ps, e)
 
         if all_errors:
             failed_contexts = []

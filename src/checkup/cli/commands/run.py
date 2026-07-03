@@ -40,6 +40,13 @@ def run(
         bool,
         typer.Option("--dry-run", help="Don't materialize, just print"),
     ] = False,
+    multiprocessing: Annotated[
+        bool,
+        typer.Option(
+            "--multiprocessing",
+            help="When disabled, run sequentially without subprocesses",
+        ),
+    ] = True,
     verbose: Annotated[
         bool,
         typer.Option("--verbose", "-v", help="Verbose output"),
@@ -55,4 +62,8 @@ def run(
     cfg = load_config(config_path=config)
     cfg = apply_cli_overrides(cfg, tag, provider, metric)
 
-    execute_checkup(cfg, materializer="console" if dry_run else materializer)
+    execute_checkup(
+        cfg,
+        materializer="console" if dry_run else materializer,
+        multiprocessing=multiprocessing,
+    )

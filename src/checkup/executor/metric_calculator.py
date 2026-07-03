@@ -37,6 +37,15 @@ class MetricCalculator:
     Calculates metrics for a given context.
     """
 
+    def __init__(self, multiprocessing: bool = True) -> None:
+        """
+        Args:
+            multiprocessing: If False, metrics that request the PROCESS executor are run with the THREAD executor instead.
+                This avoids spawning subprocesses in environments that do not support it.
+        """
+
+        self._multiprocessing = multiprocessing
+
     def calculate(
         self,
         metrics: list[Metric],
@@ -192,6 +201,12 @@ class MetricCalculator:
         """
         Execute a batch and record results.
         """
+
+        if not self._multiprocessing and executor_type is ExecutorType.PROCESS:
+            logger.debug(
+                "No subprocesses requested: running PROCESS batch with THREAD executor"
+            )
+            executor_type = ExecutorType.THREAD
 
         logger.debug(
             "Executing batch with %d metrics using %s executor",
