@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="CheckUp" width="100%" />
+  <img src="https://raw.githubusercontent.com/datamindedbe/checkup/main/assets/banner.png" alt="CheckUp" width="100%" />
 </p>
 
 <h3 align="center">Computational Governance Framework</h3>
