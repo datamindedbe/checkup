@@ -43,8 +43,8 @@ def run(
     multiprocessing: Annotated[
         bool,
         typer.Option(
-            "--multiprocessing",
-            help="When disabled, run sequentially without subprocesses",
+            "--multiprocessing/--no-multiprocessing",
+            help="Use multiprocessing. Disable with --no-multiprocessing to run sequentially without subprocesses",
         ),
     ] = True,
     verbose: Annotated[
