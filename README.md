@@ -1,9 +1,14 @@
-# CheckUp
+<p align="center">
+  <img src="assets/banner.png" alt="CheckUp" width="100%" />
+</p>
 
-[![PyPI version](https://img.shields.io/pypi/v/checkup)](https://pypi.org/project/checkup/)
-[![Python versions](https://img.shields.io/pypi/pyversions/checkup)](https://pypi.org/project/checkup/)
+<h3 align="center">Computational Governance Framework</h3>
+<p align="center">for measuring <b>data product health</b></p>
 
-Computational governance framework for measuring data product health.
+<p align="center">
+  <a href="https://pypi.org/project/checkup/"><img src="https://img.shields.io/pypi/v/checkup" alt="PyPI version" /></a>
+  <a href="https://pypi.org/project/checkup/"><img src="https://img.shields.io/pypi/pyversions/checkup" alt="Python versions" /></a>
+</p>
 
 ## Plugins
 
