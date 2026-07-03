@@ -8,6 +8,11 @@ dependencies = [
     "checkup",
 ]
 
+[project.urls]
+Homepage = "https://github.com/datamindedbe/checkup"
+Repository = "https://github.com/datamindedbe/checkup"
+Issues = "https://github.com/datamindedbe/checkup/issues"
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
