@@ -1,6 +1,7 @@
 """Tests for CheckHub execution with instance-based providers."""
 
 from typing import Any, ClassVar
+from unittest.mock import MagicMock, patch
 
 from fixtures import (
     DependentDummyMetric,
@@ -9,9 +10,14 @@ from fixtures import (
     IntegrationDerivedMetric,
 )
 
+from checkup.executor.batch_executors import (
+    execute_batch_process,
+    execute_batch_thread,
+)
+from checkup.executor.metric_calculator import BATCH_EXECUTORS
 from checkup.hub import CheckHub
 from checkup.measurement import Measurement, Measurements
-from checkup.metric import Metric
+from checkup.metric import ExecutorType, Metric
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
@@ -112,6 +118,70 @@ class OtherMetric(Metric):
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         value = context[OtherProvider.name]["other_value"]
         return self.measure(value=value)
+
+
+class ProcessExecutorMetric(Metric):
+    """Metric that requests the PROCESS executor."""
+
+    name: str = "process_metric"
+    description: str = "Runs in a subprocess"
+    unit: str = "count"
+
+    executor: ClassVar[ExecutorType] = ExecutorType.PROCESS
+
+    def calculate(self, context: Context, measurements: Measurements) -> Measurement:
+        return self.measure(value=7)
+
+
+def _spy_batch_executors() -> tuple[Any, MagicMock, MagicMock]:
+    """Patch BATCH_EXECUTORS with spies."""
+
+    thread_spy = MagicMock(side_effect=execute_batch_thread)
+    process_spy = MagicMock(side_effect=execute_batch_process)
+    patched = {
+        **BATCH_EXECUTORS,
+        ExecutorType.THREAD: thread_spy,
+        ExecutorType.PROCESS: process_spy,
+    }
+    return patch.dict(BATCH_EXECUTORS, patched, clear=True), thread_spy, process_spy
+
+
+class TestHubSequentialExecution:
+    """Tests for measure(multiprocessing=False), used in environments that do not support subprocesses."""
+
+    def test_sequential_multiple_provider_sets(self):
+        """Sequential mode iterates all provider sets."""
+
+        result = (
+            CheckHub()
+            .with_metrics([DataMetric()])
+            .with_providers(
+                [
+                    [DataProvider(value=10)],
+                    [DataProvider(value=20)],
+                    [DataProvider(value=30)],
+                ]
+            )
+            .measure(multiprocessing=False)
+        )
+
+        assert {m.value for m in result.measurements} == {10, 20, 30}
+
+    def test_sequential_process_metric_falls_back_to_threads(self):
+        """In sequential mode, a PROCESS-executor metric is routed to threads."""
+
+        patch, thread_spy, process_spy = _spy_batch_executors()
+        with patch:
+            result = (
+                CheckHub()
+                .with_metrics([ProcessExecutorMetric()])
+                .measure(multiprocessing=False)
+            )
+
+        assert result.measurements[0].value == 7
+        assert result.errors == []
+        process_spy.assert_not_called()
+        thread_spy.assert_called_once()
 
 
 class TestHubExecution:

@@ -23,13 +23,18 @@ logger = logging.getLogger(__name__)
 console = Console()
 
 
-def execute_checkup(config: CheckupConfig, materializer: str | None = None) -> None:
+def execute_checkup(
+    config: CheckupConfig,
+    materializer: str | None = None,
+    multiprocessing: bool = True,
+) -> None:
     """
     Execute checkup with the given configuration.
 
     Args:
         config: Loaded checkup configuration
         materializer: Override materializer type (e.g., "console")
+        multiprocessing: If False, run sequentially without subprocesses
     """
 
     registry = get_registry()
@@ -48,7 +53,12 @@ def execute_checkup(config: CheckupConfig, materializer: str | None = None) -> N
 
     console.print(f"[blue]Running {len(metrics)} metrics...[/blue]")
 
-    result = CheckHub().with_metrics(metrics).with_providers([providers]).measure()
+    result = (
+        CheckHub()
+        .with_metrics(metrics)
+        .with_providers([providers])
+        .measure(multiprocessing=multiprocessing)
+    )
 
     if result.errors:
         for _, error in result.errors:
