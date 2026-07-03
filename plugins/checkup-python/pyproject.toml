@@ -8,6 +8,11 @@ dependencies = [
     "checkup",
 ]
 
+[project.urls]
+Homepage = "https://github.com/datamindedbe/checkup"
+Source = "https://github.com/datamindedbe/checkup"
+Issues = "https://github.com/datamindedbe/checkup/issues"
+
 [tool.uv.sources]
 checkup = { workspace = true }
 
