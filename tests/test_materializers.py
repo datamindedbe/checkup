@@ -12,9 +12,24 @@ from checkup.materializers import (
     ConsoleMaterializer,
     CSVMaterializer,
     HTMLMaterializer,
+    MarkdownMaterializer,
     Materializer,
     SQLAlchemyMaterializer,
 )
+
+
+def _capture(materializer: Materializer, measurements, direct) -> str:
+    """
+    Capture the stdout a materializer produces, restoring stdout afterwards.
+    """
+
+    captured_output = StringIO()
+    sys.stdout = captured_output
+    try:
+        materializer.materialize(measurements, direct)
+    finally:
+        sys.stdout = sys.__stdout__
+    return captured_output.getvalue()
 
 
 def test_materializer_is_abstract():
@@ -28,17 +43,10 @@ def test_console_materializer():
     metric = DummyMetric(expected_value=42)
     measurement = metric.measure(value=42)
 
-    # Capture stdout
-    captured_output = StringIO()
-    sys.stdout = captured_output
+    output = _capture(
+        ConsoleMaterializer(group_tags=["domain", "project"]), [measurement], {"dummy"}
+    )
 
-    materializer = ConsoleMaterializer(group_tags=["domain", "project"])
-    materializer.materialize([measurement], {"dummy"})
-
-    # Reset stdout
-    sys.stdout = sys.__stdout__
-
-    output = captured_output.getvalue()
     assert "dummy" in output
     assert "42" in output
 
@@ -48,17 +56,39 @@ def test_console_materializer_no_grouping():
     metric = DummyMetric(expected_value=42)
     measurement = metric.measure(value=42)
 
-    captured_output = StringIO()
-    sys.stdout = captured_output
+    output = _capture(ConsoleMaterializer(), [measurement], {"dummy"})
 
-    materializer = ConsoleMaterializer()  # No group_tags
-    materializer.materialize([measurement], {"dummy"})
-
-    sys.stdout = sys.__stdout__
-
-    output = captured_output.getvalue()
     assert "dummy" in output
     assert "42" in output
+
+
+def test_markdown_materializer_renders_table():
+    """
+    Markdown materializer emits a markdown table with header, separator and rows.
+    """
+
+    metric = DummyMetric(expected_value=42)
+    measurement = metric.measure(value=42)
+
+    output = _capture(MarkdownMaterializer(), [measurement], {"dummy"})
+
+    assert "| Name | Description | Value | Unit | Diagnostics |" in output
+    assert "| --- | --- | ---: | --- | --- |" in output  # Value right-aligned
+    assert "| dummy | Test metric | 42 | count |" in output
+
+
+def test_markdown_materializer_escapes_pipes_and_newlines():
+    """
+    Cells cannot hold raw pipes or newlines; they must be escaped.
+    """
+
+    metric = DummyMetric(expected_value=1)
+    measurement = metric.measure(value=1, diagnostic="a|b\nc")
+
+    output = _capture(MarkdownMaterializer(), [measurement], {"dummy"})
+
+    assert "a\\|b<br>c" in output
+    assert "a|b\nc" not in output
 
 
 def test_console_materializer_single_grouping():
@@ -66,15 +96,10 @@ def test_console_materializer_single_grouping():
     metric = DummyMetric(expected_value=42)
     measurement = metric.measure(value=42, tags={"domain": "Analytics"})
 
-    captured_output = StringIO()
-    sys.stdout = captured_output
+    output = _capture(
+        ConsoleMaterializer(group_tags=["domain"]), [measurement], {"dummy"}
+    )
 
-    materializer = ConsoleMaterializer(group_tags=["domain"])
-    materializer.materialize([measurement], {"dummy"})
-
-    sys.stdout = sys.__stdout__
-
-    output = captured_output.getvalue()
     assert "dummy" in output
     assert "42" in output
     assert "domain: Analytics" in output
@@ -87,15 +112,12 @@ def test_console_materializer_three_level_grouping():
         value=42, tags={"domain": "Analytics", "project": "Core", "env": "prod"}
     )
 
-    captured_output = StringIO()
-    sys.stdout = captured_output
+    output = _capture(
+        ConsoleMaterializer(group_tags=["domain", "project", "env"]),
+        [measurement],
+        {"dummy"},
+    )
 
-    materializer = ConsoleMaterializer(group_tags=["domain", "project", "env"])
-    materializer.materialize([measurement], {"dummy"})
-
-    sys.stdout = sys.__stdout__
-
-    output = captured_output.getvalue()
     assert "dummy" in output
     assert "42" in output
     assert "domain: Analytics" in output
@@ -157,17 +179,13 @@ def test_materializer_filters_indirect_by_default():
     indirect_metric = IndirectDummyMetric(expected_value=100)
     indirect_measurement = indirect_metric.measure(value=100)
 
-    # Capture stdout
-    captured_output = StringIO()
-    sys.stdout = captured_output
-
-    materializer = ConsoleMaterializer(group_tags=["domain", "project"])
     # Only "dummy" is direct, "indirect" is not
-    materializer.materialize([direct_measurement, indirect_measurement], {"dummy"})
+    output = _capture(
+        ConsoleMaterializer(group_tags=["domain", "project"]),
+        [direct_measurement, indirect_measurement],
+        {"dummy"},
+    )
 
-    sys.stdout = sys.__stdout__
-
-    output = captured_output.getvalue()
     assert "dummy" in output  # Direct metric included
     assert "indirect" not in output  # Indirect metric filtered out
 
@@ -182,18 +200,12 @@ def test_materializer_includes_indirect_when_configured():
     indirect_metric = IndirectDummyMetric(expected_value=100)
     indirect_measurement = indirect_metric.measure(value=100)
 
-    # Capture stdout
-    captured_output = StringIO()
-    sys.stdout = captured_output
-
-    materializer = ConsoleMaterializer(
-        include_indirect=True, group_tags=["domain", "project"]
+    output = _capture(
+        ConsoleMaterializer(include_indirect=True, group_tags=["domain", "project"]),
+        [direct_measurement, indirect_measurement],
+        {"dummy"},
     )
-    materializer.materialize([direct_measurement, indirect_measurement], {"dummy"})
 
-    sys.stdout = sys.__stdout__
-
-    output = captured_output.getvalue()
     assert "dummy" in output  # Direct metric included
     assert "indirect" in output  # Indirect metric also included
 
