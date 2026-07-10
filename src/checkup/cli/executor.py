@@ -27,6 +27,7 @@ def execute_checkup(
     config: CheckupConfig,
     materializer: str | None = None,
     multiprocessing: bool = True,
+    quiet: bool = False,
 ) -> None:
     """
     Execute checkup with the given configuration.
@@ -35,23 +36,26 @@ def execute_checkup(
         config: Loaded checkup configuration
         materializer: Override materializer type (e.g., "console")
         multiprocessing: If False, run sequentially without subprocesses
+        quiet: If True, send status/errors to stderr so stdout holds only the materializer output.
     """
+
+    out = Console(stderr=True) if quiet else console
 
     registry = get_registry()
 
-    providers = _resolve_providers(config, registry)
+    providers = _resolve_providers(config, registry, out)
     if not providers:
-        console.print("[yellow]No providers configured[/yellow]")
+        out.print("[yellow]No providers configured[/yellow]")
         return
 
-    metrics = _resolve_metrics(config, registry)
+    metrics = _resolve_metrics(config, registry, out)
     if not metrics:
-        console.print("[yellow]No metrics configured[/yellow]")
+        out.print("[yellow]No metrics configured[/yellow]")
         return
 
-    materializer = _resolve_materializer(config, registry, materializer)
+    materializer = _resolve_materializer(config, registry, materializer, out)
 
-    console.print(f"[blue]Running {len(metrics)} metrics...[/blue]")
+    out.print(f"[blue]Running {len(metrics)} metrics...[/blue]")
 
     result = (
         CheckHub()
@@ -62,7 +66,7 @@ def execute_checkup(
 
     if result.errors:
         for _, error in result.errors:
-            console.print(f"[red]Error: {error}[/red]")
+            out.print(f"[red]Error: {error}[/red]")
 
     result.materialize(materializer)
 
@@ -70,6 +74,7 @@ def execute_checkup(
 def _resolve_providers(
     config: CheckupConfig,
     registry: "PluginRegistry",
+    out: Console = console,
 ) -> list["Provider"]:
     """
     Resolve provider configs to provider instances.
@@ -83,14 +88,14 @@ def _resolve_providers(
     for provider_config in config.providers:
         provider_cls = registry.get_provider(provider_config.name)
         if provider_cls is None:
-            console.print(f"[yellow]Unknown provider: {provider_config.name}[/yellow]")
+            out.print(f"[yellow]Unknown provider: {provider_config.name}[/yellow]")
             continue
 
         try:
             provider = provider_cls(**provider_config.config)
             providers.append(provider)
         except Exception as e:
-            console.print(
+            out.print(
                 f"[red]Failed to instantiate provider {provider_config.name}: {e}[/red]"
             )
 
@@ -100,6 +105,7 @@ def _resolve_providers(
 def _resolve_metrics(
     config: CheckupConfig,
     registry: "PluginRegistry",
+    out: Console = console,
 ) -> list["Metric"]:
     """
     Resolve metric configs to metric instances.
@@ -110,7 +116,7 @@ def _resolve_metrics(
     for metric_config in config.metrics:
         metric_cls = registry.get_metric(metric_config.type)
         if metric_cls is None:
-            console.print(f"[yellow]Unknown metric: {metric_config.type}[/yellow]")
+            out.print(f"[yellow]Unknown metric: {metric_config.type}[/yellow]")
             continue
 
         try:
@@ -121,7 +127,7 @@ def _resolve_metrics(
                 )
             )
         except Exception as e:
-            console.print(
+            out.print(
                 f"[red]Failed to instantiate metric {metric_config.type}: {e}[/red]"
             )
 
@@ -132,6 +138,7 @@ def _resolve_materializer(
     config: CheckupConfig,
     registry: "PluginRegistry",
     override: str | None = None,
+    out: Console = console,
 ) -> "Materializer":
     """
     Resolve materializer config to materializer instance.
@@ -150,13 +157,11 @@ def _resolve_materializer(
     materializer_cls = registry.get_materializer(mat_type)
 
     if materializer_cls is None:
-        console.print(
-            f"[yellow]Unknown materializer: {mat_type}, using console[/yellow]"
-        )
+        out.print(f"[yellow]Unknown materializer: {mat_type}, using console[/yellow]")
         return ConsoleMaterializer()
 
     try:
         return materializer_cls(**mat_config)
     except Exception as e:
-        console.print(f"[red]Failed to instantiate materializer {mat_type}: {e}[/red]")
+        out.print(f"[red]Failed to instantiate materializer {mat_type}: {e}[/red]")
         return ConsoleMaterializer()

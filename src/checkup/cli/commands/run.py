@@ -51,6 +51,10 @@ def run(
         bool,
         typer.Option("--verbose", "-v", help="Verbose output"),
     ] = False,
+    quiet: Annotated[
+        bool,
+        typer.Option("--quiet", "-q", help="Only print materializer output to stdout"),
+    ] = False,
 ) -> None:
     """
     Run metrics and materialize results.
@@ -66,4 +70,5 @@ def run(
         cfg,
         materializer="console" if dry_run else materializer,
         multiprocessing=multiprocessing,
+        quiet=quiet,
     )
