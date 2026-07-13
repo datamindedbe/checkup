@@ -1,6 +1,6 @@
 [project]
 name = "checkup-git"
-version = "0.4.0"
+version = "0.4.1"
 description = "Git metrics for checkup"
 readme = "README.md"
 requires-python = ">=3.12"
