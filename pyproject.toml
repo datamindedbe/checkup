@@ -32,6 +32,7 @@ checkup = "checkup:main"
 console = "checkup.materializers:ConsoleMaterializer"
 csv = "checkup.materializers:CSVMaterializer"
 html = "checkup.materializers:HTMLMaterializer"
+markdown = "checkup.materializers:MarkdownMaterializer"
 sqlalchemy = "checkup.materializers:SQLAlchemyMaterializer"
 
 [build-system]
