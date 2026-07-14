@@ -10,6 +10,11 @@
   <a href="https://pypi.org/project/checkup/"><img src="https://img.shields.io/pypi/pyversions/checkup" alt="Python versions" /></a>
 </p>
 
+<p align="center">
+  <!-- <img src="https://raw.githubusercontent.com/datamindedbe/checkup/main/images/demo.gif" alt="CheckUp demo" width="100%" /> -->
+  <img src="./images/demo.gif" alt="CheckUp demo" width="100%" />
+</p>
+
 ## Plugins
 
 Checkup uses plugins to provide metrics for different tools and platforms.
