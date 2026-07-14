@@ -56,17 +56,23 @@ class GitProvider(Provider):
         }
 
     def _get_last_commit_date(self, git_files: list[str]) -> datetime | None:
-        """Get the date of the most recent commit to any tracked file."""
+        """
+        Get the date of the most recent commit to any tracked file.
+        """
+
         if not git_files:
             return None
 
-        last_commit_dates = [
-            date
-            for file in git_files
-            if (date := self._get_file_last_commit_date(file)) is not None
-        ]
-
-        return max(last_commit_dates) if last_commit_dates else None
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%aI", "--", "."],
+            cwd=self.repo_path,
+            capture_output=True,
+            text=True,
+        )
+        date_str = result.stdout.strip()
+        if not date_str:
+            return None
+        return datetime.fromisoformat(date_str)
 
     def _get_tracked_files(self) -> list[str]:
         """List all git tracked files in the repo path."""
@@ -80,16 +86,3 @@ class GitProvider(Provider):
             logger.warning(f"Failed to list git files: {result.stderr}")
             return []
         return result.stdout.splitlines()
-
-    def _get_file_last_commit_date(self, file: str) -> datetime | None:
-        """Get the last commit date for a specific file."""
-        result = subprocess.run(
-            ["git", "log", "-1", "--format=%aI", "--", file],
-            cwd=self.repo_path,
-            capture_output=True,
-            text=True,
-        )
-        date_str = result.stdout.strip()
-        if not date_str:
-            return None
-        return datetime.fromisoformat(date_str)
