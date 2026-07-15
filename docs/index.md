@@ -1,10 +1,10 @@
 # CheckUp
 
-![CheckUp](images/horseshoe.png){ width="200" }
+![CheckUp](images/banner.png)
 
 **Computational governance framework for measuring data product health.**
 
-CheckUp is an extensible Python framework designed to calculate metrics from context data, enabling teams to measure and monitor the health of their data products.
+CheckUp calculates metrics from context data, so teams can track the health of their data products.
 
 ## Key Features
 
@@ -21,32 +21,36 @@ from checkup.types import Context
 
 
 class SimpleMetric(Metric):
-    name = "example_metric"
-    description = "A simple example metric"
-    unit = "count"
+    name: str = "example_metric"
+    description: str = "A simple example metric"
+    unit: str = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         return self.measure(value=42, diagnostic="Calculated successfully")
 
 
 # Run the metric and output to console
-(
-    CheckHub()
-    .with_metrics([SimpleMetric()])
-    .measure()
-    .materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
-)
+if __name__ == "__main__":
+    (
+        CheckHub()
+        .with_metrics([SimpleMetric()])
+        .measure()
+        .materialize(ConsoleMaterializer(group_tag_1="domain", group_tag_2="project"))
+    )
 ```
+
+CheckUp runs metrics in a process pool, so scripts need the `if __name__ == "__main__":`
+guard on platforms that spawn subprocesses, such as macOS and Windows.
 
 ## Installation
 
 ```bash
-pip install checkup
+uv add checkup
 ```
 
 ## Getting Started
 
-Ready to dive in? Check out the [Installation Guide](getting-started/installation.md) and [Quick Start](getting-started/quickstart.md) to get up and running.
+Start with the [Installation Guide](getting-started/installation.md), then the [Quick Start](getting-started/quickstart.md).
 
 ## Architecture
 

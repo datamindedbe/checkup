@@ -5,7 +5,7 @@ The Conveyor plugin provides metrics for monitoring projects deployed on the Con
 ## Installation
 
 ```bash
-pip install checkup-conveyor
+uv add checkup-conveyor
 ```
 
 **Note:** This plugin requires the `requests` library.

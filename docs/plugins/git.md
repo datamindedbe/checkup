@@ -5,7 +5,7 @@ The Git plugin provides metrics for analyzing Git repositories.
 ## Installation
 
 ```bash
-pip install checkup-git
+uv add checkup-git
 ```
 
 ## Provider

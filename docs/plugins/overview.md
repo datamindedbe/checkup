@@ -17,9 +17,6 @@ Install plugins alongside the core package:
 
 ```bash
 # Install core and desired plugins
-pip install checkup checkup-git checkup-dbt
-
-# Or using uv
 uv add checkup checkup-git checkup-dbt
 ```
 
@@ -120,9 +117,9 @@ from .providers import MyServiceProvider
 
 
 class MyServiceMetric(Metric):
-    name = "myservice_health"
-    description = "Health status of MyService"
-    unit = "status"
+    name: str = "myservice_health"
+    description: str = "Health status of MyService"
+    unit: str = "status"
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:

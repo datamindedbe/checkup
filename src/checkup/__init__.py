@@ -11,6 +11,7 @@ from checkup.materializers import (
     ConsoleMaterializer,
     CSVMaterializer,
     HTMLMaterializer,
+    MarkdownMaterializer,
     Materializer,
     SQLAlchemyMaterializer,
 )
@@ -41,6 +42,7 @@ __all__ = [
     "ConsoleMaterializer",
     "CSVMaterializer",
     "HTMLMaterializer",
+    "MarkdownMaterializer",
     "SQLAlchemyMaterializer",
     "ProviderError",
     "MetricPicklingError",

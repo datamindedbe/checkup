@@ -1,6 +1,6 @@
 # Quick Start
 
-This guide will help you get started with CheckUp by walking through a complete example.
+This guide walks through a complete example.
 
 ## Creating Your First Metric
 
@@ -12,9 +12,9 @@ from checkup.types import Context
 
 
 class FileCountMetric(Metric):
-    name = "file_count"
-    description = "Number of files in the project"
-    unit = "files"
+    name: str = "file_count"
+    description: str = "Number of files in the project"
+    unit: str = "files"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Access data from context and calculate your metric
@@ -77,9 +77,9 @@ Now update your metric to use the provider:
 
 ```python
 class FileCountMetric(Metric):
-    name = "file_count"
-    description = "Number of files in the project"
-    unit = "files"
+    name: str = "file_count"
+    description: str = "Number of files in the project"
+    unit: str = "files"
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
@@ -113,9 +113,9 @@ Metrics can depend on other metrics:
 
 ```python
 class TotalLinesMetric(Metric):
-    name = "total_lines"
-    description = "Total lines of code"
-    unit = "lines"
+    name: str = "total_lines"
+    description: str = "Total lines of code"
+    unit: str = "lines"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Count lines in all files
@@ -123,9 +123,9 @@ class TotalLinesMetric(Metric):
 
 
 class AverageLinesPerFileMetric(Metric):
-    name = "avg_lines_per_file"
-    description = "Average lines per file"
-    unit = "lines/file"
+    name: str = "avg_lines_per_file"
+    description: str = "Average lines per file"
+    unit: str = "lines/file"
 
     @classmethod
     def depends_on(cls) -> list[type[Metric]]:
