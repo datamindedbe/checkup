@@ -54,8 +54,7 @@ members = [
 [dependency-groups]
 dev = ["pytest>=9.0.2", "pytest-cov>=7.0.0", "ruff>=0.8.6", "prek>=0.3.0"]
 docs = [
-    "mkdocs>=1.6.0",
-    "mkdocs-material>=9.5.0",
+    "zensical>=0.0.50",
     "pymdown-extensions>=10.0",
 ]
 

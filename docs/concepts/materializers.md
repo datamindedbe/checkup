@@ -4,13 +4,15 @@ Materializers format and output calculated metrics. They transform raw metric da
 
 ## Available Materializers
 
-CheckUp includes three built-in materializers:
+CheckUp includes five built-in materializers:
 
 | Materializer | Output | Use Case |
 |-------------|--------|----------|
 | `ConsoleMaterializer` | Terminal tables | Interactive viewing |
 | `CSVMaterializer` | CSV file | Data analysis, spreadsheets |
 | `HTMLMaterializer` | HTML report | Sharing, dashboards |
+| `MarkdownMaterializer` | Markdown table on stdout | Pull request comments, CI job summaries |
+| `SQLAlchemyMaterializer` | Database rows | Tracking metrics over time |
 
 ## Using Materializers
 
@@ -98,6 +100,59 @@ Features:
 - Collapsible accordion groups
 - Responsive design
 - Color-coded values
+
+## Markdown Materializer
+
+Prints a GitHub-flavoured Markdown table to stdout. Redirect it into a pull request
+comment or a CI job summary:
+
+```python
+from checkup import MarkdownMaterializer
+
+result.materialize(MarkdownMaterializer())
+```
+
+The table holds one row per measurement, with the value column right-aligned:
+
+```markdown
+| Name | Description | Value | Unit | Diagnostics |
+| --- | --- | ---: | --- | --- |
+| file_count | Number of files | 42 | files | Found 42 files |
+```
+
+Pipes in a value become `\|` and newlines become `<br>`, so a diagnostic that spans
+several lines still renders as one row.
+
+## SQLAlchemy Materializer
+
+Writes measurements as rows to a database table, creating the table when it does not
+exist. Each run appends rows and stamps them with `measured_at`, which makes it the
+option to reach for when tracking metrics over time:
+
+```python
+from checkup import SQLAlchemyMaterializer
+
+result.materialize(
+    SQLAlchemyMaterializer(
+        connection_url="sqlite:///metrics.db",
+        table_name="metrics",
+    )
+)
+```
+
+Any database SQLAlchemy supports works through the connection URL, including
+PostgreSQL and MySQL. The default table holds these columns:
+
+`name`, `value`, `unit`, `diagnostic`, `description`, `tags`, `measured_at`
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `connection_url` | required | SQLAlchemy connection URL, stored as a secret |
+| `table_name` | `"metrics"` | Target table |
+| `table_schema` | `None` | Database schema, such as `analytics` |
+| `connect_args` | `None` | Arguments passed to the underlying driver |
+| `expand_tags` | `False` | Write each tag to its own `tag_<key>` column instead of one JSON `tags` column |
+| `batch_size` | `1000` | Rows per insert batch |
 
 ## Multiple Outputs
 
