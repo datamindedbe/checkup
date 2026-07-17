@@ -2,7 +2,7 @@
 
 CheckUp is built around three core concepts that work together to calculate and output metrics.
 
-## The Three Pillars
+## Providers, metrics, and materializers
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌──────────────┐
@@ -52,6 +52,8 @@ Available formats:
 - Console (rich tables)
 - CSV files
 - HTML reports
+- Markdown tables
+- Database rows, through SQLAlchemy
 
 ## The CheckHub Orchestrator
 
@@ -75,20 +77,21 @@ result.materialize(ConsoleMaterializer(...))
 
 ## Execution Flow
 
-1. **Registration**: Metrics and provider sets are registered with CheckHub
+1. **Registration**: CheckHub registers the metrics and provider sets
 2. **Dependency Resolution**: The framework builds a dependency graph and determines execution order
-3. **Validation**: Provider requirements are validated against available providers
+3. **Validation**: The framework validates provider requirements against the available providers
 4. **Provider Execution**: Each provider set runs to enrich context
-5. **Metric Calculation**: Metrics are calculated in dependency order
-6. **Result Aggregation**: Results from all provider sets are combined
-7. **Materialization**: Results are output in the desired format
+5. **Metric Calculation**: The framework calculates metrics in dependency order
+6. **Result Aggregation**: CheckHub combines the results from all provider sets
+7. **Materialization**: The materializer writes the results in the format you chose
 
 ## Multi-Context Execution
 
 CheckUp supports running metrics across multiple contexts (provider sets):
 
 ```python
-CheckHub()
+(
+    CheckHub()
     .with_metrics([RepoMetric])
     .with_providers([
         [GitProvider(repo="repo-a")],
@@ -96,15 +99,16 @@ CheckHub()
         [GitProvider(repo="repo-c")],
     ])
     .measure()
+)
 ```
 
 This calculates the same metrics for each repository, enabling comparative analysis.
 
 ## Parallel Execution
 
-Metrics are calculated in parallel using a process pool:
+CheckUp calculates metrics in parallel using a process pool:
 
-- Provider sets are executed concurrently
+- CheckHub runs provider sets concurrently
 - Within each context, metrics respect dependency order
 - CPU-bound metrics can use the `PROCESS` executor
 - I/O-bound metrics can use the `THREAD` executor
@@ -112,9 +116,9 @@ Metrics are calculated in parallel using a process pool:
 
 ## Error Handling
 
-CheckUp provides robust error handling:
+CheckUp reports failures instead of hiding them:
 
-- Provider failures are captured and reported
-- Individual context failures don't stop other contexts
+- CheckUp captures and reports provider failures
+- Each context fails independently, so the others keep running
 - `MeasurementResult.errors` contains all failures
-- Detailed logging is available for debugging
+- Logging is available for debugging

@@ -5,7 +5,7 @@ The Python plugin provides metrics for analyzing Python projects.
 ## Installation
 
 ```bash
-pip install checkup-python
+uv add checkup-python
 ```
 
 ## Provider

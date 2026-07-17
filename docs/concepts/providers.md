@@ -79,13 +79,15 @@ class DatabaseProvider(Provider):
 Use providers with different configurations:
 
 ```python
-CheckHub()
+(
+    CheckHub()
     .with_metrics([MyMetric])
     .with_providers([
         [DatabaseProvider("postgres://prod/db")],
         [DatabaseProvider("postgres://staging/db")],
     ])
     .measure()
+)
 ```
 
 ## Provider Sets
@@ -93,7 +95,8 @@ CheckHub()
 Provider sets allow running the same metrics against different contexts:
 
 ```python
-CheckHub()
+(
+    CheckHub()
     .with_metrics([RepoMetrics])
     .with_providers([
         # Each inner list is a "provider set"
@@ -102,6 +105,7 @@ CheckHub()
         [GitProvider(repo="repo-a"), EnvProvider(env="staging")],
     ])
     .measure()
+)
 ```
 
 Each provider set runs independently, creating separate context for metrics.

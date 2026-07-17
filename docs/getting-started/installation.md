@@ -3,20 +3,20 @@
 ## Requirements
 
 - Python 3.12 or higher
-- pip or uv package manager
+- [uv](https://docs.astral.sh/uv/) package manager
 
 ## Installing CheckUp
 
-### Using pip
-
-```bash
-pip install checkup
-```
-
-### Using uv
+Add CheckUp to your project:
 
 ```bash
 uv add checkup
+```
+
+To try CheckUp without adding it to a project, run the CLI directly:
+
+```bash
+uvx checkup
 ```
 
 ### From Source
@@ -24,21 +24,21 @@ uv add checkup
 Clone the repository and install in development mode:
 
 ```bash
-git clone https://github.com/datamindedbe/incubator-checkup.git
-cd incubator-checkup
+git clone https://github.com/datamindedbe/checkup.git
+cd checkup
 uv sync
 ```
 
 ## Installing Plugins
 
-CheckUp provides several plugins for specific use cases. Install them as needed:
+Install plugins as needed:
 
 ### Git Plugin
 
 For analyzing Git repositories:
 
 ```bash
-pip install checkup-git
+uv add checkup-git
 ```
 
 ### dbt Plugin
@@ -46,7 +46,7 @@ pip install checkup-git
 For dbt project metrics:
 
 ```bash
-pip install checkup-dbt
+uv add checkup-dbt
 ```
 
 ### Python Plugin
@@ -54,7 +54,7 @@ pip install checkup-dbt
 For Python project analysis:
 
 ```bash
-pip install checkup-python
+uv add checkup-python
 ```
 
 ### Conveyor Plugin
@@ -62,22 +62,21 @@ pip install checkup-python
 For Conveyor platform integration:
 
 ```bash
-pip install checkup-conveyor
+uv add checkup-conveyor
 ```
 
 ## Verifying Installation
 
-After installation, verify that CheckUp is correctly installed:
+Verify the installation:
 
 ```bash
-checkup
+uv run checkup --version
 ```
 
-You should see:
+This prints the installed version. To list the plugins available in your environment:
 
-```
-Checkup metrics framework
-Import CheckHub to get started
+```bash
+uv run checkup plugins
 ```
 
 Or verify in Python:
@@ -93,8 +92,8 @@ For contributing to CheckUp:
 
 ```bash
 # Clone the repository
-git clone https://github.com/datamindedbe/incubator-checkup.git
-cd incubator-checkup
+git clone https://github.com/datamindedbe/checkup.git
+cd checkup
 
 # Install with development dependencies
 uv sync

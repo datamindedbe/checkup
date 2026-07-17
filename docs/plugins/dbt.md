@@ -5,7 +5,7 @@ The dbt plugin provides metrics for analyzing dbt (data build tool) projects.
 ## Installation
 
 ```bash
-pip install checkup-dbt
+uv add checkup-dbt
 ```
 
 **Note:** This plugin requires `dbt-core>=1.9`.

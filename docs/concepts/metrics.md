@@ -13,9 +13,9 @@ from checkup.types import Context
 
 class MyMetric(Metric):
     # Required class attributes
-    name = "my_metric"
-    description = "Description of what this metric measures"
-    unit = "count"
+    name: str = "my_metric"
+    description: str = "Description of what this metric measures"
+    unit: str = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         # Your calculation logic here
@@ -53,7 +53,7 @@ return self.measure(value=42, diagnostic="Explanation", tags={"key": "value"})
 
 ## The Calculate Method
 
-The `calculate` method is where you implement your metric logic:
+The `calculate` method holds your metric logic:
 
 ```python
 def calculate(self, context: Context, measurements: dict) -> Measurement:
@@ -77,18 +77,18 @@ Metrics can depend on other metrics. The framework ensures dependencies are calc
 
 ```python
 class BaseMetric(Metric):
-    name = "base_metric"
-    description = "A base metric"
-    unit = "count"
+    name: str = "base_metric"
+    description: str = "A base metric"
+    unit: str = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         return self.measure(value=100)
 
 
 class DerivedMetric(Metric):
-    name = "derived_metric"
-    description = "Depends on base metric"
-    unit = "percent"
+    name: str = "derived_metric"
+    description: str = "Depends on base metric"
+    unit: str = "percent"
 
     @classmethod
     def depends_on(cls) -> list[type[Metric]]:
@@ -113,9 +113,9 @@ class MyDataProvider(Provider):
 
 
 class MyMetric(Metric):
-    name = "my_metric"
-    description = "Uses my_data provider"
-    unit = "items"
+    name: str = "my_metric"
+    description: str = "Uses my_data provider"
+    unit: str = "items"
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
@@ -132,22 +132,24 @@ class MyMetric(Metric):
 Metrics can specify how they should be executed:
 
 ```python
+from typing import ClassVar
+
 from checkup import ExecutorType
 
 
 class IOBoundMetric(Metric):
-    name = "io_metric"
-    executor = ExecutorType.THREAD  # Default, for I/O-bound operations
+    name: str = "io_metric"
+    executor: ClassVar[ExecutorType] = ExecutorType.THREAD  # Default, for I/O-bound operations
 
 
 class CPUBoundMetric(Metric):
-    name = "cpu_metric"
-    executor = ExecutorType.PROCESS  # For CPU-intensive calculations
+    name: str = "cpu_metric"
+    executor: ClassVar[ExecutorType] = ExecutorType.PROCESS  # For CPU-intensive calculations
 
 
 class AsyncMetric(Metric):
-    name = "async_metric"
-    executor = ExecutorType.ASYNCIO  # For async I/O operations
+    name: str = "async_metric"
+    executor: ClassVar[ExecutorType] = ExecutorType.ASYNCIO  # For async I/O operations
 ```
 
 | Executor | Best For | Notes |
@@ -162,9 +164,9 @@ Tags allow grouping and filtering metrics. Tags can be set when creating the mea
 
 ```python
 class TaggedMetric(Metric):
-    name = "tagged_metric"
-    description = "A metric with tags"
-    unit = "count"
+    name: str = "tagged_metric"
+    description: str = "A metric with tags"
+    unit: str = "count"
 
     def calculate(self, context: Context, measurements: dict) -> Measurement:
         return self.measure(
@@ -195,15 +197,17 @@ result.materialize(
 ## Example: Complete Metric
 
 ```python
+from typing import ClassVar
+
 from checkup import Metric, Provider, ExecutorType, Measurement
 from checkup.types import Context
 
 
 class CodeCoverageMetric(Metric):
-    name = "code_coverage"
-    description = "Percentage of code covered by tests"
-    unit = "percent"
-    executor = ExecutorType.THREAD
+    name: str = "code_coverage"
+    description: str = "Percentage of code covered by tests"
+    unit: str = "percent"
+    executor: ClassVar[ExecutorType] = ExecutorType.THREAD
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
