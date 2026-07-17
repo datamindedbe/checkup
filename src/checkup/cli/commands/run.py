@@ -36,6 +36,21 @@ def run(
             "--materializer", help="Set materializer (type or type:key=value)"
         ),
     ] = None,
+    select: Annotated[
+        str | None,
+        typer.Option(
+            "--select",
+            "-s",
+            help="Only materialize matching metrics ('method:pattern'). Methods: name (default), tag, type.",
+        ),
+    ] = None,
+    exclude: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude",
+            help="Exclude matching metrics from materialization. Same format as --select.",
+        ),
+    ] = None,
     dry_run: Annotated[
         bool,
         typer.Option("--dry-run", help="Don't materialize, just print"),
@@ -71,4 +86,6 @@ def run(
         materializer="console" if dry_run else materializer,
         multiprocessing=multiprocessing,
         quiet=quiet,
+        select=select,
+        exclude=exclude,
     )

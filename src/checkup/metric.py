@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from checkup.types import Context
 
@@ -44,6 +44,7 @@ class Metric(ABC, BaseModel):
     name: str
     description: str = ""
     unit: str = ""
+    tags: list[str] = Field(default_factory=list)
 
     model_config = {"frozen": True}
 

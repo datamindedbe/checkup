@@ -216,4 +216,6 @@ def load_config(
         providers=parse_providers(raw.get("providers")),
         metrics=parse_metrics(raw.get("metrics")),
         materializer=parse_materializer(raw.get("materializer")),
+        select=raw.get("select"),
+        exclude=raw.get("exclude"),
     )

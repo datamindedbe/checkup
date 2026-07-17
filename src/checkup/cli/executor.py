@@ -12,6 +12,7 @@ from checkup.hub import CheckHub
 from checkup.materializers import ConsoleMaterializer
 from checkup.providers.tags import TagProvider
 from checkup.registry import get_registry
+from checkup.selection import select_metrics
 
 if TYPE_CHECKING:
     from checkup.materializers import Materializer
@@ -28,6 +29,8 @@ def execute_checkup(
     materializer: str | None = None,
     multiprocessing: bool = True,
     quiet: bool = False,
+    select: str | None = None,
+    exclude: str | None = None,
 ) -> None:
     """
     Execute checkup with the given configuration.
@@ -37,6 +40,8 @@ def execute_checkup(
         materializer: Override materializer type (e.g., "console")
         multiprocessing: If False, run sequentially without subprocesses
         quiet: If True, send status/errors to stderr so stdout holds only the materializer output.
+        select: Selector for which metrics to materialize.
+        exclude: Selector for metrics to exclude from materialization.
     """
 
     out = Console(stderr=True) if quiet else console
@@ -55,6 +60,10 @@ def execute_checkup(
 
     materializer = _resolve_materializer(config, registry, materializer, out)
 
+    select = select if select is not None else config.select
+    exclude = exclude if exclude is not None else config.exclude
+    type_by_name = {mc.instance_name: mc.type for mc in config.metrics}
+
     out.print(f"[blue]Running {len(metrics)} metrics...[/blue]")
 
     result = (
@@ -67,6 +76,22 @@ def execute_checkup(
     if result.errors:
         for _, error in result.errors:
             out.print(f"[red]Error: {error}[/red]")
+
+    if select or exclude:
+        selected = select_metrics(
+            metrics,
+            select=select,
+            exclude=exclude,
+            type_resolver=lambda metric: type_by_name.get(metric.name),
+        )
+        result.measurements = [
+            m for m in result.measurements if m.metric.name in selected
+        ]
+        result.direct_metric_names = result.direct_metric_names & selected
+
+        console.print(
+            f"[blue]Materializing {len(selected)} selected of {len(metrics)} total metrics[/blue]"
+        )
 
     result.materialize(materializer)
 
