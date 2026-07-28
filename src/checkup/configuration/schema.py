@@ -182,6 +182,14 @@ def generate_schema() -> dict:
                 "description": "Tags to identify the data product (e.g., product, team)",
                 "additionalProperties": {"type": "string"},
             },
+            "select": {
+                "type": "string",
+                "description": "Default selector for materialized output.",
+            },
+            "exclude": {
+                "type": "string",
+                "description": "Default selector for materialization to exclude.",
+            },
             "providers": {
                 "type": "array",
                 "description": "Data providers for context enrichment",

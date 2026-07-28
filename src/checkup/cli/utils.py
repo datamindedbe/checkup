@@ -51,6 +51,8 @@ def apply_cli_overrides(
         providers=new_providers,
         metrics=new_metrics,
         materializer=cfg.materializer,
+        select=cfg.select,
+        exclude=cfg.exclude,
     )
 
 
