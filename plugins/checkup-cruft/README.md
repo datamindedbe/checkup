@@ -15,7 +15,7 @@ pip install checkup-cruft
 - Python >= 3.12
 - [checkup](https://pypi.org/project/checkup/)
 - Git installed on the system
-- Network access to the template repository (only for the drift metrics below)
+- Network access to the template repository (only for the drift metrics)
 
 ## Usage
 
@@ -38,7 +38,7 @@ results = (
         CruftUpToDateMetric(),
     ])
     .with_providers([[
-        CruftProvider("./my_product", fetch_template=True),
+        CruftProvider(project_path="./my_product", fetch_template=True),
     ]])
     .measure()
 )
@@ -48,30 +48,43 @@ results = (
 
 ### CruftProvider
 
-Reads `.cruft.json` from the project (template URL, pinned commit, `.rej` conflict
-markers, and the last commit that touched `.cruft.json`).
-
-`fetch_template=True` additionally clones the template repository and compares the
-pinned commit against the template head. Leave it off (the default) for a fully
-local, offline run: the drift metrics then report `None`.
+Reads `.cruft.json` from the project (template URL, pinned commit, and the `.rej`
+conflict markers left by a failed `cruft update`). With `fetch_template=True` it
+also clones the template repository to compare the pinned commit against the
+template head; leave it off (the default) for a fully local, offline run, in which
+case the drift metrics report `None`.
 
 ## Available Metrics
 
-### Local (no network)
+### Local Metrics
 
-| Metric                       | Unit    | Description                                             |
-| ---------------------------- | ------- | ------------------------------------------------------- |
-| `CruftLinkedMetric`          | boolean | Whether a `.cruft.json` is present                      |
-| `CruftDaysSinceUpdateMetric` | days    | Days since `.cruft.json` last changed in git            |
-| `CruftConflictCountMetric`   | files   | Number of `*.rej` files left by a failed `cruft update` |
+#### CruftLinkedMetric
 
-### Template drift (requires `fetch_template=True`)
+Whether a `.cruft.json` template link is present.
 
-| Metric                          | Unit    | Description                                             |
-| ------------------------------- | ------- | ------------------------------------------------------- |
-| `CruftUpToDateMetric`           | boolean | Whether the pinned commit matches the template head     |
-| `CruftCommitsBehindMetric`      | commits | Template commits between the pinned commit and the head |
-| `CruftDaysBehindTemplateMetric` | days    | Days between the pinned commit and the template head    |
+#### CruftDaysSinceUpdateMetric
+
+Days since `.cruft.json` last changed in git.
+
+#### CruftConflictCountMetric
+
+Number of `*.rej` files left by a failed `cruft update`.
+
+### Template Drift Metrics
+
+These require the provider to run with `fetch_template=True`.
+
+#### CruftUpToDateMetric
+
+Whether the pinned commit matches the latest template commit.
+
+#### CruftCommitsBehindMetric
+
+Number of template commits between the pinned commit and the head.
+
+#### CruftDaysBehindTemplateMetric
+
+Days between the pinned commit and the template head.
 
 ## Creating Custom Metrics
 
