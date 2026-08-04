@@ -1,5 +1,3 @@
-"""Cruft template provider for checkup."""
-
 import json
 import logging
 import subprocess
@@ -16,24 +14,24 @@ CRUFT_FILE = ".cruft.json"
 
 
 class CruftProvider(Provider):
-    """Provides cruft template context from a project's .cruft.json.
+    """
+    Provides cruft template context.
 
-    Reads the local .cruft.json (template URL, pinned commit, conflict markers).
-    With fetch_template=True it also clones the template to measure drift against
-    the latest template commit, which requires network access to the template.
+    With fetch_template=True it also clones the template
+    to measure drift against the latest template commit.
 
     Example:
-        CruftProvider(repo_path="./my_product", fetch_template=True)
+        CruftProvider(project_path="./my_product", fetch_template=True)
     """
 
     name: ClassVar[str] = "cruft"
 
-    def __init__(self, repo_path: str | Path = ".", fetch_template: bool = False):
-        self.repo_path = Path(repo_path)
+    def __init__(self, project_path: str | Path = ".", fetch_template: bool = False):
+        self.project_path = Path(project_path)
         self.fetch_template = fetch_template
 
     def provide(self) -> dict[str, Any]:
-        cruft_path = self.repo_path / CRUFT_FILE
+        cruft_path = self.project_path / CRUFT_FILE
         if not cruft_path.exists():
             return {"cruft_present": False}
 
@@ -62,7 +60,7 @@ class CruftProvider(Provider):
         """Author date of the most recent commit touching .cruft.json."""
         result = subprocess.run(
             ["git", "log", "-1", "--format=%aI", "--", CRUFT_FILE],
-            cwd=self.repo_path,
+            cwd=self.project_path,
             capture_output=True,
             text=True,
         )
@@ -74,7 +72,8 @@ class CruftProvider(Provider):
         # ponytail: unfiltered walk of the product dir; product dirs are small dbt
         # projects, switch to `git ls-files -o` if this ever runs on a huge tree.
         return [
-            str(p.relative_to(self.repo_path)) for p in self.repo_path.rglob("*.rej")
+            str(p.relative_to(self.project_path))
+            for p in self.project_path.rglob("*.rej")
         ]
 
     def _template_drift(

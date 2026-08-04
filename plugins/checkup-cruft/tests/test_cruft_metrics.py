@@ -18,7 +18,7 @@ def _measure(repo: Path, metric, *, fetch_template: bool = False):
         CheckHub()
         .with_metrics([metric])
         .with_providers(
-            [[CruftProvider(repo_path=repo, fetch_template=fetch_template)]]
+            [[CruftProvider(project_path=repo, fetch_template=fetch_template)]]
         )
         .measure()
     )
