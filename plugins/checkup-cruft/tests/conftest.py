@@ -44,7 +44,10 @@ def _commit(repo: Path, message: str, *, date: str | None = None) -> str:
 
 @pytest.fixture
 def template_repo(tmp_path: Path) -> Path:
-    """A local git repo standing in for a cruft template, with three commits."""
+    """
+    A local git repo standing in for a cruft template, with three commits.
+    """
+
     repo = tmp_path / "template"
     repo.mkdir()
     _git(repo, "init", "-q")
@@ -56,7 +59,9 @@ def template_repo(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def make_product(tmp_path: Path):
-    """Build a product repo with a .cruft.json pinned to a given template commit."""
+    """
+    Build a product repo with a .cruft.json pinned to a given template commit.
+    """
 
     def _make(
         template: Path | None = None,

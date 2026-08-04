@@ -26,9 +26,6 @@ def _measure(repo: Path, metric, *, fetch_template: bool = False):
     return next(m for m in result.measurements if m.metric.name == metric.name)
 
 
-# --- Tier A: local only ------------------------------------------------------
-
-
 def test_linked_true(make_product, template_repo):
     repo = make_product(template_repo, "deadbeef")
     assert _measure(repo, CruftLinkedMetric()).value == 1
@@ -70,9 +67,6 @@ def test_conflicts_finds_untracked_and_skips_gitignored(make_product, template_r
     measurement = _measure(repo, CruftConflictCountMetric())
     assert measurement.value == 1
     assert "model.sql.rej" in measurement.diagnostic
-
-
-# --- Tier B: requires fetch_template -----------------------------------------
 
 
 def _first_commit(repo: Path) -> str:

@@ -1,5 +1,3 @@
-"""Cruft template metrics for checkup."""
-
 from checkup_cruft.metrics import (
     CruftCommitsBehindMetric,
     CruftConflictCountMetric,
