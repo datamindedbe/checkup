@@ -61,6 +61,17 @@ def test_no_conflicts(make_product, template_repo):
     assert _measure(repo, CruftConflictCountMetric()).value == 0
 
 
+def test_conflicts_finds_untracked_and_skips_gitignored(make_product, template_repo):
+    repo = make_product(template_repo, "deadbeef")
+    (repo / "model.sql.rej").write_text("x")  # untracked, must count
+    (repo / ".gitignore").write_text("node_modules/\n")
+    (repo / "node_modules").mkdir()
+    (repo / "node_modules" / "dep.rej").write_text("x")  # ignored, must not count
+    measurement = _measure(repo, CruftConflictCountMetric())
+    assert measurement.value == 1
+    assert "model.sql.rej" in measurement.diagnostic
+
+
 # --- Tier B: requires fetch_template -----------------------------------------
 
 

@@ -56,7 +56,10 @@ class CruftProvider(Provider):
         return context
 
     def _last_update_date(self) -> datetime | None:
-        """Author date of the most recent commit touching .cruft.json."""
+        """
+        Author date of the most recent commit touching .cruft.json.
+        """
+
         result = subprocess.run(
             ["git", "log", "-1", "--format=%aI", "--", CRUFT_FILE],
             cwd=self.project_path,
@@ -67,18 +70,27 @@ class CruftProvider(Provider):
         return datetime.fromisoformat(date_str) if date_str else None
 
     def _conflict_files(self) -> list[str]:
-        """Reject files a failed `cruft update` leaves behind (git apply --reject)."""
-        # ponytail: unfiltered walk of the product dir; product dirs are small dbt
-        # projects, switch to `git ls-files -o` if this ever runs on a huge tree.
-        return [
-            str(p.relative_to(self.project_path))
-            for p in self.project_path.rglob("*.rej")
-        ]
+        """Reject files a failed `cruft update` leaves behind (git apply --reject).
+
+        Uses git so gitignored trees (node_modules, .venv, …) are skipped and the
+        typically-untracked .rej artifacts are still found.
+        """
+        result = subprocess.run(
+            # -c tracked, -o untracked, --exclude-standard honours .gitignore.
+            ["git", "ls-files", "-co", "--exclude-standard", "-z", "--", "*.rej"],
+            cwd=self.project_path,
+            capture_output=True,
+            text=True,
+        )
+        return [f for f in result.stdout.split("\0") if f]
 
     def _template_drift(
         self, template: str, pinned: str, checkout: str | None
     ) -> dict[str, Any]:
-        """Clone the template and measure how far the pinned commit lags its head."""
+        """
+        Clone the template and measure how far the pinned commit lags its head.
+        """
+
         try:
             with tempfile.TemporaryDirectory() as tmp:
                 subprocess.run(
@@ -89,6 +101,7 @@ class CruftProvider(Provider):
                 )
                 head = self._git(tmp, "rev-parse", checkout or "HEAD")
                 behind = int(self._git(tmp, "rev-list", "--count", f"{pinned}..{head}"))
+
                 return {
                     "template_head": head,
                     "commits_behind": behind,
