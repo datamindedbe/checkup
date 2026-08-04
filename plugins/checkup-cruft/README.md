@@ -48,11 +48,9 @@ results = (
 
 ### CruftProvider
 
-Reads `.cruft.json` from the project (template URL, pinned commit, and the `.rej`
-conflict markers left by a failed `cruft update`). With `fetch_template=True` it
-also clones the template repository to compare the pinned commit against the
-template head; leave it off (the default) for a fully local, offline run, in which
-case the drift metrics report `None`.
+Reads `.cruft.json` from the project. With `fetch_template=True` it also clones the template repository
+to compare the pinned commit against the template head; leave it off (the default) for a fully local,
+offline run, in which case the drift metrics report `None`.
 
 ## Available Metrics
 
