@@ -35,7 +35,9 @@ class CruftLinkedMetric(CruftMetric):
 
 
 class CruftDaysSinceUpdateMetric(CruftMetric):
-    """Days since the cruft template link (.cruft.json) was last updated."""
+    """
+    Days since the cruft template link (.cruft.json) was last updated.
+    """
 
     name: str = "cruft_days_since_update"
     description: str = "Days since the last cruft template update"
@@ -54,10 +56,12 @@ class CruftDaysSinceUpdateMetric(CruftMetric):
 
 
 class CruftConflictCountMetric(CruftMetric):
-    """Number of unresolved cruft template conflicts (*.rej files)."""
+    """
+    Number of unresolved cruft template conflicts (*.rej files).
+    """
 
     name: str = "cruft_conflicts"
-    description: str = "Number of unresolved cruft template conflicts (.rej files)"
+    description: str = "Number of unresolved cruft template conflicts"
     unit: str = "files"
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
@@ -67,9 +71,10 @@ class CruftConflictCountMetric(CruftMetric):
 
 
 class CruftCommitsBehindMetric(CruftMetric):
-    """Template commits between the pinned commit and the template head.
+    """
+    Template commits between the pinned commit and the template head.
 
-    Requires the provider to run with fetch_template=True; otherwise None.
+    Requires the provider to run with fetch_template=True.
     """
 
     name: str = "cruft_commits_behind"
@@ -85,9 +90,10 @@ class CruftCommitsBehindMetric(CruftMetric):
 
 
 class CruftUpToDateMetric(CruftMetric):
-    """Whether the pinned template commit matches the template head.
+    """
+    Whether the pinned template commit matches the template head.
 
-    Requires the provider to run with fetch_template=True; otherwise None.
+    Requires the provider to run with fetch_template=True.
     """
 
     name: str = "cruft_up_to_date"
@@ -103,9 +109,10 @@ class CruftUpToDateMetric(CruftMetric):
 
 
 class CruftDaysBehindTemplateMetric(CruftMetric):
-    """Days between the pinned template commit and the latest template commit.
+    """
+    Days between the pinned template commit and the latest template commit.
 
-    Requires the provider to run with fetch_template=True; otherwise None.
+    Requires the provider to run with fetch_template=True.
     """
 
     name: str = "cruft_days_behind_template"
