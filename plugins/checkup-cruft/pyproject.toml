@@ -4,9 +4,7 @@ version = "0.1.0"
 description = "Cruft template metrics for checkup"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "checkup",
-]
+dependencies = ["checkup"]
 
 [project.urls]
 Homepage = "https://github.com/datamindedbe/checkup"
@@ -14,9 +12,7 @@ Source = "https://github.com/datamindedbe/checkup"
 Issues = "https://github.com/datamindedbe/checkup/issues"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.0",
-]
+dev = ["pytest>=8.0"]
 
 [tool.uv.sources]
 checkup = { workspace = true }

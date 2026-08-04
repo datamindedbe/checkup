@@ -19,9 +19,6 @@ class CruftProvider(Provider):
 
     With fetch_template=True it also clones the template
     to measure drift against the latest template commit.
-
-    Example:
-        CruftProvider(project_path="./my_product", fetch_template=True)
     """
 
     name: ClassVar[str] = "cruft"
@@ -113,13 +110,6 @@ class CruftProvider(Provider):
             logger.warning(f"Could not fetch cruft template {template}: {exc}")
             return {}
 
-    @staticmethod
-    def _git(repo: str, *args: str) -> str:
-        result = subprocess.run(
-            ["git", "-C", repo, *args], check=True, capture_output=True, text=True
-        )
-        return result.stdout.strip()
-
     def _commit_date(self, repo: str, ref: str) -> datetime | None:
         try:
             return datetime.fromisoformat(
@@ -127,3 +117,10 @@ class CruftProvider(Provider):
             )
         except (subprocess.CalledProcessError, ValueError):
             return None
+
+    @staticmethod
+    def _git(repo: str, *args: str) -> str:
+        result = subprocess.run(
+            ["git", "-C", repo, *args], check=True, capture_output=True, text=True
+        )
+        return result.stdout.strip()
