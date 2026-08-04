@@ -70,13 +70,11 @@ class CruftProvider(Provider):
         return datetime.fromisoformat(date_str) if date_str else None
 
     def _conflict_files(self) -> list[str]:
-        """Reject files a failed `cruft update` leaves behind (git apply --reject).
-
-        Uses git so gitignored trees (node_modules, .venv, …) are skipped and the
-        typically-untracked .rej artifacts are still found.
         """
+        Reject files a failed `cruft update` leaves behind.
+        """
+
         result = subprocess.run(
-            # -c tracked, -o untracked, --exclude-standard honours .gitignore.
             ["git", "ls-files", "-co", "--exclude-standard", "-z", "--", "*.rej"],
             cwd=self.project_path,
             capture_output=True,
@@ -85,7 +83,10 @@ class CruftProvider(Provider):
         return [f for f in result.stdout.split("\0") if f]
 
     def _template_drift(
-        self, template: str, pinned: str, checkout: str | None
+        self,
+        template: str,
+        pinned: str,
+        checkout: str | None,
     ) -> dict[str, Any]:
         """
         Clone the template and measure how far the pinned commit lags its head.
@@ -109,7 +110,7 @@ class CruftProvider(Provider):
                     "head_date": self._commit_date(tmp, head),
                 }
         except (subprocess.CalledProcessError, ValueError) as exc:
-            logger.warning("Could not fetch cruft template %s: %s", template, exc)
+            logger.warning(f"Could not fetch cruft template {template}: {exc}")
             return {}
 
     @staticmethod
