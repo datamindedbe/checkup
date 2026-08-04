@@ -17,8 +17,7 @@ class CruftProvider(Provider):
     """
     Provides cruft template context.
 
-    With fetch_template=True it also clones the template
-    to measure drift against the latest template commit.
+    With fetch_template=True it also clones the template to measure drift.
     """
 
     name: ClassVar[str] = "cruft"
