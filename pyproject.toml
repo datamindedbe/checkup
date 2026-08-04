@@ -42,6 +42,7 @@ build-backend = "uv_build"
 [tool.uv.workspace]
 members = [
   "plugins/checkup-git",
+  "plugins/checkup-cruft",
   "plugins/checkup-dbt",
   "plugins/checkup-python",
   "plugins/checkup-conveyor",
