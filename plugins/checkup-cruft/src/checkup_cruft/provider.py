@@ -33,20 +33,19 @@ class CruftProvider(Provider):
     def provide(self) -> dict[str, Any]:
         cruft_path = self.project_path / CRUFT_FILE
         if not cruft_path.exists():
-            return {"cruft_present": False}
+            return {"present": False}
 
-        # https://cruft.github.io/cruft/ — .cruft.json pins `commit` to a template SHA.
         config = json.loads(cruft_path.read_text())
         template = config.get("template")
         commit = config.get("commit")
 
         context: dict[str, Any] = {
-            "cruft_present": True,
-            "cruft_template": template,
-            "cruft_commit": commit,
-            "cruft_directory": config.get("directory"),
-            "cruft_last_update_date": self._last_update_date(),
-            "cruft_conflict_files": self._conflict_files(),
+            "present": True,
+            "template": template,
+            "commit": commit,
+            "directory": config.get("directory"),
+            "last_update_date": self._last_update_date(),
+            "conflict_files": self._conflict_files(),
         }
 
         if self.fetch_template and template and commit:
@@ -91,10 +90,10 @@ class CruftProvider(Provider):
                 head = self._git(tmp, "rev-parse", checkout or "HEAD")
                 behind = int(self._git(tmp, "rev-list", "--count", f"{pinned}..{head}"))
                 return {
-                    "cruft_template_head": head,
-                    "cruft_commits_behind": behind,
-                    "cruft_pinned_date": self._commit_date(tmp, pinned),
-                    "cruft_head_date": self._commit_date(tmp, head),
+                    "template_head": head,
+                    "commits_behind": behind,
+                    "pinned_date": self._commit_date(tmp, pinned),
+                    "head_date": self._commit_date(tmp, head),
                 }
         except (subprocess.CalledProcessError, ValueError) as exc:
             logger.warning("Could not fetch cruft template %s: %s", template, exc)

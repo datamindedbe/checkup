@@ -2,8 +2,7 @@
 
 Cruft template metrics plugin for [checkup](https://pypi.org/project/checkup/).
 
-Tracks how well a project stays in sync with its [cruft](https://cruft.github.io/cruft/)
-(cookiecutter) template by reading the project's `.cruft.json`.
+Tracks how well a project stays in sync with its [cruft](https://cruft.github.io/cruft/) (cookiecutter) template.
 
 ## Installation
 
@@ -39,7 +38,6 @@ results = (
         CruftUpToDateMetric(),
     ])
     .with_providers([[
-        # fetch_template clones the template to measure drift (needs network).
         CruftProvider("./my_product", fetch_template=True),
     ]])
     .measure()
@@ -61,19 +59,19 @@ local, offline run: the drift metrics then report `None`.
 
 ### Local (no network)
 
-| Metric | Unit | Description |
-| --- | --- | --- |
-| `CruftLinkedMetric` | boolean | Whether a `.cruft.json` is present |
-| `CruftDaysSinceUpdateMetric` | days | Days since `.cruft.json` last changed in git |
-| `CruftConflictCountMetric` | files | Number of `*.rej` files left by a failed `cruft update` |
+| Metric                       | Unit    | Description                                             |
+| ---------------------------- | ------- | ------------------------------------------------------- |
+| `CruftLinkedMetric`          | boolean | Whether a `.cruft.json` is present                      |
+| `CruftDaysSinceUpdateMetric` | days    | Days since `.cruft.json` last changed in git            |
+| `CruftConflictCountMetric`   | files   | Number of `*.rej` files left by a failed `cruft update` |
 
 ### Template drift (requires `fetch_template=True`)
 
-| Metric | Unit | Description |
-| --- | --- | --- |
-| `CruftUpToDateMetric` | boolean | Whether the pinned commit matches the template head |
-| `CruftCommitsBehindMetric` | commits | Template commits between the pinned commit and the head |
-| `CruftDaysBehindTemplateMetric` | days | Days between the pinned commit and the template head |
+| Metric                          | Unit    | Description                                             |
+| ------------------------------- | ------- | ------------------------------------------------------- |
+| `CruftUpToDateMetric`           | boolean | Whether the pinned commit matches the template head     |
+| `CruftCommitsBehindMetric`      | commits | Template commits between the pinned commit and the head |
+| `CruftDaysBehindTemplateMetric` | days    | Days between the pinned commit and the template head    |
 
 ## Creating Custom Metrics
 
@@ -88,5 +86,5 @@ class TemplateUrlMetric(CruftMetric):
 
     def calculate(self, context, measurements):
         cruft = self.get_context(context)
-        return self.measure(value=cruft.get("cruft_template"))
+        return self.measure(value=cruft.get("template"))
 ```

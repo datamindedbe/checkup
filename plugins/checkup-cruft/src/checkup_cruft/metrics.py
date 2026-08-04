@@ -1,5 +1,3 @@
-"""Cruft template metrics for checkup."""
-
 from datetime import UTC, datetime
 
 from checkup.measurement import Measurement, Measurements
@@ -10,7 +8,9 @@ from checkup_cruft.provider import CruftProvider
 
 
 class CruftMetric(Metric):
-    """Base class for cruft-related metrics."""
+    """
+    Base class for cruft-related metrics.
+    """
 
     @classmethod
     def providers(cls) -> list[type[Provider]]:
@@ -21,7 +21,9 @@ class CruftMetric(Metric):
 
 
 class CruftLinkedMetric(CruftMetric):
-    """Whether the project is linked to a cruft template (.cruft.json present)."""
+    """
+    Whether the project is linked to a cruft template.
+    """
 
     name: str = "cruft_linked"
     description: str = "Whether a .cruft.json template link is present"
@@ -29,7 +31,7 @@ class CruftLinkedMetric(CruftMetric):
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        return self.measure(value=1 if cruft.get("cruft_present") else 0)
+        return self.measure(value=1 if cruft.get("present") else 0)
 
 
 class CruftDaysSinceUpdateMetric(CruftMetric):
@@ -41,7 +43,7 @@ class CruftDaysSinceUpdateMetric(CruftMetric):
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        last_update = cruft.get("cruft_last_update_date")
+        last_update = cruft.get("last_update_date")
         if not isinstance(last_update, datetime):
             return self.measure(value=None, diagnostic="No .cruft.json found")
         delta = datetime.now(UTC) - last_update
@@ -60,7 +62,7 @@ class CruftConflictCountMetric(CruftMetric):
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        conflicts = cruft.get("cruft_conflict_files", [])
+        conflicts = cruft.get("conflict_files", [])
         return self.measure(value=len(conflicts), diagnostic=", ".join(conflicts))
 
 
@@ -76,7 +78,7 @@ class CruftCommitsBehindMetric(CruftMetric):
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        behind = cruft.get("cruft_commits_behind")
+        behind = cruft.get("commits_behind")
         if behind is None:
             return self.measure(value=None, diagnostic="Template not fetched")
         return self.measure(value=behind)
@@ -94,7 +96,7 @@ class CruftUpToDateMetric(CruftMetric):
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        behind = cruft.get("cruft_commits_behind")
+        behind = cruft.get("commits_behind")
         if behind is None:
             return self.measure(value=None, diagnostic="Template not fetched")
         return self.measure(value=1 if behind == 0 else 0)
@@ -112,8 +114,8 @@ class CruftDaysBehindTemplateMetric(CruftMetric):
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        pinned = cruft.get("cruft_pinned_date")
-        head = cruft.get("cruft_head_date")
+        pinned = cruft.get("pinned_date")
+        head = cruft.get("head_date")
         if not isinstance(pinned, datetime) or not isinstance(head, datetime):
             return self.measure(value=None, diagnostic="Template not fetched")
         return self.measure(value=(head - pinned).days)
