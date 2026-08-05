@@ -1,0 +1,36 @@
+[project]
+name = "checkup-cruft"
+version = "0.1.0"
+description = "Cruft template metrics for checkup"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["checkup"]
+
+[project.urls]
+Homepage = "https://github.com/datamindedbe/checkup"
+Source = "https://github.com/datamindedbe/checkup"
+Issues = "https://github.com/datamindedbe/checkup/issues"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.uv.sources]
+checkup = { workspace = true }
+
+[project.entry-points."checkup.providers"]
+cruft = "checkup_cruft:CruftProvider"
+
+[project.entry-points."checkup.metrics"]
+cruft_linked = "checkup_cruft:CruftLinkedMetric"
+cruft_days_since_update = "checkup_cruft:CruftDaysSinceUpdateMetric"
+cruft_conflicts = "checkup_cruft:CruftConflictCountMetric"
+cruft_commits_behind = "checkup_cruft:CruftCommitsBehindMetric"
+cruft_up_to_date = "checkup_cruft:CruftUpToDateMetric"
+cruft_days_behind_template = "checkup_cruft:CruftDaysBehindTemplateMetric"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/checkup_cruft"]

@@ -7,7 +7,7 @@ on:
       - main
 
 env:
-  PACKAGES: checkup checkup-git checkup-dbt checkup-python checkup-conveyor checkup-airflow checkup-github checkup-gitlab checkup-bitbucket
+  PACKAGES: checkup checkup-git checkup-cruft checkup-dbt checkup-python checkup-conveyor checkup-airflow checkup-github checkup-gitlab checkup-bitbucket
 
 jobs:
   finalize:
