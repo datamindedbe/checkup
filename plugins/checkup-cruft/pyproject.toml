@@ -1,6 +1,6 @@
 [project]
 name = "checkup-cruft"
-version = "0.1.0"
+version = "0.1.1"
 description = "Cruft template metrics for checkup"
 readme = "README.md"
 requires-python = ">=3.12"
