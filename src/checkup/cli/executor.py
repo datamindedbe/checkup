@@ -89,7 +89,7 @@ def execute_checkup(
         ]
         result.direct_metric_names = result.direct_metric_names & selected
 
-        console.print(
+        out.print(
             f"[blue]Materializing {len(selected)} selected of {len(metrics)} total metrics[/blue]"
         )
 
