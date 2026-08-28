@@ -4,7 +4,22 @@ from rich.console import Console
 from rich.table import Table
 
 from checkup.materializers.base import Materializer
+from checkup.materializers.utils import (
+    TableColumn,
+    effective_columns,
+    render_cell,
+)
 from checkup.measurement import Measurement
+from checkup.metric import Unit
+
+# Rich column settings.
+COLUMN_SETTINGS: dict[TableColumn, dict] = {
+    "name": {"header": "Name", "style": "cyan", "no_wrap": True},
+    "description": {"header": "Description", "style": "dim"},
+    "value": {"header": "Value", "justify": "right", "style": "green"},
+    "unit": {"header": "Unit", "style": "yellow"},
+    "diagnostics": {"header": "Diagnostics", "style": "red"},
+}
 
 
 class ConsoleMaterializer(Materializer):
@@ -17,9 +32,13 @@ class ConsoleMaterializer(Materializer):
     Args:
         group_tags: List of tag names to group by. If empty, no grouping.
         include_indirect: If True, include indirect measurements.
+        pretty: If True, format values for presentation, well-know ``Metric.Unit`` values are formatted accordingly.
+        columns: Columns to display, in order. Defaults to all columns.
     """
 
     group_tags: list[str] = []
+    pretty: bool = False
+    columns: list[TableColumn] | None = None
 
     def materialize(
         self, measurements: list[Measurement], direct_metric_names: set[str]
@@ -55,24 +74,41 @@ class ConsoleMaterializer(Materializer):
         Print a single table of measurements.
         """
 
-        table = Table(title=title)
+        columns = effective_columns(self.columns, self.pretty)
 
-        table.add_column("Name", style="cyan", no_wrap=True)
-        table.add_column("Description", style="dim")
-        table.add_column("Value", justify="right", style="green")
-        table.add_column("Unit", style="yellow")
-        table.add_column("Diagnostics", style="red")
+        table = Table(title=title)
+        for column in columns:
+            settings = COLUMN_SETTINGS[column]
+            # Without a name column the description is the row identifier, so don't dim it.
+            if column == "description" and "name" not in columns:
+                settings = {**settings, "style": None}
+            table.add_column(**settings)
 
         for measurement in measurements:
             table.add_row(
-                measurement.metric.name,
-                measurement.metric.description,
-                str(measurement.value) if measurement.value is not None else "",
-                measurement.metric.unit,
-                measurement.diagnostic,
+                *(self._cell(measurement, column, columns) for column in columns)
             )
 
         console.print(table)
+
+    def _cell(
+        self,
+        measurement: Measurement,
+        column: TableColumn,
+        columns: tuple[TableColumn, ...],
+    ) -> str:
+        text = render_cell(measurement, column, columns, self.pretty)
+
+        # Pretty booleans are colored.
+        if (
+            self.pretty
+            and column == "value"
+            and measurement.value is not None
+            and measurement.metric.unit == Unit.BOOLEAN
+        ):
+            color = "green" if measurement.value else "red"
+            return f"[{color}]{text}[/{color}]"
+        return text
 
     def _group_by_tags(
         self,

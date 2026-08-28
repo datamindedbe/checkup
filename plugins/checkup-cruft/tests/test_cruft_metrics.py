@@ -28,12 +28,12 @@ def _measure(repo: Path, metric, *, fetch_template: bool = False):
 
 def test_linked_true(make_product, template_repo):
     repo = make_product(template_repo, "deadbeef")
-    assert _measure(repo, CruftLinkedMetric()).value == 1
+    assert _measure(repo, CruftLinkedMetric()).value is True
 
 
 def test_linked_false(make_product):
     repo = make_product()
-    assert _measure(repo, CruftLinkedMetric()).value == 0
+    assert _measure(repo, CruftLinkedMetric()).value is False
 
 
 def test_days_since_update_fresh(make_product, template_repo):
@@ -96,12 +96,12 @@ def test_up_to_date_when_pinned_to_head(make_product, template_repo):
         check=True,
     ).stdout.strip()
     repo = make_product(template_repo, head)
-    assert _measure(repo, CruftUpToDateMetric(), fetch_template=True).value == 1
+    assert _measure(repo, CruftUpToDateMetric(), fetch_template=True).value is True
 
 
 def test_up_to_date_false_when_behind(make_product, template_repo):
     repo = make_product(template_repo, _first_commit(template_repo))
-    assert _measure(repo, CruftUpToDateMetric(), fetch_template=True).value == 0
+    assert _measure(repo, CruftUpToDateMetric(), fetch_template=True).value is False
 
 
 def test_days_behind_template(make_product, template_repo):

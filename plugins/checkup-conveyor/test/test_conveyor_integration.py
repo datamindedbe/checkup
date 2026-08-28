@@ -3,7 +3,7 @@ import os
 import pytest
 from checkup_conveyor import ConveyorProvider
 from checkup_conveyor.conveyor_metric import (
-    ConveyorIsDirtyDeployment,
+    ConveyorCleanDeployment,
     ConveyorLastDeploymentTime,
     ConveyorLastRunStatus,
 )
@@ -25,7 +25,7 @@ def test_conveyor_integration():
         .with_metrics(
             [
                 ConveyorLastDeploymentTime,
-                ConveyorIsDirtyDeployment,
+                ConveyorCleanDeployment,
                 ConveyorLastRunStatus,
             ]
         )

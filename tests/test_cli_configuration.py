@@ -321,3 +321,17 @@ class TestParseCliItem:
         assert name == "dbt"
         assert config == {"project_dir": "./dbt", "other": "value"}
         assert "malformed" in caplog.text
+
+
+class TestResolveMaterializerOverride:
+    def test_override_with_config_pairs(self):
+        from checkup.cli.executor import _resolve_materializer
+        from checkup.configuration import CheckupConfig
+        from checkup.registry import get_registry
+
+        materializer = _resolve_materializer(
+            CheckupConfig.empty(), get_registry(), "console:pretty=true"
+        )
+
+        assert type(materializer).__name__ == "ConsoleMaterializer"
+        assert materializer.pretty is True

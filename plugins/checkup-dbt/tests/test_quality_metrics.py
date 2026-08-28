@@ -70,7 +70,7 @@ def test_supported_version_metric(sample_manifest_path: Path):
         m for m in result.measurements if m.metric.name == "dbt_supported_version"
     )
     assert measurement.metric.unit == "boolean"
-    assert measurement.value == 1
+    assert measurement.value is True
 
 
 def test_supported_version_metric_requires_min_version():

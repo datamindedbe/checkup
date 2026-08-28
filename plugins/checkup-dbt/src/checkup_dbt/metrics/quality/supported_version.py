@@ -1,7 +1,7 @@
 import logging
 
 from checkup.measurement import Measurement, Measurements
-from checkup.metric import Metric
+from checkup.metric import Metric, Unit
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.quality.version import DbtVersionMetric
@@ -16,7 +16,7 @@ class DbtSupportedVersionMetric(DbtMetric):
 
     name: str = "dbt_supported_version"
     description: str = "Whether dbt version meets minimum requirement"
-    unit: str = "boolean"
+    unit: str = Unit.BOOLEAN
 
     min_version: str
 
@@ -34,12 +34,11 @@ class DbtSupportedVersionMetric(DbtMetric):
 
         supported = major_version == min_major and minor_version >= min_minor
 
-        value = 1 if supported else 0
         diagnostic = ""
         if not supported:
             diagnostic = (
                 f"dbt version {version} does not meet minimum requirement of {self.min_version}. "
                 f"Please upgrade dbt to version {self.min_version} or later."
             )
-        logger.info(f"dbt version {version} supported: {bool(value)}")
-        return self.measure(value=value, diagnostic=diagnostic)
+        logger.info(f"dbt version {version} supported: {supported}")
+        return self.measure(value=supported, diagnostic=diagnostic)

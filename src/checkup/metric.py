@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
@@ -28,6 +28,17 @@ class ExecutorType(Enum):
     THREAD = "thread"
     PROCESS = "process"
     ASYNCIO = "asyncio"
+
+
+class Unit(StrEnum):
+    """
+    Well-known units.
+    """
+
+    # Boolean metrics should be phrased positively (True = desirable).
+    BOOLEAN = "boolean"
+    # Values are on the 0-100 scale.
+    PERCENT = "percent"
 
 
 class Metric(ABC, BaseModel):

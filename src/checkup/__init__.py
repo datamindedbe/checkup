@@ -15,7 +15,7 @@ from checkup.materializers import (
     SQLAlchemyMaterializer,
 )
 from checkup.measurement import Measurement, Measurements
-from checkup.metric import ExecutorType, Metric
+from checkup.metric import ExecutorType, Metric, Unit
 from checkup.provider import Provider
 from checkup.providers.tags import TagProvider
 from checkup.types import Context
@@ -25,30 +25,26 @@ from checkup.utils import suppress_subprocess_output
 Measurement.model_rebuild()
 
 __all__ = [
-    # Core
     "CheckHub",
     "MeasurementResult",
     "Metric",
     "Measurement",
     "Measurements",
     "ExecutorType",
+    "Unit",
     "Provider",
     "TagProvider",
     "Context",
-    # Executors
     "ProviderExecutor",
     "MetricCalculator",
-    # Materializers
     "Materializer",
     "ConsoleMaterializer",
     "CSVMaterializer",
     "HTMLMaterializer",
     "SQLAlchemyMaterializer",
-    # Exceptions
     "ProviderError",
     "MetricPicklingError",
     "DuplicateMetricNameError",
-    # Utilities
     "suppress_subprocess_output",
 ]
 

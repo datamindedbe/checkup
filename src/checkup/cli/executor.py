@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from rich.console import Console
 
+from checkup.cli.utils import parse_cli_item
 from checkup.configuration import CheckupConfig
 from checkup.hub import CheckHub
 from checkup.materializers import ConsoleMaterializer
@@ -170,8 +171,7 @@ def _resolve_materializer(
     """
 
     if override:
-        mat_type = override
-        mat_config = {}
+        mat_type, mat_config = parse_cli_item(override)
     elif config.materializer:
         mat_type = config.materializer.type
         mat_config = config.materializer.config

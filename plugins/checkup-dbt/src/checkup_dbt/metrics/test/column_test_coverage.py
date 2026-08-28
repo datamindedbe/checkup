@@ -1,7 +1,7 @@
 import logging
 
 from checkup.measurement import Measurement, Measurements
-from checkup.metric import Metric
+from checkup.metric import Metric, Unit
 from checkup.types import Context
 from checkup_dbt.metrics.base import DbtMetric
 from checkup_dbt.metrics.core.columns import DbtColumnsMetric
@@ -20,7 +20,7 @@ class DbtColumnTestCoverageMetric(DbtMetric):
 
     name: str = "dbt_column_test_coverage"
     description: str = "Percentage of columns with at least one test"
-    unit: str = "percent"
+    unit: str = Unit.PERCENT
 
     @classmethod
     def depends_on(cls) -> list[type[Metric]]:
