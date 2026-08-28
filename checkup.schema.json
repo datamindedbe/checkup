@@ -12,6 +12,14 @@
         "type": "string"
       }
     },
+    "select": {
+      "type": "string",
+      "description": "Default selector for materialized output."
+    },
+    "exclude": {
+      "type": "string",
+      "description": "Default selector for materialization to exclude."
+    },
     "providers": {
       "type": "array",
       "description": "Data providers for context enrichment",
@@ -55,6 +63,26 @@
               },
               "environment_name": {
                 "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "cruft"
+              },
+              "project_path": {
+                "type": "string",
+                "default": "."
+              },
+              "fetch_template": {
+                "type": "boolean",
+                "default": false
               }
             },
             "required": [
@@ -142,7 +170,14 @@
             "type": "object",
             "properties": {
               "type": {
-                "const": "conveyor_is_dirty_deployment"
+                "const": "conveyor_clean_deployment"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -155,6 +190,13 @@
             "properties": {
               "type": {
                 "const": "conveyor_last_deployment_time"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -167,6 +209,217 @@
             "properties": {
               "type": {
                 "const": "conveyor_last_run_status"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cruft_commits_behind"
+              },
+              "name": {
+                "default": "cruft_commits_behind",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of template commits the project is behind",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "commits",
+                "title": "Unit",
+                "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cruft_conflicts"
+              },
+              "name": {
+                "default": "cruft_conflicts",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Number of unresolved cruft template conflicts",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "files",
+                "title": "Unit",
+                "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cruft_days_behind_template"
+              },
+              "name": {
+                "default": "cruft_days_behind_template",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Days between the pinned commit and the template head",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "days",
+                "title": "Unit",
+                "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cruft_days_since_update"
+              },
+              "name": {
+                "default": "cruft_days_since_update",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Days since the last cruft template update",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "days",
+                "title": "Unit",
+                "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cruft_linked"
+              },
+              "name": {
+                "default": "cruft_linked",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Whether a .cruft.json template link is present",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "boolean",
+                "title": "Unit",
+                "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cruft_up_to_date"
+              },
+              "name": {
+                "default": "cruft_up_to_date",
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "Whether the project matches the latest template commit",
+                "title": "Description",
+                "type": "string"
+              },
+              "unit": {
+                "default": "boolean",
+                "title": "Unit",
+                "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -194,6 +447,13 @@
                 "default": "percent",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -221,6 +481,13 @@
                 "default": "tests",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -248,6 +515,13 @@
                 "default": "columns",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -275,6 +549,13 @@
                 "default": "columns",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -302,6 +583,13 @@
                 "default": "columns",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -329,6 +617,13 @@
                 "default": "tests",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -356,6 +651,13 @@
                 "default": "packages",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               },
               "flagged_packages": {
                 "items": {
@@ -390,6 +692,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -429,6 +738,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -456,6 +772,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -483,6 +806,13 @@
                 "default": "columns",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -510,6 +840,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -537,6 +874,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -564,6 +908,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -591,6 +942,13 @@
                 "default": "models",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -618,6 +976,13 @@
                 "default": "url",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               },
               "profile": {
                 "anyOf": [
@@ -662,6 +1027,13 @@
                 "title": "Unit",
                 "type": "string"
               },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
+              },
               "min_version": {
                 "title": "Min Version",
                 "type": "string"
@@ -692,6 +1064,13 @@
                 "default": "columns",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -719,6 +1098,13 @@
                 "default": "tests",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -746,6 +1132,13 @@
                 "default": "tests",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -773,6 +1166,13 @@
                 "default": "version",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -800,6 +1200,13 @@
                 "default": "days",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -827,6 +1234,13 @@
                 "default": "files",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               },
               "pattern": {
                 "default": "*",
@@ -859,6 +1273,13 @@
                 "default": "version",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               }
             },
             "required": [
@@ -883,9 +1304,16 @@
                 "type": "string"
               },
               "unit": {
-                "default": "bool",
+                "default": "boolean",
                 "title": "Unit",
                 "type": "string"
+              },
+              "tags": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Tags",
+                "type": "array"
               },
               "min_version": {
                 "title": "Min Version",
@@ -924,6 +1352,33 @@
               },
               "title": "Group Tags",
               "type": "array"
+            },
+            "pretty": {
+              "default": false,
+              "title": "Pretty",
+              "type": "boolean"
+            },
+            "columns": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "name",
+                      "description",
+                      "value",
+                      "unit",
+                      "diagnostics"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Columns"
             }
           },
           "required": [
@@ -976,6 +1431,50 @@
             "group_tag_2": {
               "title": "Group Tag 2",
               "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "markdown"
+            },
+            "include_indirect": {
+              "default": false,
+              "title": "Include Indirect",
+              "type": "boolean"
+            },
+            "pretty": {
+              "default": false,
+              "title": "Pretty",
+              "type": "boolean"
+            },
+            "columns": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "name",
+                      "description",
+                      "value",
+                      "unit",
+                      "diagnostics"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Columns"
             }
           },
           "required": [

@@ -4,10 +4,7 @@ version = "0.4.0"
 description = "Conveyor metrics for checkup"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "checkup",
-    "requests"
-]
+dependencies = ["checkup", "requests"]
 
 [project.urls]
 Homepage = "https://github.com/datamindedbe/checkup"
@@ -22,7 +19,7 @@ conveyor = "checkup_conveyor:ConveyorProvider"
 
 [project.entry-points."checkup.metrics"]
 conveyor_last_deployment_time = "checkup_conveyor.conveyor_metric:ConveyorLastDeploymentTime"
-conveyor_is_dirty_deployment = "checkup_conveyor.conveyor_metric:ConveyorIsDirtyDeployment"
+conveyor_clean_deployment = "checkup_conveyor.conveyor_metric:ConveyorCleanDeployment"
 conveyor_last_run_status = "checkup_conveyor.conveyor_metric:ConveyorLastRunStatus"
 
 [build-system]

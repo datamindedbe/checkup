@@ -4,7 +4,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from checkup.materializers.base import Materializer, group_measurements_hierarchical
+from checkup.materializers.base import Materializer
+from checkup.materializers.utils import group_measurements_hierarchical
 from checkup.measurement import Measurement
 
 

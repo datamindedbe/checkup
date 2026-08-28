@@ -1,70 +1,10 @@
-"""Base materializer class and measurement grouping helpers."""
+"""Base materializer class."""
 
 from abc import ABC, abstractmethod
-from collections import defaultdict
 
 from pydantic import BaseModel
 
 from checkup.measurement import Measurement
-
-
-def group_measurements_by_tags(
-    measurements: list[Measurement],
-    tag1: str,
-    tag2: str,
-    default_value: str = "Unknown",
-) -> dict[tuple[str, str], list[Measurement]]:
-    """Group measurements by two tag values.
-
-    Args:
-        measurements: List of measurements to group
-        tag1: First tag name for grouping
-        tag2: Second tag name for grouping
-        default_value: Value to use when tag is missing
-
-    Returns:
-        Dict mapping (tag1_value, tag2_value) tuples to measurement lists
-    """
-    groups: dict[tuple[str, str], list[Measurement]] = {}
-    for measurement in measurements:
-        tag1_value = measurement.tags.get(tag1, default_value)
-        tag2_value = measurement.tags.get(tag2, default_value)
-        key = (tag1_value, tag2_value)
-
-        if key not in groups:
-            groups[key] = []
-        groups[key].append(measurement)
-
-    return groups
-
-
-def group_measurements_hierarchical(
-    measurements: list[Measurement],
-    tag1: str,
-    tag2: str,
-    default_value: str = "Ungrouped",
-) -> dict[str, dict[str, list[Measurement]]]:
-    """Group measurements hierarchically by two tag values.
-
-    Args:
-        measurements: List of measurements to group
-        tag1: First tag name for top-level grouping
-        tag2: Second tag name for nested grouping
-        default_value: Value to use when tag is missing
-
-    Returns:
-        Nested dict: {tag1_value: {tag2_value: [measurements]}}
-    """
-    grouped: dict[str, dict[str, list[Measurement]]] = defaultdict(
-        lambda: defaultdict(list)
-    )
-
-    for measurement in measurements:
-        group1_value = measurement.tags.get(tag1, default_value)
-        group2_value = measurement.tags.get(tag2, default_value)
-        grouped[group1_value][group2_value].append(measurement)
-
-    return dict(grouped)
 
 
 class Materializer(ABC, BaseModel):

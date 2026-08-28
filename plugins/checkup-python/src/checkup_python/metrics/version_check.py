@@ -1,5 +1,5 @@
 from checkup.measurement import Measurement, Measurements
-from checkup.metric import Metric
+from checkup.metric import Metric, Unit
 from checkup.types import Context
 from checkup_python.metrics.utils import parse_semantic_version
 from checkup_python.metrics.version import PythonVersionMetric
@@ -13,7 +13,7 @@ class PythonVersionCheckMetric(Metric):
 
     name: str = "python_version_check"
     description: str = "The Python version adheres to a minimum and maximum boundary"
-    unit: str = "bool"
+    unit: str = Unit.BOOLEAN
 
     min_version: str
     max_version: str

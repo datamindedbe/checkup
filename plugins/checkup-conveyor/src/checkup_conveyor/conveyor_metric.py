@@ -5,6 +5,7 @@ import requests
 
 from checkup import Context
 from checkup.measurement import Measurement, Measurements
+from checkup.metric import Unit
 from checkup_conveyor import ConveyorMetric
 
 logger = logging.getLogger(__name__)
@@ -33,10 +34,12 @@ class ConveyorLastDeploymentTime(ConveyorMetric):
         )
 
 
-class ConveyorIsDirtyDeployment(ConveyorMetric):
-    name: ClassVar[str] = "Conveyor Is Dirty Deployment"
-    description: ClassVar[str] = "True if the last deployment was dirty"
-    unit: ClassVar[str] = "boolean"
+class ConveyorCleanDeployment(ConveyorMetric):
+    name: ClassVar[str] = "Conveyor Clean Deployment"
+    description: ClassVar[str] = (
+        "Whether the last deployment was built from a clean git tree"
+    )
+    unit: ClassVar[str] = Unit.BOOLEAN
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         proj_id = self.get_conveyor_project_id(context)
@@ -54,7 +57,7 @@ class ConveyorIsDirtyDeployment(ConveyorMetric):
         diagnostic = (
             "Commit changes to git, and deploy the project again." if is_dirty else ""
         )
-        return self.measure(value=is_dirty, diagnostic=diagnostic)
+        return self.measure(value=not is_dirty, diagnostic=diagnostic)
 
 
 class ConveyorLastRunStatus(ConveyorMetric):

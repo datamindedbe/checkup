@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from checkup.measurement import Measurement, Measurements
-from checkup.metric import Metric
+from checkup.metric import Metric, Unit
 from checkup.provider import Provider
 from checkup.types import Context
 from checkup_cruft.provider import CruftProvider
@@ -27,11 +27,11 @@ class CruftLinkedMetric(CruftMetric):
 
     name: str = "cruft_linked"
     description: str = "Whether a .cruft.json template link is present"
-    unit: str = "boolean"
+    unit: str = Unit.BOOLEAN
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
-        return self.measure(value=1 if cruft.get("present") else 0)
+        return self.measure(value=bool(cruft.get("present")))
 
 
 class CruftDaysSinceUpdateMetric(CruftMetric):
@@ -98,14 +98,14 @@ class CruftUpToDateMetric(CruftMetric):
 
     name: str = "cruft_up_to_date"
     description: str = "Whether the project matches the latest template commit"
-    unit: str = "boolean"
+    unit: str = Unit.BOOLEAN
 
     def calculate(self, context: Context, measurements: Measurements) -> Measurement:
         cruft = self.get_context(context)
         behind = cruft.get("commits_behind")
         if behind is None:
             return self.measure(value=None, diagnostic="Template not fetched")
-        return self.measure(value=1 if behind == 0 else 0)
+        return self.measure(value=behind == 0)
 
 
 class CruftDaysBehindTemplateMetric(CruftMetric):
