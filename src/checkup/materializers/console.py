@@ -78,7 +78,11 @@ class ConsoleMaterializer(Materializer):
 
         table = Table(title=title)
         for column in columns:
-            table.add_column(**COLUMN_SETTINGS[column])
+            settings = COLUMN_SETTINGS[column]
+            # Without a name column the description is the row identifier, so don't dim it.
+            if column == "description" and "name" not in columns:
+                settings = {**settings, "style": None}
+            table.add_column(**settings)
 
         for measurement in measurements:
             table.add_row(
